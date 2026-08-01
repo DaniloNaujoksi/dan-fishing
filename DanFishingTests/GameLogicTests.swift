@@ -56,6 +56,37 @@ final class BaitSystemTests: XCTestCase {
                            stats: stats)
     }
 
+    func testPeacefulFishIgnorePredatorBaits() {
+        let carp = FishCatalog.species(id: "carp")!
+        let spinner = BaitCatalog.bait(id: "spinner")!
+        let corn = BaitCatalog.bait(id: "corn")!
+        let ctx = context(habitat: .lilies, time: .day)
+
+        // Ein Karpfen ist Friedfisch — ein Spinner ist für ihn kein Futter.
+        XCTAssertEqual(BaitSystem.attraction(species: carp, bait: spinner, context: ctx), 0)
+        XCTAssertGreaterThan(BaitSystem.attraction(species: carp, bait: corn, context: ctx), 0)
+    }
+
+    func testPredatorsIgnorePeacefulBaits() {
+        let pike = FishCatalog.species(id: "pike")!
+        let bread = BaitCatalog.bait(id: "bread")!
+        let wobbler = BaitCatalog.bait(id: "wobbler")!
+        let ctx = context(habitat: .sunkenLogs, time: .dawn)
+
+        XCTAssertEqual(BaitSystem.attraction(species: pike, bait: bread, context: ctx), 0)
+        XCTAssertGreaterThan(BaitSystem.attraction(species: pike, bait: wobbler, context: ctx), 0)
+    }
+
+    func testSpecialtyBaitBeatsOthers() {
+        let ctx = context(habitat: .deep, time: .night, level: 10)
+        let catfish = FishCatalog.species(id: "catfish")!
+        let bundle = BaitCatalog.bait(id: "wormbundle")!
+        let worm = BaitCatalog.bait(id: "worm")!
+
+        XCTAssertGreaterThan(BaitSystem.attraction(species: catfish, bait: bundle, context: ctx),
+                             BaitSystem.attraction(species: catfish, bait: worm, context: ctx))
+    }
+
     func testWrongHabitatGivesNoAttraction() {
         let pike = FishCatalog.species(id: "pike")!
         let worm = BaitCatalog.bait(id: "worm")!
@@ -249,6 +280,18 @@ final class EconomyTests: XCTestCase {
         let reward = EconomySystem.releaseReward(for: trophy)
         XCTAssertEqual(reward.coins, 0)
         XCTAssertGreaterThan(reward.experience, 20)
+        // Zurücksetzen zahlt in Ansehen — das ist der eigentliche Grund dafür.
+        XCTAssertGreaterThan(reward.reputation, 5)
+    }
+
+    func testReputationImprovesLuckAndPrices() {
+        var data = SaveData.newGame()
+        let plainLuck = UpgradeSystem.stats(for: data).luck
+        let plainPrice = UpgradeSystem.price(1000, for: data)
+
+        data.reputation = 200
+        XCTAssertGreaterThan(UpgradeSystem.stats(for: data).luck, plainLuck)
+        XCTAssertLessThan(UpgradeSystem.price(1000, for: data), plainPrice)
     }
 }
 

@@ -22,6 +22,11 @@ enum BaitSystem {
         guard species.habitats.contains(context.habitat) else { return 0 }
         guard species.minPlayerLevel <= context.playerLevel else { return 0 }
 
+        // Harte Regel vor allen Feinheiten: Ein Karpfen jagt keine Beutefische
+        // und nimmt deshalb keinen Spinner, egal wie gut Platz und Uhrzeit
+        // passen. Umgekehrt interessiert einen Hecht kein Maiskorn.
+        guard bait.targets.contains(species.feeding) else { return 0 }
+
         // Grundgewicht aus der Seltenheit, angehoben durch Glücksbringer und
         // die Seltenheitsneigung des Köders.
         let luckBoost = 1.0 + (context.stats.luck - 1.0) + bait.rarityBias * 0.8
@@ -30,12 +35,15 @@ enum BaitSystem {
         // Tageszeit: außerhalb der aktiven Phase beißt kaum etwas.
         score *= species.activeTimes.contains(context.timeOfDay) ? 1.0 : 0.18
 
-        // Vorliebe für den Köder.
-        if species.preferredBaitIDs.contains(bait.id) {
-            score *= 2.2
-        } else if bait.kind == .artificial && species.fightStrength < 0.3 {
-            // Kleine Friedfische ignorieren Kunstköder weitgehend.
-            score *= 0.15
+        // Der Köder ist genau auf diese Art abgestimmt — Fliege auf Äsche,
+        // Köderfisch auf Zander, Wurmbündel auf Wels.
+        if bait.specialty == species.id {
+            score *= 3.4
+        } else if species.preferredBaitIDs.contains(bait.id) {
+            score *= 2.0
+        } else if bait.kind == .artificial && species.feeding == .peaceful {
+            // Friedfische nehmen Kunstköder allenfalls versehentlich.
+            score *= 0.12
         } else {
             score *= 0.55
         }

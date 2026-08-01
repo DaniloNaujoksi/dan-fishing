@@ -9,6 +9,10 @@ struct FishSpecies: Identifiable, Equatable {
 
     let rarity: Rarity
 
+    /// Friedfisch, Raubfisch oder Allesfresser. Entscheidet mit darüber,
+    /// welche Köder überhaupt in Frage kommen.
+    let feeding: FeedingType
+
     /// Längenspanne in Zentimetern.
     let minLength: Double
     let maxLength: Double

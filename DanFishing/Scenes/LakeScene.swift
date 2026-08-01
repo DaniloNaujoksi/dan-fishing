@@ -436,6 +436,7 @@ final class LakeScene: SKScene {
         boatNode.position = boat.position
         boatNode.zRotation = boat.heading
         boatNode.update(deltaTime: dt, rowing: boat.rowingIntensity, speed: boat.speed)
+        boatNode.applyUpgrade(level: session.save.upgradeLevels["boat"] ?? 0)
 
         // Kielwasser: je schneller, desto dichter die Ringe.
         if boat.speed > 25 {

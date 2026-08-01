@@ -111,30 +111,58 @@ struct CatchResultView: View {
         .background(Capsule().fill(color.opacity(0.12)))
     }
 
+    /// Drei Wege, und jeder zahlt in eine andere Währung: Münzen jetzt,
+    /// Sammlung dauerhaft, Ansehen für später. Unter jedem Knopf steht, was
+    /// er einbringt — sonst rät man.
     private var actions: some View {
-        VStack(spacing: 9) {
-            Button("Verkaufen · \(result.coins) Münzen") {
+        let release = EconomySystem.releaseReward(for: result.fish)
+        let isNewTrophy = !session.save.trophySpeciesIDs.contains(result.fish.species.id)
+
+        return VStack(spacing: 10) {
+            Button {
                 session.sellPendingCatch()
                 session.clearCompletedMissions()
+            } label: {
+                actionLabel(title: "Verkaufen",
+                            detail: "+\(result.coins) Münzen",
+                            symbol: "circle.hexagongrid.fill")
             }
             .buttonStyle(BrushButtonStyle())
             .frame(maxWidth: .infinity)
 
             HStack(spacing: 9) {
-                Button("Behalten") {
+                Button {
                     session.keepPendingCatch()
                     session.clearCompletedMissions()
+                } label: {
+                    actionLabel(title: "Trophäe",
+                                detail: isNewTrophy ? "neu in der Sammlung" : "ersetzt Eintrag",
+                                symbol: "trophy")
                 }
-                .buttonStyle(BrushButtonStyle(tint: Palette.inkSoft.swiftUIColor, filled: false))
+                .buttonStyle(BrushButtonStyle(tint: Palette.gold.swiftUIColor, filled: false))
 
-                Button("Freilassen") {
+                Button {
                     session.releasePendingCatch()
                     session.clearCompletedMissions()
+                } label: {
+                    actionLabel(title: "Freilassen",
+                                detail: "+\(release.reputation) Ansehen",
+                                symbol: "leaf")
                 }
                 .buttonStyle(BrushButtonStyle(tint: Palette.moss.swiftUIColor, filled: false))
             }
         }
         .padding(.top, 4)
+    }
+
+    private func actionLabel(title: String, detail: String, symbol: String) -> some View {
+        VStack(spacing: 2) {
+            Label(title, systemImage: symbol)
+                .labelStyle(.titleAndIcon)
+            Text(detail)
+                .font(.system(size: 10, weight: .regular, design: .rounded))
+                .opacity(0.85)
+        }
     }
 }
 

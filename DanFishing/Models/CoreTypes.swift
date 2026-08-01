@@ -105,6 +105,29 @@ enum TimeOfDay: String, Codable, CaseIterable {
     }
 }
 
+/// Ernährungsweise einer Fischart.
+///
+/// Das ist die wichtigste Regel im Ködersystem: Ein Karpfen nimmt keinen
+/// Spinner, weil er Pflanzen und Kleintiere frisst und kein Beutefisch-Jäger
+/// ist. Ohne diese Trennung fängt jeder Köder alles, und die Köderwahl wird
+/// beliebig.
+enum FeedingType: String, Codable, CaseIterable {
+    /// Friedfisch: Pflanzen, Würmer, Larven, Körner.
+    case peaceful
+    /// Raubfisch: jagt Beutefische.
+    case predator
+    /// Nimmt beides — etwa Barsch oder Wels.
+    case omnivore
+
+    var displayName: String {
+        switch self {
+        case .peaceful: return "Friedfisch"
+        case .predator: return "Raubfisch"
+        case .omnivore: return "Allesfresser"
+        }
+    }
+}
+
 /// Bewegungsmuster eines Fisches im Fang-Minispiel.
 enum FightMotion: String, Codable, CaseIterable {
     case steady      // ruhig, gleichmäßig

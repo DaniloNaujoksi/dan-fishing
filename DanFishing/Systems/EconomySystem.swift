@@ -21,11 +21,57 @@ enum EconomySystem {
         return xp
     }
 
-    /// Bonus, wenn ein Fisch wieder freigelassen wird. Statt Münzen gibt es
-    /// mehr Erfahrung — Sammeln und Freilassen sollen sich beide lohnen.
-    static func releaseReward(for fish: HookedFish) -> (coins: Int, experience: Int) {
+    /// Ertrag beim Zurücksetzen: keine Münzen, dafür Erfahrung und Ansehen.
+    ///
+    /// Das Ansehen ist der eigentliche Grund, einen kapitalen Fisch wieder
+    /// schwimmen zu lassen: Es erhöht dauerhaft die Chance auf seltene Arten
+    /// und senkt die Preise im Laden. Wer verkauft, hat heute Geld; wer
+    /// freilässt, fängt morgen besser.
+    static func releaseReward(for fish: HookedFish) -> (coins: Int, experience: Int, reputation: Int) {
         let xp = 8 + Int(fish.trophyFactor * 26) + (fish.species.rarity >= .rare ? 12 : 0)
-        return (0, xp)
+
+        // Große und seltene Exemplare bringen deutlich mehr Ansehen.
+        var reputation = 2 + Int(fish.trophyFactor * 10)
+        switch fish.species.rarity {
+        case .common: break
+        case .uncommon: reputation += 2
+        case .rare: reputation += 5
+        case .veryRare: reputation += 9
+        case .legendary: reputation += 16
+        }
+
+        return (0, xp, reputation)
+    }
+
+    /// Ertrag, wenn ein Fisch als Trophäe behalten wird.
+    ///
+    /// Lohnt sich nur bei einem persönlichen Rekord — sonst liegt derselbe
+    /// Fisch schon in der Sammlung, und Verkaufen ist die bessere Wahl.
+    static func trophyReward(for fish: HookedFish, isFirstOfSpecies: Bool) -> (experience: Int, coins: Int) {
+        let xp = 14 + Int(fish.trophyFactor * 30) + (isFirstOfSpecies ? 20 : 0)
+        return (xp, 0)
+    }
+
+    /// Prämie, wenn alle Arten einer Seltenheitsstufe als Trophäe im Regal
+    /// stehen. Das ist das Ziel hinter dem Behalten.
+    static func collectionBonus(for rarity: Rarity) -> Int {
+        switch rarity {
+        case .common: return 250
+        case .uncommon: return 500
+        case .rare: return 1200
+        case .veryRare: return 2500
+        case .legendary: return 5000
+        }
+    }
+
+    /// Vollständige Sammlungen prüfen und auszahlen.
+    /// - Returns: Die Stufen, die durch diesen Fang vollständig wurden.
+    static func completedCollections(in data: SaveData) -> [Rarity] {
+        Rarity.allCases.filter { rarity in
+            let species = FishCatalog.all.filter { $0.rarity == rarity }
+            guard !species.isEmpty else { return false }
+            return species.allSatisfy { data.trophySpeciesIDs.contains($0.id) }
+        }
     }
 
     /// Wendet Erfahrung an und gibt zurück, wie viele Level dazugekommen sind.

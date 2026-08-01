@@ -23,6 +23,17 @@ struct Bait: Identifiable, Equatable {
     let summary: String
     let kind: BaitKind
 
+    /// Welche Fischgruppen diesen Köder überhaupt nehmen.
+    ///
+    /// Ein Spinner steht nur für Raubfische und Allesfresser in der Liste;
+    /// ein Karpfen taucht deshalb gar nicht erst als Kandidat auf. Der Wurm
+    /// steht in allen drei — deswegen ist er der Anfängerköder.
+    let targets: [FeedingType]
+
+    /// Art, auf die dieser Köder besonders gut abgestimmt ist. Nicht jeder
+    /// Köder hat eine.
+    let specialty: String?
+
     /// Preis in Münzen. 0 = von Beginn an vorhanden.
     let price: Int
     /// Spielerlevel, ab dem der Köder im Laden auftaucht.

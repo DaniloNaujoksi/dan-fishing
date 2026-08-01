@@ -14,6 +14,10 @@ final class BoatNode: SKNode {
     private let rod = SKShapeNode()
     private let shadow = SKSpriteNode()
 
+    /// Zierrat, der mit den Ausbaustufen dazukommt.
+    private let trim = SKNode()
+    private var appliedUpgradeLevel = -1
+
     private var rowPhase: CGFloat = 0
     private var idlePhase: CGFloat = 0
 
@@ -21,6 +25,10 @@ final class BoatNode: SKNode {
         super.init()
         buildShadow()
         buildHull()
+
+        trim.zPosition = 3
+        addChild(trim)
+
         buildOars()
         buildAngler()
     }
@@ -174,6 +182,96 @@ final class BoatNode: SKNode {
                             y: rod.position.y + sin(rod.zRotation) * 54)
         let inAngler = CGPoint(x: angler.position.x + local.x, y: angler.position.y + local.y)
         return convert(inAngler, to: parent ?? self)
+    }
+
+    /// Rüstet das Boot sichtbar auf.
+    ///
+    /// Wer für ein Upgrade bezahlt, soll es sehen: Stufe 1 bringt neue Riemen
+    /// mit hellen Blättern, Stufe 2 einen lackierten Rumpf mit Zierstreifen
+    /// und Messingbeschlägen, Stufe 3 zusätzlich Laterne und Wimpel.
+    func applyUpgrade(level: Int) {
+        guard level != appliedUpgradeLevel else { return }
+        appliedUpgradeLevel = level
+
+        trim.removeAllChildren()
+
+        // Rumpffarbe je Ausbaustufe.
+        let hullColor: ColorSpec
+        switch level {
+        case 0: hullColor = ColorSpec(0x8A6A46)
+        case 1: hullColor = ColorSpec(0x96714A)
+        case 2: hullColor = ColorSpec(0x7E5A3C)
+        default: hullColor = ColorSpec(0x5E4432)
+        }
+        hull.strokeColor = ColorSpec(0x3E2C1B).skColor
+        if hull.fillTexture != nil {
+            hull.fillColor = hullColor.skColor
+        }
+
+        // Hellere Ruderblätter ab Stufe 1.
+        let oarColor = level >= 1 ? ColorSpec(0xC49A63) : ColorSpec(0x8A6A46)
+        leftOar.fillColor = oarColor.skColor
+        rightOar.fillColor = oarColor.skColor
+
+        guard level >= 2 else { return }
+
+        // Zierstreifen längs der Bordwand.
+        for side in [CGFloat(1), CGFloat(-1)] {
+            let stripe = SKShapeNode(rectOf: CGSize(width: 74, height: 3), cornerRadius: 1.5)
+            stripe.fillColor = Palette.vermilion.skColor(alpha: 0.85)
+            stripe.strokeColor = .clear
+            stripe.position = CGPoint(x: -2, y: 15 * side)
+            trim.addChild(stripe)
+        }
+
+        // Messingbeschläge an Bug und Heck.
+        for x in [CGFloat(44), CGFloat(-38)] {
+            let fitting = SKShapeNode(circleOfRadius: 4)
+            fitting.fillColor = Palette.gold.skColor
+            fitting.strokeColor = ColorSpec(0x8A6A2A).skColor
+            fitting.lineWidth = 1
+            fitting.position = CGPoint(x: x, y: 0)
+            trim.addChild(fitting)
+        }
+
+        guard level >= 3 else { return }
+
+        // Laterne am Bug, mit warmem Schein.
+        let lantern = SKShapeNode(rectOf: CGSize(width: 9, height: 12), cornerRadius: 2)
+        lantern.fillColor = ColorSpec(0xF2D98C).skColor
+        lantern.strokeColor = ColorSpec(0x6B4E30).skColor
+        lantern.lineWidth = 1.5
+        lantern.position = CGPoint(x: 36, y: 0)
+        lantern.zPosition = 1
+        trim.addChild(lantern)
+
+        if let glow = TextureFactory.softDisc(color: UIColor(red: 1, green: 0.87, blue: 0.6, alpha: 0.6)) {
+            let halo = SKSpriteNode(texture: glow)
+            halo.size = CGSize(width: 70, height: 70)
+            halo.blendMode = .add
+            halo.alpha = 0.55
+            halo.position = lantern.position
+            trim.addChild(halo)
+        }
+
+        // Wimpel am Heck, der im Fahrtwind flattert.
+        let pennant = SKShapeNode()
+        let path = CGMutablePath()
+        path.move(to: CGPoint(x: -40, y: 0))
+        path.addLine(to: CGPoint(x: -62, y: 7))
+        path.addLine(to: CGPoint(x: -56, y: 0))
+        path.addLine(to: CGPoint(x: -62, y: -7))
+        path.closeSubpath()
+        pennant.path = path
+        pennant.fillColor = Palette.vermilion.skColor
+        pennant.strokeColor = .clear
+        pennant.zPosition = 1
+        trim.addChild(pennant)
+
+        pennant.run(.repeatForever(.sequence([
+            .scaleX(to: 0.82, duration: 0.6),
+            .scaleX(to: 1.0, duration: 0.6)
+        ])))
     }
 
     /// Wird jeden Frame aufgerufen.
