@@ -104,33 +104,83 @@ enum DecorFactory {
         return group
     }
 
+    /// Eine Steingruppe statt eines einzelnen Klotzes.
+    ///
+    /// Steine liegen selten allein: ein großer, ein mittlerer, ein kleiner
+    /// daneben. Dazu Schatten unter jedem, eine Lichtkante oben und Moos an
+    /// der Wetterseite — damit wirken sie plastisch statt wie Aufkleber.
     private static func rock(variant: CGFloat) -> SKNode {
         let group = SKNode()
-        let size = 16 + variant * 18
 
-        let shape = SKShapeNode()
-        let path = CGMutablePath()
-        let corners = 6
-        for index in 0...corners {
-            let angle = CGFloat(index) / CGFloat(corners) * .pi * 2
-            let radius = size * (0.75 + (index % 2 == 0 ? variant * 0.3 : 0.15))
-            let point = CGPoint(x: cos(angle) * radius, y: sin(angle) * radius * 0.7)
-            if index == 0 { path.move(to: point) } else { path.addLine(to: point) }
+        struct Stone {
+            let offset: CGPoint
+            let size: CGFloat
+            let tilt: CGFloat
         }
-        path.closeSubpath()
 
-        shape.path = path
-        shape.fillColor = Palette.stone.skColor
-        shape.strokeColor = ColorSpec(0x5F5C55).skColor
-        shape.lineWidth = 2
-        group.addChild(shape)
+        let stones: [Stone] = [
+            Stone(offset: .zero, size: 18 + variant * 16, tilt: variant * 0.5),
+            Stone(offset: CGPoint(x: 15 + variant * 9, y: -8), size: 10 + variant * 8, tilt: -0.3),
+            Stone(offset: CGPoint(x: -13 - variant * 6, y: -11), size: 7 + variant * 6, tilt: 0.7)
+        ]
 
-        // Moosfleck
-        let moss = SKShapeNode(ellipseOf: CGSize(width: size * 0.7, height: size * 0.4))
-        moss.fillColor = Palette.moss.skColor(alpha: 0.6)
-        moss.strokeColor = .clear
-        moss.position = CGPoint(x: -size * 0.2, y: size * 0.15)
-        group.addChild(moss)
+        for (index, stone) in stones.enumerated() {
+            let node = SKNode()
+            node.position = stone.offset
+            node.zRotation = stone.tilt
+
+            // Schatten auf dem Boden.
+            if let shadowTexture = TextureFactory.softDisc(color: UIColor(white: 0, alpha: 0.32)) {
+                let shadow = SKSpriteNode(texture: shadowTexture)
+                shadow.size = CGSize(width: stone.size * 3.0, height: stone.size * 1.8)
+                shadow.position = CGPoint(x: stone.size * 0.16, y: -stone.size * 0.42)
+                shadow.zPosition = -1
+                node.addChild(shadow)
+            }
+
+            // Unregelmäßiger Umriss aus acht Ecken mit ungleichen Radien.
+            let shape = SKShapeNode()
+            let path = CGMutablePath()
+            let corners = 8
+            for step in 0...corners {
+                let angle = CGFloat(step) / CGFloat(corners) * .pi * 2
+                let wobble = 0.72 + sin(angle * 3 + variant * 6 + CGFloat(index)) * 0.2
+                let point = CGPoint(x: cos(angle) * stone.size * wobble,
+                                    y: sin(angle) * stone.size * wobble * 0.74)
+                if step == 0 { path.move(to: point) } else { path.addLine(to: point) }
+            }
+            path.closeSubpath()
+
+            shape.path = path
+            shape.fillColor = index == 0
+                ? Palette.stone.skColor
+                : ColorSpec(0x9C988D).skColor
+            shape.strokeColor = ColorSpec(0x625E56).skColor(alpha: 0.85)
+            shape.lineWidth = 1.6
+            node.addChild(shape)
+
+            // Lichtkante oben links — die Sonne steht im Spiel oben.
+            let highlight = SKShapeNode(ellipseOf: CGSize(width: stone.size * 0.9,
+                                                          height: stone.size * 0.45))
+            highlight.fillColor = SKColor(white: 1, alpha: 0.22)
+            highlight.strokeColor = .clear
+            highlight.position = CGPoint(x: -stone.size * 0.18, y: stone.size * 0.26)
+            highlight.zRotation = -0.25
+            node.addChild(highlight)
+
+            // Moos an der Nordseite, nur beim größten Stein.
+            if index == 0 && variant > 0.35 {
+                let moss = SKShapeNode(ellipseOf: CGSize(width: stone.size * 0.8,
+                                                         height: stone.size * 0.42))
+                moss.fillColor = Palette.moss.skColor(alpha: 0.55)
+                moss.strokeColor = .clear
+                moss.position = CGPoint(x: -stone.size * 0.26, y: -stone.size * 0.2)
+                moss.zRotation = 0.3
+                node.addChild(moss)
+            }
+
+            group.addChild(node)
+        }
 
         return group
     }
@@ -162,47 +212,102 @@ enum DecorFactory {
         return group
     }
 
+    /// Baum von schräg oben.
+    ///
+    /// Die Krone besteht aus drei Lagen: dunkle Grundmasse, mittlere Tupfen,
+    /// helle Lichter obenauf. Erst diese Staffelung lässt sie räumlich wirken;
+    /// eine einzelne Farbfläche sah aus wie ein grüner Kreis. Der Ahorn
+    /// bekommt zusätzlich einzelne Blätter am Rand, die Kiefer eine gezackte
+    /// Silhouette.
     private static func tree(maple: Bool, variant: CGFloat) -> SKNode {
         let group = SKNode()
+        let scale = 0.85 + variant * 0.5
 
-        // Schatten auf dem Boden
-        if let shadowTexture = TextureFactory.softDisc(color: UIColor(white: 0, alpha: 0.3)) {
+        // Weicher Schlagschatten, leicht versetzt.
+        if let shadowTexture = TextureFactory.softDisc(color: UIColor(white: 0, alpha: 0.34)) {
             let shadow = SKSpriteNode(texture: shadowTexture)
-            shadow.size = CGSize(width: 120, height: 80)
-            shadow.position = CGPoint(x: 6, y: -10)
+            shadow.size = CGSize(width: 132 * scale, height: 86 * scale)
+            shadow.position = CGPoint(x: 12 * scale, y: -16 * scale)
             shadow.zPosition = -1
             group.addChild(shadow)
         }
 
-        let trunk = SKShapeNode(rectOf: CGSize(width: 9, height: 26), cornerRadius: 3)
+        // Stamm mit zwei sichtbaren Ästen.
+        let trunk = SKShapeNode()
+        let trunkPath = CGMutablePath()
+        trunkPath.move(to: CGPoint(x: -5 * scale, y: -14 * scale))
+        trunkPath.addLine(to: CGPoint(x: -3 * scale, y: 16 * scale))
+        trunkPath.addLine(to: CGPoint(x: 3 * scale, y: 16 * scale))
+        trunkPath.addLine(to: CGPoint(x: 5 * scale, y: -14 * scale))
+        trunkPath.closeSubpath()
+        trunkPath.move(to: CGPoint(x: 0, y: 6 * scale))
+        trunkPath.addLine(to: CGPoint(x: -14 * scale, y: 18 * scale))
+        trunkPath.move(to: CGPoint(x: 0, y: 10 * scale))
+        trunkPath.addLine(to: CGPoint(x: 13 * scale, y: 20 * scale))
+
+        trunk.path = trunkPath
         trunk.fillColor = ColorSpec(0x5A4632).skColor
-        trunk.strokeColor = .clear
+        trunk.strokeColor = ColorSpec(0x5A4632).skColor
+        trunk.lineWidth = 3 * scale
+        trunk.lineCap = .round
         group.addChild(trunk)
 
-        // Krone aus mehreren Tupfen — wie mit dem Pinsel gesetzt.
-        let baseColor = maple ? Palette.maple : Palette.pine
-        let blobCount = 5
-        for index in 0..<blobCount {
-            let angle = CGFloat(index) / CGFloat(blobCount) * .pi * 2 + variant * 3
-            let radius = 20 + variant * 8
-            let blob = SKShapeNode(circleOfRadius: 22 + variant * 8)
-            blob.fillColor = baseColor.skColor(alpha: 0.92)
+        let base = maple ? ColorSpec(0x9E3F2A) : ColorSpec(0x33492F)
+        let mid = maple ? Palette.maple : Palette.pine
+        let light = maple ? ColorSpec(0xE0764A) : ColorSpec(0x6F8B5A)
+
+        // Lage 1: breite dunkle Grundmasse.
+        for index in 0..<6 {
+            let angle = CGFloat(index) / 6 * .pi * 2 + variant * 4
+            let blob = SKShapeNode(circleOfRadius: (19 + variant * 5) * scale)
+            blob.fillColor = base.skColor
             blob.strokeColor = .clear
-            blob.position = CGPoint(x: cos(angle) * radius, y: sin(angle) * radius * 0.7 + 22)
+            blob.position = CGPoint(x: cos(angle) * 18 * scale,
+                                    y: sin(angle) * 13 * scale + 26 * scale)
             blob.zPosition = 1
             group.addChild(blob)
         }
 
-        let crown = SKShapeNode(circleOfRadius: 26 + variant * 8)
-        crown.fillColor = baseColor.skColor
-        crown.strokeColor = .clear
-        crown.position = CGPoint(x: 0, y: 24)
-        crown.zPosition = 2
-        group.addChild(crown)
+        // Lage 2: mittlere Tupfen, etwas nach oben versetzt.
+        for index in 0..<5 {
+            let angle = CGFloat(index) / 5 * .pi * 2 + variant * 2.2
+            let blob = SKShapeNode(circleOfRadius: (14 + variant * 4) * scale)
+            blob.fillColor = mid.skColor
+            blob.strokeColor = .clear
+            blob.position = CGPoint(x: cos(angle) * 13 * scale,
+                                    y: sin(angle) * 9 * scale + 31 * scale)
+            blob.zPosition = 2
+            group.addChild(blob)
+        }
 
+        // Lage 3: Lichter dort, wo die Sonne hinfällt.
+        for index in 0..<3 {
+            let blob = SKShapeNode(circleOfRadius: (8 + variant * 3) * scale)
+            blob.fillColor = light.skColor(alpha: 0.9)
+            blob.strokeColor = .clear
+            blob.position = CGPoint(x: (-9 + CGFloat(index) * 9) * scale,
+                                    y: (38 + CGFloat(index % 2) * 6) * scale)
+            blob.zPosition = 3
+            group.addChild(blob)
+        }
+
+        // Einzelne Blätter am Rand lösen die Kontur auf.
+        for index in 0..<7 {
+            let angle = CGFloat(index) / 7 * .pi * 2 + variant
+            let leaf = SKShapeNode(ellipseOf: CGSize(width: 7 * scale, height: 5 * scale))
+            leaf.fillColor = (maple ? light : mid).skColor(alpha: 0.85)
+            leaf.strokeColor = .clear
+            leaf.position = CGPoint(x: cos(angle) * 32 * scale,
+                                    y: sin(angle) * 22 * scale + 28 * scale)
+            leaf.zRotation = angle
+            leaf.zPosition = 4
+            group.addChild(leaf)
+        }
+
+        // Der ganze Baum wiegt sich im Wind, jeder mit eigenem Takt.
         group.run(.repeatForever(.sequence([
-            .rotate(byAngle: 0.02, duration: 2.8 + Double(variant)),
-            .rotate(byAngle: -0.02, duration: 2.8 + Double(variant))
+            .rotate(byAngle: 0.018, duration: 2.6 + Double(variant) * 1.4),
+            .rotate(byAngle: -0.018, duration: 2.6 + Double(variant) * 1.4)
         ])))
         return group
     }

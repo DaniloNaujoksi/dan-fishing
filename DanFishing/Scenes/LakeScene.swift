@@ -395,10 +395,19 @@ final class LakeScene: SKScene {
             line.clear()
         }
 
-        // Die Rute dreht sich beim Zielen mit und lädt sich beim Ausholen auf.
-        boatNode.setCastPose(fishing.phase == .aiming ? CGFloat(fishing.castPower) : nil,
-                             aimDirection: fishing.aimDirection,
-                             boatHeading: boat.heading)
+        // Die Rute zeigt beim Zielen in die Wurfrichtung und danach dorthin,
+        // wo der Schwimmer liegt — sie folgt also immer der Schnur.
+        if fishing.phase == .aiming {
+            boatNode.setCastPose(CGFloat(fishing.castPower),
+                                 direction: fishing.aimDirection,
+                                 boatHeading: boat.heading)
+        } else if let bobberPosition = fishing.bobberPosition {
+            let toBobber = CGVector(dx: bobberPosition.x - boat.position.x,
+                                    dy: bobberPosition.y - boat.position.y)
+            boatNode.setCastPose(0, direction: toBobber, boatHeading: boat.heading)
+        } else {
+            boatNode.setCastPose(nil, direction: nil, boatHeading: boat.heading)
+        }
 
         // Drill weiterrechnen; endet er, wird die Angel eingeholt.
         if session.isFightRunning {

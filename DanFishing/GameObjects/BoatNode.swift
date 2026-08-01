@@ -212,20 +212,26 @@ final class BoatNode: SKNode {
 
     /// Haltung der Rute.
     ///
-    /// Beim Zielen dreht sie sich in die Wurfrichtung und lädt sich mit
-    /// wachsender Wurfweite weiter nach hinten auf — man sieht der Rute an,
-    /// wie weit der Wurf wird, ohne auf eine Anzeige schauen zu müssen.
-    func setCastPose(_ power: CGFloat?, aimDirection: CGVector, boatHeading: CGFloat) {
-        guard let power else {
-            rod.zRotation = rod.zRotation + (0.5 - rod.zRotation) * 0.2
-            return
-        }
+    /// - Parameters:
+    ///   - direction: Wohin die Rute zeigen soll, in Weltkoordinaten. Beim
+    ///     Zielen ist das die Wurfrichtung, danach der Schwimmer im Wasser.
+    ///     Nil bedeutet Ruhestellung.
+    ///   - power: Wurfstärke 0…1; die Rute lädt sich sichtbar nach hinten auf.
+    ///
+    /// Wichtig ist das Nachführen nach dem Wurf: Sonst schnappt die Rute in
+    /// ihre Ruhelage zurück und zeigt plötzlich auf die andere Seite des
+    /// Bootes, während die Schnur nach vorn läuft.
+    func setCastPose(_ power: CGFloat?, direction: CGVector?, boatHeading: CGFloat) {
+        let target: CGFloat
 
-        // Die Rute steckt im Boot, also wird die Zielrichtung in dessen
-        // Drehung umgerechnet.
-        let worldAngle = atan2(aimDirection.dy, aimDirection.dx)
-        let localAngle = worldAngle - boatHeading
-        let target = localAngle - 0.9 * power
+        if let direction, hypot(direction.dx, direction.dy) > 0.001 {
+            // Die Rute steckt im Boot, also wird die Richtung in dessen
+            // Drehung umgerechnet.
+            let worldAngle = atan2(direction.dy, direction.dx)
+            target = worldAngle - boatHeading - 0.9 * (power ?? 0)
+        } else {
+            target = 0.5   // Ruhestellung, schräg nach vorn
+        }
 
         rod.zRotation += BoatController.angleDifference(rod.zRotation, target) * 0.35
     }

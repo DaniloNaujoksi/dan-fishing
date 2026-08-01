@@ -116,16 +116,19 @@ struct GameView: View {
                             }
                         }
                     }
-                    .padding(.trailing, 8)
+                    .padding(.trailing, 10)
                 }
-                .frame(maxWidth: 210)
+                // Breit genug für Münzen, Stufe und volle Uhrzeit; alles
+                // Weitere scrollt. Vorher schnitt die Grenze die Uhr ab.
+                .frame(maxWidth: 268)
+                .fixedSize(horizontal: false, vertical: true)
             }
 
             Spacer(minLength: 8)
 
             VStack(alignment: .trailing, spacing: 8) {
                 iconButton("book.closed", label: "Fangbuch") { showCodex = true }
-                iconButton("bag", label: "Laden") { showShop = true }
+                iconButton("bag", label: "Shop") { showShop = true }
                 iconButton("checklist", label: "Aufgaben") { showMissions = true }
             }
         }
@@ -170,7 +173,7 @@ struct GameView: View {
                     .font(.system(size: 9, weight: .medium, design: .rounded))
             }
             .foregroundStyle(Palette.uiInk)
-            .frame(width: 66, height: 54)
+            .frame(width: 64, height: 52)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(Palette.paper.swiftUIColor.opacity(0.9))
