@@ -1,4 +1,4 @@
-name: Build & Test
+﻿name: Build & Test
 
 # Baut das Projekt auf einem macOS-Runner mit vorinstalliertem Xcode.
 # Der Compiler ist damit erreichbar, ohne dass irgendwo ein Mac steht.
@@ -55,28 +55,28 @@ jobs:
 
           mkdir -p artefakte
 
-          # Erst das Hauptmenü.
+          # Erst das HauptmenÃ¼.
           xcrun simctl install "$DEVICE" "$APP_PATH"
           xcrun simctl launch "$DEVICE" com.example.danfishing
           sleep 10
           xcrun simctl io "$DEVICE" screenshot artefakte/hauptmenue.png
 
-          # Danach direkt auf den See: Der Startschalter überspringt das Menü,
+          # Danach direkt auf den See: Der Startschalter Ã¼berspringt das MenÃ¼,
           # damit die Szene selbst im Bild landet.
           xcrun simctl terminate "$DEVICE" com.example.danfishing || true
           xcrun simctl launch "$DEVICE" com.example.danfishing -autostart
           sleep 14
           xcrun simctl io "$DEVICE" screenshot artefakte/see.png
 
-          # Noch ein Bild ein paar Sekunden später — zeigt, dass die Schleife
-          # weiterläuft und die App nicht eingefroren ist.
+          # Noch ein Bild ein paar Sekunden spÃ¤ter â€” zeigt, dass die Schleife
+          # weiterlÃ¤uft und die App nicht eingefroren ist.
           sleep 8
           xcrun simctl io "$DEVICE" screenshot artefakte/see-spaeter.png
 
           # Der Vorspann. Jeder Moment bekommt einen eigenen Start: Ein
           # Bildschirmfoto kostet selbst ein bis zwei Sekunden, hintereinander
-          # weg würden die späteren Aufnahmen hinter das Ende rutschen.
-          for MOMENT in "morgen:3" "wurf:6" "kampf:7" "titel:8"; do
+          # weg wÃ¼rden die spÃ¤teren Aufnahmen hinter das Ende rutschen.
+          for MOMENT in "morgen:3" "wurf:6" "kampf:7" "titel:9"; do
             NAME="${MOMENT%%:*}"
             WAIT="${MOMENT##*:}"
             xcrun simctl terminate "$DEVICE" com.example.danfishing || true
@@ -86,10 +86,10 @@ jobs:
             xcrun simctl io "$DEVICE" screenshot "artefakte/intro-$NAME.png"
           done
 
-          # Läuft der Prozess überhaupt noch?
+          # LÃ¤uft der Prozess Ã¼berhaupt noch?
           xcrun simctl spawn "$DEVICE" launchctl list | grep -i danfishing || echo "App laeuft nicht mehr"
 
-          # Absturzberichte einsammeln, falls die App nicht durchhält.
+          # Absturzberichte einsammeln, falls die App nicht durchhÃ¤lt.
           cp -R ~/Library/Logs/DiagnosticReports artefakte/crashes 2>/dev/null || true
 
       - name: Artefakte hochladen
@@ -104,7 +104,7 @@ jobs:
           if-no-files-found: warn
 
   ipa:
-    name: Unsigniertes IPA fürs iPhone
+    name: Unsigniertes IPA fÃ¼rs iPhone
     runs-on: macos-15
     timeout-minutes: 30
     needs: build
@@ -112,7 +112,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Für Gerät bauen (ohne Signierung)
+      - name: FÃ¼r GerÃ¤t bauen (ohne Signierung)
         run: |
           set -o pipefail
           xcodebuild build \

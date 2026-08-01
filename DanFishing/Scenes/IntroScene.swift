@@ -31,8 +31,10 @@ final class IntroScene: SKScene {
     private var lastUpdate: TimeInterval = 0
     private var finished = false
 
-    /// Gesamtlänge — passt zur Länge des Titelstücks.
-    private let duration: TimeInterval = 9.2
+    /// Gesamtlänge. Das Titelstück ist 9,2 Sekunden lang; danach bleibt der
+    /// Titel noch gut zwei Sekunden stehen, bevor abgeblendet wird — sonst
+    /// verschwindet er, kaum dass man ihn gelesen hat.
+    private let duration: TimeInterval = 11.4
 
     override init(size: CGSize) {
         super.init(size: size)
@@ -398,7 +400,7 @@ final class IntroScene: SKScene {
 
         titleBacking.run(.sequence([
             .wait(forDuration: 7.5),
-            .fadeAlpha(to: 0.85, duration: 0.8)
+            .fadeAlpha(to: 0.55, duration: 0.8)
         ]))
 
         titleLabel.run(.sequence([
