@@ -73,8 +73,8 @@ enum LegendNames {
         "tench": [Noun("Der", "Schleimbeutel"), Noun("Die", "Grüne Dame"),
                   Noun("Der", "Doktorfisch")],
 
-        "bream": [Noun("Der", "Teller"), Noun("Das", "Blatt"),
-                  Noun("Der", "Schleimteller")],
+        "bream": [Noun("Der", "Klodeckel"), Noun("Der", "Teller"),
+                  Noun("Das", "Blatt"), Noun("Der", "Schleimteller")],
 
         "barbel": [Noun("Der", "Kieskönig"), Noun("Der", "Strömungspflug"),
                    Noun("Der", "Bartel")],
@@ -82,8 +82,9 @@ enum LegendNames {
         "grayling": [Noun("Die", "Fahne"), Noun("Die", "Äschenkönigin"),
                      Noun("Der", "Segler")],
 
-        "rainbow_trout": [Noun("Der", "Regenbogen"), Noun("Die", "Springerin"),
-                          Noun("Der", "Farbtupfer")],
+        // „Puffmutter“, weil Forellenteiche unter Anglern Forellenpuff heißen.
+        "rainbow_trout": [Noun("Die", "Puffmutter"), Noun("Der", "Regenbogen"),
+                          Noun("Die", "Springerin"), Noun("Der", "Farbtupfer")],
 
         "golden_trout": [Noun("Der", "Goldschimmer"), Noun("Das", "Goldstück"),
                          Noun("Der", "Sonnenfisch")],
