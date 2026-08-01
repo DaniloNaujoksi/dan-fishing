@@ -255,13 +255,18 @@ final class LakeScene: SKScene {
                                                        radius: radius > 0 ? radius : 900) else { break }
             let species = candidates[Int.random(in: 0..<candidates.count)]
 
+            // Tempo aus der Art ableiten: Barrakuda-artige Räuber ziehen
+            // schneller durchs Wasser als ein gründelnder Karpfen.
+            let baseSpeed = 16 + CGFloat(species.fightStrength) * 34
+
             let swimmer = FishAI.Swimmer(position: position,
                                          heading: CGFloat.random(in: 0..<(.pi * 2)),
-                                         speed: CGFloat.random(in: 18...46),
+                                         speed: baseSpeed * CGFloat.random(in: 0.8...1.25),
                                          habitat: habitat,
                                          speciesID: species.id,
                                          scale: CGFloat.random(in: 0.6...1.3),
-                                         turnTimer: CGFloat.random(in: 0.5...2.5))
+                                         turnTimer: CGFloat.random(in: 0.5...2.5),
+                                         traits: FishAI.Traits.random(for: species))
 
             let node = FishNode(swimmer: swimmer, species: species)
             node.zPosition = CGFloat.random(in: 0...5)
@@ -379,19 +384,62 @@ final class LakeScene: SKScene {
     }
 
     private func updateFish(dt: CGFloat) {
-        let lure = fishing.bobberPosition
+        // Nur ein liegender Köder ist interessant — ein fliegender nicht.
+        let lure = fishing.isFishing ? fishing.bobberPosition : nil
         let bait = session.selectedBait
+        let context = lure != nil ? fishingContext() : nil
+        let biteAllowed = fishing.isFishing
 
         for node in fishNodes {
-            // Wie stark sich dieser Fisch für den Köder interessiert.
+            // Wie gut Köder, Zone und Tageszeit zu genau dieser Art passen.
             var interest: CGFloat = 0
-            if lure != nil,
-               let species = FishCatalog.species(id: node.swimmer.speciesID),
-               let context = fishingContext() {
-                let weight = BaitSystem.attraction(species: species, bait: bait, context: context)
-                interest = CGFloat(min(1.0, weight / 1.5))
+            if let context {
+                let weight = BaitSystem.attraction(species: node.species, bait: bait, context: context)
+                interest = CGFloat(min(1.0, weight / 1.2))
             }
-            node.update(deltaTime: dt, map: map, lure: lure, interest: interest)
+
+            let outcome = node.update(deltaTime: dt,
+                                      map: map,
+                                      lure: lure,
+                                      interest: interest,
+                                      biteAllowed: biteAllowed)
+
+            switch outcome {
+            case .nibbled:
+                fishing.reportNibble()
+                bobber.showNibble()
+                AudioManager.shared.play(.reel)
+                HapticManager.shared.reelTick()
+
+            case .bit:
+                // Der Fisch, der zugebissen hat, ist auch der Fisch am Haken.
+                // Vorher wurde beim Biss neu ausgewürfelt — dadurch hatte das,
+                // was man im Wasser sah, nichts mit dem Fang zu tun.
+                guard let context else { break }
+                let length = FishSpawner.rollLength(for: node.species,
+                                                    bait: bait,
+                                                    stats: session.stats)
+                let fish = HookedFish(species: node.species,
+                                      lengthCm: length,
+                                      weightKg: (node.species.weight(forLength: length) * 100).rounded() / 100,
+                                      habitat: context.habitat,
+                                      baitID: bait.id)
+                fishing.reportBite(fish: fish)
+
+            case .rejected, .none:
+                break
+            }
+        }
+    }
+
+    /// Fische in unmittelbarer Nähe des Einschlags erschrecken.
+    private func spookFish(around point: CGPoint) {
+        for node in fishNodes {
+            let delta = CGVector(dx: node.swimmer.position.x - point.x,
+                                 dy: node.swimmer.position.y - point.y)
+            if hypot(delta.dx, delta.dy) < 90 {
+                node.spook(from: point)
+            }
         }
     }
 
@@ -505,8 +553,11 @@ final class LakeScene: SKScene {
 
     private func handleFishing(event: FishingSystem.Event) {
         switch event {
-        case .castLanded:
+        case .castLanded(let point):
             bobber.showSplash()
+            // Wer direkt unter dem Einschlag steht, sucht das Weite. Genau
+            // neben den Schwarm zu werfen, ist deshalb keine gute Idee.
+            spookFish(around: point)
         case .nibble:
             bobber.showNibble()
         case .bite:

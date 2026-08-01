@@ -1,74 +1,253 @@
 import CoreGraphics
 import Foundation
 
-/// Bewegung der sichtbaren Fische im See. Diese Fische sind Kulisse und
-/// Hinweis zugleich: Wo sich viel bewegt, beißt es auch. Sie sind bewusst
-/// getrennt vom Fisch am Haken, der erst beim Biss ausgewürfelt wird.
+/// Verhalten der sichtbaren Fische.
+///
+/// Die Fische sind nicht mehr nur Kulisse: Wer den Köder findet, entscheidet
+/// selbst, ob er ihn nimmt. Der Ablauf ist bewusst lesbar — entdecken,
+/// annähern, umkreisen, prüfen, zupfen, beißen oder abdrehen. Der Spieler
+/// sieht den Biss dadurch kommen, statt von einem Timer überrascht zu werden.
 struct FishAI {
+
+    /// Was ein Fisch gerade tut.
+    enum Behaviour: Equatable {
+        /// Zieht ruhig durch sein Revier.
+        case cruise
+        /// Hat den Köder bemerkt und nähert sich.
+        case approach
+        /// Umkreist den Köder und schaut ihn sich an.
+        case inspect
+        /// Zupft — der Schwimmer wackelt, der Biss steht kurz bevor.
+        case nibble
+        /// Hat abgelehnt und sucht das Weite.
+        case retreat
+        /// Erschrocken: flieht schnell und ist eine Weile nicht ansprechbar.
+        case spooked
+    }
+
+    /// Was ein Schritt der KI ausgelöst hat.
+    enum Outcome: Equatable {
+        case none
+        /// Der Fisch hat gezupft.
+        case nibbled
+        /// Der Fisch hat zugebissen.
+        case bit
+        /// Der Fisch hat abgedreht.
+        case rejected
+    }
+
+    /// Charakter eines einzelnen Fisches. Zwei Hechte am selben Platz
+    /// verhalten sich dadurch unterschiedlich.
+    struct Traits: Equatable {
+        /// Wie fressbereit er ist.
+        var hunger: CGFloat
+        /// Wie schnell er sich für Neues interessiert.
+        var curiosity: CGFloat
+        /// Wie misstrauisch er den Köder prüft.
+        var caution: CGFloat
+
+        static func random(for species: FishSpecies) -> Traits {
+            // Räuber sind mutiger, Friedfische vorsichtiger.
+            let predator = CGFloat(species.fightStrength)
+            return Traits(
+                hunger: CGFloat.random(in: 0.35...1.0),
+                curiosity: CGFloat.random(in: 0.3...1.0) * (0.6 + predator * 0.6),
+                caution: CGFloat.random(in: 0.2...0.9) * (1.3 - predator * 0.5)
+            )
+        }
+    }
 
     /// Zustand eines einzelnen Schwimmers.
     struct Swimmer {
         var position: CGPoint
         var heading: CGFloat
         var speed: CGFloat
-        /// Zone, in der sich der Fisch aufhält — er verlässt sie nicht.
+        /// Zone, in der sich der Fisch aufhält.
         var habitat: Habitat
         var speciesID: String
         var scale: CGFloat
-        /// Zeit bis zur nächsten Richtungsänderung.
+        /// Zeit bis zur nächsten Richtungsänderung im Streifzug.
         var turnTimer: CGFloat
-        /// Wie stark der Fisch gerade zum Köder gezogen wird (0…1).
+
+        var traits: Traits
+        var behaviour: Behaviour = .cruise
+        /// 0…1 — wie sehr der Köder ihn gerade reizt.
         var attraction: CGFloat = 0
+        /// Restzeit im aktuellen Verhalten.
+        var behaviourTimer: CGFloat = 0
+        /// Drehrichtung beim Umkreisen.
+        var circleSign: CGFloat = 1
+        /// Wie oft noch gezupft wird, bevor er zubeißt.
+        var nibblesLeft: Int = 0
+        /// Sperre, damit ein Fisch nicht sofort erneut anbeißt.
+        var cooldown: CGFloat = 0
     }
+
+    /// Wie weit ein Fisch den Köder überhaupt bemerkt.
+    static let detectionRadius: CGFloat = 420
+    /// Abstand, in dem er den Köder umkreist.
+    static let inspectRadius: CGFloat = 70
 
     /// Ein Schritt für einen Schwimmer.
     ///
     /// - Parameters:
     ///   - lure: Position des Köders, falls einer im Wasser liegt.
-    ///   - interest: 0…1 — wie attraktiv der Köder für diesen Fisch ist.
+    ///   - interest: 0…1 — wie gut Köder, Zone und Tageszeit zu dieser Art passen.
+    ///   - biteAllowed: false, solange schon ein Fisch am Haken hängt.
+    @discardableResult
     static func update(_ swimmer: inout Swimmer,
                        deltaTime: CGFloat,
                        map: LakeMap,
                        lure: CGPoint?,
-                       interest: CGFloat) {
+                       interest: CGFloat,
+                       biteAllowed: Bool) -> Outcome {
         let dt = min(max(deltaTime, 0), 1.0 / 20.0)
+        var outcome = Outcome.none
 
-        swimmer.turnTimer -= dt
-        if swimmer.turnTimer <= 0 {
-            swimmer.heading += CGFloat.random(in: -0.9...0.9)
-            swimmer.turnTimer = CGFloat.random(in: 0.8...2.6)
-        }
+        swimmer.cooldown = max(0, swimmer.cooldown - dt)
+        swimmer.behaviourTimer -= dt
 
-        // Köder in der Nähe: der Fisch dreht langsam bei und wird schneller.
-        if let lure {
-            let delta = CGVector(dx: lure.x - swimmer.position.x, dy: lure.y - swimmer.position.y)
-            let distance = hypot(delta.dx, delta.dy)
-            if distance < 340 && interest > 0.1 {
-                let target = atan2(delta.dy, delta.dx)
-                let pull = interest * (1 - distance / 340) * 2.2 * dt
-                swimmer.heading = BoatController.turn(from: swimmer.heading,
-                                                      to: target,
-                                                      maxStep: pull)
-                swimmer.attraction = min(1, swimmer.attraction + dt)
-            } else {
-                swimmer.attraction = max(0, swimmer.attraction - dt * 0.5)
+        // Ohne Köder im Wasser gibt es nichts zu entscheiden.
+        guard let lure, biteAllowed, swimmer.cooldown <= 0 else {
+            if swimmer.behaviour != .cruise && swimmer.behaviour != .spooked {
+                swimmer.behaviour = .cruise
+                swimmer.attraction = 0
+            } else if swimmer.behaviour == .spooked && swimmer.behaviourTimer <= 0 {
+                swimmer.behaviour = .cruise
             }
-        } else {
-            swimmer.attraction = max(0, swimmer.attraction - dt * 0.5)
+            swim(&swimmer, dt: dt, map: map)
+            return .none
         }
 
-        let speed = swimmer.speed * (1 + swimmer.attraction * 0.6)
+        let delta = CGVector(dx: lure.x - swimmer.position.x, dy: lure.y - swimmer.position.y)
+        let distance = hypot(delta.dx, delta.dy)
+        let toLure = atan2(delta.dy, delta.dx)
+
+        switch swimmer.behaviour {
+        case .cruise:
+            // Entdecken: je näher und je passender der Köder, desto eher.
+            if distance < detectionRadius && interest > 0.08 {
+                let proximity = 1 - distance / detectionRadius
+                let chance = interest * proximity * swimmer.traits.curiosity * dt * 1.6
+                if CGFloat.random(in: 0...1) < chance {
+                    swimmer.behaviour = .approach
+                    swimmer.behaviourTimer = 14
+                    swimmer.attraction = 0.2
+                }
+            }
+
+        case .approach:
+            swimmer.attraction = min(1, swimmer.attraction + dt * 0.6)
+            swimmer.heading = turn(from: swimmer.heading, to: toLure, maxStep: dt * 2.4)
+
+            if distance < inspectRadius {
+                swimmer.behaviour = .inspect
+                swimmer.behaviourTimer = 2.5 + swimmer.traits.caution * 4
+                swimmer.circleSign = Bool.random() ? 1 : -1
+            } else if swimmer.behaviourTimer <= 0 {
+                // Zu lange gebraucht — Interesse verloren.
+                swimmer.behaviour = .retreat
+                swimmer.behaviourTimer = 4
+                outcome = .rejected
+            }
+
+        case .inspect:
+            // Um den Köder kreisen, statt ihn anzustarren.
+            swimmer.attraction = min(1, swimmer.attraction + dt * 0.4)
+            let tangent = toLure + swimmer.circleSign * (.pi / 2)
+            let correction = distance > inspectRadius * 1.5 ? toLure : tangent
+            swimmer.heading = turn(from: swimmer.heading, to: correction, maxStep: dt * 3.2)
+
+            if swimmer.behaviourTimer <= 0 {
+                // Entscheidung: Der Appetit muss das Misstrauen schlagen.
+                let appetite = swimmer.traits.hunger * interest * 1.6
+                if appetite > swimmer.traits.caution {
+                    swimmer.behaviour = .nibble
+                    swimmer.behaviourTimer = 0.6
+                    swimmer.nibblesLeft = Int.random(in: 1...2)
+                } else {
+                    swimmer.behaviour = .retreat
+                    swimmer.behaviourTimer = 5
+                    swimmer.cooldown = 8
+                    outcome = .rejected
+                }
+            }
+
+        case .nibble:
+            swimmer.heading = turn(from: swimmer.heading, to: toLure, maxStep: dt * 2.0)
+
+            if swimmer.behaviourTimer <= 0 {
+                if swimmer.nibblesLeft > 0 {
+                    swimmer.nibblesLeft -= 1
+                    swimmer.behaviourTimer = CGFloat.random(in: 0.7...1.4)
+                    outcome = .nibbled
+                } else {
+                    outcome = .bit
+                    swimmer.behaviour = .retreat
+                    swimmer.behaviourTimer = 6
+                    swimmer.cooldown = 25
+                }
+            }
+
+        case .retreat, .spooked:
+            swimmer.attraction = max(0, swimmer.attraction - dt * 0.8)
+            if swimmer.behaviourTimer <= 0 {
+                swimmer.behaviour = .cruise
+            }
+        }
+
+        swim(&swimmer, dt: dt, map: map)
+        return outcome
+    }
+
+    /// Der Fisch erschrickt — etwa wenn der Köder direkt neben ihm einschlägt.
+    static func spook(_ swimmer: inout Swimmer, awayFrom point: CGPoint) {
+        swimmer.behaviour = .spooked
+        swimmer.behaviourTimer = CGFloat.random(in: 2.5...5)
+        swimmer.attraction = 0
+        swimmer.cooldown = max(swimmer.cooldown, 6)
+        swimmer.heading = atan2(swimmer.position.y - point.y, swimmer.position.x - point.x)
+    }
+
+    // MARK: - Bewegung
+
+    private static func swim(_ swimmer: inout Swimmer, dt: CGFloat, map: LakeMap) {
+        // Im Streifzug wechselt die Richtung gemächlich, auf der Flucht nicht.
+        if swimmer.behaviour == .cruise {
+            swimmer.turnTimer -= dt
+            if swimmer.turnTimer <= 0 {
+                swimmer.heading += CGFloat.random(in: -0.8...0.8)
+                swimmer.turnTimer = CGFloat.random(in: 1.2...3.4)
+            }
+        }
+
+        let speed: CGFloat
+        switch swimmer.behaviour {
+        case .cruise:   speed = swimmer.speed * 0.75
+        case .approach: speed = swimmer.speed * 1.25
+        case .inspect:  speed = swimmer.speed * 0.7
+        case .nibble:   speed = swimmer.speed * 0.35
+        case .retreat:  speed = swimmer.speed * 1.4
+        case .spooked:  speed = swimmer.speed * 2.4
+        }
+
         let step = CGPoint(x: swimmer.position.x + cos(swimmer.heading) * speed * dt,
                            y: swimmer.position.y + sin(swimmer.heading) * speed * dt)
 
-        // Fische bleiben in ihrer Zone. Passt der nächste Schritt nicht, wird
-        // umgekehrt statt gestoppt — sonst kleben sie an Kanten fest.
         if map.habitat(at: step) == swimmer.habitat {
+            swimmer.position = step
+        } else if !map.isLand(at: step) && swimmer.behaviour != .cruise {
+            // Beim Verfolgen des Köders darf er seine Zone kurz verlassen,
+            // solange er nicht auf Land schwimmt.
             swimmer.position = step
         } else {
             swimmer.heading += .pi * CGFloat.random(in: 0.6...1.4)
             swimmer.turnTimer = CGFloat.random(in: 0.6...1.4)
         }
+    }
+
+    private static func turn(from current: CGFloat, to target: CGFloat, maxStep: CGFloat) -> CGFloat {
+        BoatController.turn(from: current, to: target, maxStep: maxStep)
     }
 
     /// Sucht eine Startposition in einer Zone. Gibt nil zurück, wenn die Zone

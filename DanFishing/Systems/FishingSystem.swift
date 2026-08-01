@@ -168,6 +168,32 @@ final class FishingSystem {
         }
     }
 
+    /// Ein sichtbarer Fisch zupft am Köder.
+    ///
+    /// Die Bisse kommen bevorzugt von Fischen, die man im Wasser sieht — der
+    /// eingebaute Timer ist nur noch der Rückfall für Stellen, an denen gerade
+    /// kein Schwarm in der Nähe ist.
+    func reportNibble() {
+        guard phase == .waiting || phase == .nibble else { return }
+        phase = .nibble
+        timer = max(timer, 2.5)
+        onEvent?(.nibble)
+    }
+
+    /// Ein sichtbarer Fisch beißt zu.
+    func reportBite(fish: HookedFish) {
+        guard phase == .waiting || phase == .nibble else { return }
+        pendingFish = fish
+        phase = .biteWindow
+        biteWindowRemaining = biteWindowLength
+        onEvent?(.bite)
+    }
+
+    /// Wartet der Köder gerade auf einen Fisch?
+    var isFishing: Bool {
+        phase == .waiting || phase == .nibble
+    }
+
     /// Angel einholen — auch mitten im Warten möglich.
     func reelIn() {
         guard phase != .idle else { return }
@@ -278,7 +304,9 @@ final class FishingSystem {
     private func nextBiteDelay(context: BaitSystem.Context?, bait: Bait?) -> Double {
         guard let context, let bait else { return 12 }
         let average = BaitSystem.averageBiteDelay(bait: bait, context: context)
-        // Streuung, damit der Rhythmus nicht vorhersehbar wird.
-        return average * Double.random(in: 0.55...1.45)
+        // Streuung, damit der Rhythmus nicht vorhersehbar wird. Der Faktor 1.7
+        // gibt den sichtbaren Fischen den Vortritt: Sie sollen die Bisse
+        // liefern, der Timer greift nur, wenn keiner in der Nähe ist.
+        return average * 1.7 * Double.random(in: 0.55...1.45)
     }
 }
