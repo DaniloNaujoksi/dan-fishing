@@ -83,20 +83,31 @@ final class BoatNode: SKNode {
         hull.addChild(hullInner)
     }
 
+    /// Die Riemen sitzen mittschiffs in den Dollen und ragen quer über die
+    /// Bordwand — vorher lagen sie am Heck, was am Ruderboot falsch aussieht.
+    /// Gezeichnet wird in Bootskoordinaten: x ist längs (Bug rechts), y quer.
     private func buildOars() {
         for (oar, side) in [(leftOar, CGFloat(1)), (rightOar, CGFloat(-1))] {
             let path = CGMutablePath()
-            path.move(to: .zero)
-            path.addLine(to: CGPoint(x: -46, y: 0))
-            // Blatt am Ende
-            path.addEllipse(in: CGRect(x: -60, y: -5, width: 16, height: 10))
+
+            // Griff im Boot, Schaft nach außen über die Bordwand.
+            path.move(to: CGPoint(x: 10, y: 0))
+            path.addLine(to: CGPoint(x: -6, y: 42 * side))
+
+            // Blatt am äußeren Ende, quer zum Schaft.
+            let blade = CGMutablePath()
+            blade.addEllipse(in: CGRect(x: -13, y: 40 * side - (side > 0 ? 0 : 14),
+                                        width: 15, height: 14))
+            path.addPath(blade)
 
             oar.path = path
             oar.strokeColor = ColorSpec(0x6B4E30).skColor
-            oar.fillColor = ColorSpec(0x6B4E30).skColor
-            oar.lineWidth = 3
-            oar.position = CGPoint(x: -4, y: 18 * side)
-            oar.zRotation = side * 0.5
+            oar.fillColor = ColorSpec(0x8A6A46).skColor
+            oar.lineWidth = 3.5
+            oar.lineCap = .round
+
+            // Drehpunkt ist die Dolle mittschiffs.
+            oar.position = CGPoint(x: 0, y: 16 * side)
             oar.zPosition = 4
             addChild(oar)
         }
@@ -169,16 +180,17 @@ final class BoatNode: SKNode {
     func update(deltaTime: CGFloat, rowing: CGFloat, speed: CGFloat) {
         idlePhase += deltaTime
 
-        // Ruderschlag: Die Riemen tauchen ein, ziehen durch und kommen zurück.
+        // Ruderschlag: Die Blätter fahren nach vorn, tauchen ein und ziehen
+        // nach achtern durch. Beide Riemen laufen gegengleich um ihre Dolle.
         rowPhase += deltaTime * (1.6 + speed / 90)
-        let swing = sin(rowPhase) * 0.5 * rowing
-        leftOar.zRotation = 0.5 + swing
-        rightOar.zRotation = -0.5 - swing
+        let swing = sin(rowPhase) * 0.55 * rowing
+        leftOar.zRotation = swing
+        rightOar.zRotation = -swing
 
-        // Beim Durchziehen rutschen die Riemen etwas nach hinten.
-        let reach = cos(rowPhase) * 4 * rowing
-        leftOar.position = CGPoint(x: -4 - reach, y: 18)
-        rightOar.position = CGPoint(x: -4 - reach, y: -18)
+        // Im Durchzug rutschen die Griffe leicht nach achtern.
+        let reach = cos(rowPhase) * 3 * rowing
+        leftOar.position = CGPoint(x: -reach, y: 16)
+        rightOar.position = CGPoint(x: -reach, y: -16)
 
         // Das Boot wiegt sich, im Stand ruhig, in Fahrt stärker.
         let bob = sin(rowPhase * 0.55) * (0.025 + rowing * 0.02)

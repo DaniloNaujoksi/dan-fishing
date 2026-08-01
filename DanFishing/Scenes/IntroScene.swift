@@ -2,10 +2,14 @@ import SpriteKit
 
 /// Der Vorspann beim ersten Start.
 ///
-/// Neun Sekunden, alles gezeichnet, kein Video: Nebel über dem Wasser, die
-/// Sonne steigt, Dan rudert ins Bild, unter ihm zieht ein großer Fisch vorbei
-/// und schaut nach oben. Dan wirft aus, es beißt, die Kamera fährt heraus, der
-/// Titel steht. Jederzeit durch Tippen abzubrechen.
+/// Dreizehn Sekunden, alles gezeichnet, kein Video: Nebel über stillem Wasser,
+/// Bergrücken in Tuschelagen, ein Kirschzweig im Bild, ein Torii am Ufer. Die
+/// Sonne steigt, Dan rudert gemächlich herein, unter ihm zieht ein großer Fisch
+/// vorbei und dreht nach oben. Dan wirft aus, es beißt, die Kamera fährt heraus,
+/// der Titel steht.
+///
+/// Das Tempo ist bewusst langsam gewählt: Der Vorspann soll die Ruhe des Spiels
+/// ankündigen, nicht Ereignisse abarbeiten. Jederzeit durch Tippen abzubrechen.
 final class IntroScene: SKScene {
 
     /// Wird aufgerufen, wenn der Vorspann durch ist oder übersprungen wurde.
@@ -31,10 +35,9 @@ final class IntroScene: SKScene {
     private var lastUpdate: TimeInterval = 0
     private var finished = false
 
-    /// Gesamtlänge. Das Titelstück ist 9,2 Sekunden lang; danach bleibt der
-    /// Titel noch gut zwei Sekunden stehen, bevor abgeblendet wird — sonst
-    /// verschwindet er, kaum dass man ihn gelesen hat.
-    private let duration: TimeInterval = 11.4
+    /// Gesamtlänge, abgestimmt auf das Titelstück. Bewusst langsam: Der
+    /// Vorspann soll den Ton des Spiels setzen, nicht Ereignisse abhaken.
+    private let duration: TimeInterval = 13.5
 
     override init(size: CGSize) {
         super.init(size: size)
@@ -54,13 +57,14 @@ final class IntroScene: SKScene {
         buildWater()
         buildDeepFish()
         buildBoat()
+        buildScenery()
         buildFog()
         buildTitle()
 
         flash.zPosition = 900
         flash.position = CGPoint(x: size.width / 2, y: size.height / 2)
         addChild(flash)
-        flash.run(.fadeAlpha(to: 0, duration: 1.0))
+        flash.run(.fadeAlpha(to: 0, duration: 1.8))
 
         runTimeline()
         AudioManager.shared.playIntroTheme()
@@ -69,14 +73,17 @@ final class IntroScene: SKScene {
     // MARK: - Aufbau
 
     private func buildSky() {
-        sky.color = ColorSpec(0x2A3D52).skColor
+        // Gedämpftes Morgengrau statt kräftigem Blau — die Farben sollen wie
+        // auf getöntem Papier liegen, nicht leuchten.
+        sky.color = ColorSpec(0x6E7A82).skColor
         sky.size = CGSize(width: size.width * 1.4, height: size.height)
         sky.position = CGPoint(x: size.width / 2, y: size.height * 0.75)
         sky.zPosition = 0
         world.addChild(sky)
 
-        // Ferne Berge als zwei weiche Rücken.
-        for (index, shade) in [ColorSpec(0x51697A), ColorSpec(0x3E5464)].enumerated() {
+        // Drei Bergrücken in abgestuftem Grau — wie Tuschelagen auf Papier,
+        // von hinten nach vorn dunkler.
+        for (index, shade) in [ColorSpec(0x9AA6AC), ColorSpec(0x77858E), ColorSpec(0x56646D)].enumerated() {
             let ridge = SKShapeNode()
             let path = CGMutablePath()
             let baseY = size.height * (0.60 - CGFloat(index) * 0.04)
@@ -116,7 +123,7 @@ final class IntroScene: SKScene {
         waterNode.zPosition = 3
         world.addChild(waterNode)
 
-        let surface = SKSpriteNode(color: ColorSpec(0x35586B).skColor,
+        let surface = SKSpriteNode(color: ColorSpec(0x5C7480).skColor,
                                    size: CGSize(width: size.width * 1.4, height: size.height * 0.62))
         surface.position = CGPoint(x: size.width / 2, y: size.height * 0.30)
         waterNode.addChild(surface)
@@ -252,6 +259,85 @@ final class IntroScene: SKScene {
         world.addChild(boat)
     }
 
+    /// Kirschzweig am oberen Bildrand, ein Torii am Ufer, treibende Blüten.
+    /// Diese drei Zeichen setzen den Ort, ohne dass etwas erklärt werden muss.
+    private func buildScenery() {
+        // Zweig, der von oben links ins Bild hängt.
+        let branch = SKShapeNode()
+        let path = CGMutablePath()
+        path.move(to: CGPoint(x: -20, y: size.height + 20))
+        path.addQuadCurve(to: CGPoint(x: size.width * 0.42, y: size.height * 0.86),
+                          control: CGPoint(x: size.width * 0.16, y: size.height * 0.9))
+        branch.path = path
+        branch.strokeColor = ColorSpec(0x4A3A32).skColor
+        branch.lineWidth = 5
+        branch.lineCap = .round
+        branch.zPosition = 8
+        world.addChild(branch)
+
+        // Blütenbüschel entlang des Zweigs.
+        for index in 0..<16 {
+            let fraction = CGFloat(index) / 16
+            let point = CGPoint(x: -20 + (size.width * 0.42 + 20) * fraction,
+                                y: size.height + 20 - (size.height * 0.16) * fraction * fraction)
+
+            let blossom = SKShapeNode(circleOfRadius: CGFloat.random(in: 4...8))
+            blossom.fillColor = Palette.blossom.skColor(alpha: 0.9)
+            blossom.strokeColor = ColorSpec(0xD9A7B0).skColor(alpha: 0.6)
+            blossom.lineWidth = 1
+            blossom.position = CGPoint(x: point.x + CGFloat.random(in: -16...16),
+                                       y: point.y + CGFloat.random(in: -18...10))
+            blossom.zPosition = 9
+            world.addChild(blossom)
+        }
+
+        // Torii am gegenüberliegenden Ufer, nur als Silhouette.
+        let torii = SKNode()
+        for side in [CGFloat(-1), CGFloat(1)] {
+            let post = SKShapeNode(rectOf: CGSize(width: 5, height: 44))
+            post.fillColor = ColorSpec(0x8C4A3A).skColor(alpha: 0.75)
+            post.strokeColor = .clear
+            post.position = CGPoint(x: 15 * side, y: 0)
+            torii.addChild(post)
+        }
+        let top = SKShapeNode(rectOf: CGSize(width: 52, height: 6))
+        top.fillColor = ColorSpec(0x8C4A3A).skColor(alpha: 0.75)
+        top.strokeColor = .clear
+        top.position = CGPoint(x: 0, y: 24)
+        torii.addChild(top)
+
+        torii.position = CGPoint(x: size.width * 0.13, y: size.height * 0.53)
+        torii.setScale(0.9)
+        torii.zPosition = 2.5
+        world.addChild(torii)
+
+        // Einzelne Blütenblätter, die durchs Bild treiben.
+        guard let texture = TextureFactory.petal(color: Palette.blossom.skColor) else { return }
+        for index in 0..<9 {
+            let petal = SKSpriteNode(texture: texture)
+            petal.size = CGSize(width: 13, height: 13)
+            petal.alpha = 0.85
+            petal.zPosition = 8.5
+            petal.position = CGPoint(x: CGFloat.random(in: 0...size.width),
+                                     y: size.height + CGFloat.random(in: 0...300))
+            world.addChild(petal)
+
+            let fall = Double.random(in: 9...15)
+            petal.run(.repeatForever(.sequence([
+                .group([
+                    .moveBy(x: CGFloat.random(in: -70...50), y: -(size.height + 320), duration: fall),
+                    .rotate(byAngle: CGFloat.random(in: -4...4), duration: fall)
+                ]),
+                .run { [weak petal, weak self] in
+                    guard let self, let petal else { return }
+                    petal.position = CGPoint(x: CGFloat.random(in: 0...self.size.width),
+                                             y: self.size.height + 40)
+                }
+            ])))
+            _ = index
+        }
+    }
+
     private func buildFog() {
         fogLayer.zPosition = 7
         world.addChild(fogLayer)
@@ -313,23 +399,23 @@ final class IntroScene: SKScene {
     // MARK: - Ablauf
 
     private func runTimeline() {
-        // Sonnenaufgang: Die Sonne steigt, der Himmel wird warm.
+        // Sonnenaufgang: Die Sonne steigt langsam, der Himmel wird warm.
         sun.run(.sequence([
-            .wait(forDuration: 0.6),
+            .wait(forDuration: 0.8),
             .group([
-                .moveBy(x: 0, y: size.height * 0.16, duration: 5.0),
-                .fadeAlpha(to: 1, duration: 3.0)
+                .moveBy(x: 0, y: size.height * 0.17, duration: 7.5),
+                .fadeAlpha(to: 1, duration: 4.5)
             ])
         ]))
         sky.run(.sequence([
-            .wait(forDuration: 0.6),
-            .colorize(with: ColorSpec(0xE9B98A).skColor, colorBlendFactor: 0.75, duration: 4.5)
+            .wait(forDuration: 0.8),
+            .colorize(with: ColorSpec(0xE4C39C).skColor, colorBlendFactor: 0.7, duration: 6.5)
         ]))
 
-        // Dan rudert ins Bild.
+        // Dan rudert gemächlich ins Bild.
         boat.run(.sequence([
-            .wait(forDuration: 1.2),
-            .move(to: CGPoint(x: size.width * 0.34, y: size.height * 0.27), duration: 3.0)
+            .wait(forDuration: 1.6),
+            .move(to: CGPoint(x: size.width * 0.34, y: size.height * 0.27), duration: 4.6)
         ]))
         boat.run(.repeatForever(.sequence([
             .rotate(byAngle: 0.02, duration: 1.1),
@@ -338,27 +424,27 @@ final class IntroScene: SKScene {
 
         // Der große Fisch zieht unten durch und dreht nach oben.
         deepFish.run(.sequence([
-            .wait(forDuration: 2.6),
+            .wait(forDuration: 3.6),
             .fadeAlpha(to: 1, duration: 0.8),
             .group([
-                .move(to: CGPoint(x: size.width * 0.55, y: size.height * 0.15), duration: 3.2),
+                .move(to: CGPoint(x: size.width * 0.55, y: size.height * 0.15), duration: 5.0),
                 .sequence([
-                    .wait(forDuration: 2.0),
-                    .rotate(toAngle: 0.35, duration: 1.0)
+                    .wait(forDuration: 3.0),
+                    .rotate(toAngle: 0.35, duration: 1.4)
                 ])
             ])
         ]))
 
         // Wurf: Der Schwimmer fliegt hinaus und landet.
         bobber.run(.sequence([
-            .wait(forDuration: 4.9),
+            .wait(forDuration: 9.0),
             .run { [weak self] in
                 guard let self else { return }
                 self.bobber.position = CGPoint(x: self.size.width * 0.42, y: self.size.height * 0.34)
                 self.bobber.alpha = 1
                 AudioManager.shared.play(.cast)
             },
-            .move(to: CGPoint(x: size.width * 0.68, y: size.height * 0.30), duration: 0.7),
+            .move(to: CGPoint(x: size.width * 0.68, y: size.height * 0.30), duration: 0.9),
             .run { [weak self] in
                 AudioManager.shared.play(.splash)
                 self?.emitRipple(at: CGPoint(x: (self?.size.width ?? 0) * 0.68,
@@ -368,7 +454,7 @@ final class IntroScene: SKScene {
 
         // Der Biss.
         bobber.run(.sequence([
-            .wait(forDuration: 6.6),
+            .wait(forDuration: 9.0),
             .run { AudioManager.shared.play(.bite) },
             .moveBy(x: 0, y: -14, duration: 0.16),
             .moveBy(x: 0, y: 9, duration: 0.2),
@@ -383,7 +469,7 @@ final class IntroScene: SKScene {
 
         // Die Rute biegt sich, der Kampf beginnt.
         rod.run(.sequence([
-            .wait(forDuration: 6.7),
+            .wait(forDuration: 9.1),
             .rotate(toAngle: -0.55, duration: 0.35),
             .repeat(.sequence([
                 .rotate(toAngle: -0.35, duration: 0.28),
@@ -393,7 +479,7 @@ final class IntroScene: SKScene {
 
         // Kamera fährt heraus, Titel erscheint.
         world.run(.sequence([
-            .wait(forDuration: 7.4),
+            .wait(forDuration: 10.3),
             .group([
                 .scale(to: 0.9, duration: 1.8),
                 .fadeAlpha(to: 0.78, duration: 1.8)
@@ -402,20 +488,20 @@ final class IntroScene: SKScene {
         world.position = .zero
 
         titleBacking.run(.sequence([
-            .wait(forDuration: 7.5),
+            .wait(forDuration: 10.6),
             .fadeAlpha(to: 0.55, duration: 0.8)
         ]))
 
         titleLabel.run(.sequence([
-            .wait(forDuration: 7.7),
+            .wait(forDuration: 10.8),
             .group([
                 .fadeIn(withDuration: 0.9),
                 .scale(to: 1.0, duration: 0.9)
             ])
         ]))
-        subtitle.run(.sequence([.wait(forDuration: 8.2), .fadeAlpha(to: 1, duration: 0.7)]))
+        subtitle.run(.sequence([.wait(forDuration: 11.4), .fadeAlpha(to: 1, duration: 0.7)]))
         hint.run(.sequence([
-            .wait(forDuration: 8.6),
+            .wait(forDuration: 11.9),
             .fadeAlpha(to: 1, duration: 0.5),
             .repeatForever(.sequence([
                 .fadeAlpha(to: 0.35, duration: 0.8),

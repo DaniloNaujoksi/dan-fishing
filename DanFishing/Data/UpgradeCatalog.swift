@@ -11,14 +11,14 @@ enum UpgradeCatalog {
             category: .rod,
             summary: "Längere Ruten werfen weiter und halten schwerere Fische aus.",
             levels: [
-                UpgradeLevel(title: "Bambusrute", effect: "+90 Wurfweite, +2 kg Tragkraft", price: 150,
-                             delta: EquipmentStatDelta(castRange: 90, control: 0.03, maxFishWeight: 2)),
-                UpgradeLevel(title: "Zedernrute", effect: "+110 Wurfweite, bessere Kontrolle", price: 420,
-                             delta: EquipmentStatDelta(castRange: 110, control: 0.04, maxFishWeight: 4)),
-                UpgradeLevel(title: "Lackrute", effect: "+130 Wurfweite, +8 kg Tragkraft", price: 980,
-                             delta: EquipmentStatDelta(castRange: 130, control: 0.05, maxFishWeight: 8)),
-                UpgradeLevel(title: "Meisterrute", effect: "+160 Wurfweite, hält alles im See", price: 2200,
-                             delta: EquipmentStatDelta(castRange: 160, control: 0.06, maxFishWeight: 40))
+                UpgradeLevel(title: "Bambusrute", effect: "+55 Wurfweite, +2 kg Tragkraft", price: 150,
+                             delta: EquipmentStatDelta(castRange: 55, control: 0.03, maxFishWeight: 2)),
+                UpgradeLevel(title: "Zedernrute", effect: "+65 Wurfweite, bessere Kontrolle", price: 420,
+                             delta: EquipmentStatDelta(castRange: 65, control: 0.04, maxFishWeight: 4)),
+                UpgradeLevel(title: "Lackrute", effect: "+75 Wurfweite, +8 kg Tragkraft", price: 980,
+                             delta: EquipmentStatDelta(castRange: 75, control: 0.05, maxFishWeight: 8)),
+                UpgradeLevel(title: "Meisterrute", effect: "+90 Wurfweite, hält alles im See", price: 2200,
+                             delta: EquipmentStatDelta(castRange: 90, control: 0.06, maxFishWeight: 40))
             ]
         ),
 

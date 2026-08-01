@@ -47,7 +47,7 @@ struct MainMenuView: View {
                                     detail: "\(session.save.codex.count) von \(FishCatalog.all.count) Arten") {
                                 showCodex = true
                             }
-                            menuRow(icon: "bag", title: "Ausrüstung & Köderbox",
+                            menuRow(icon: "bag", title: "Angelladen",
                                     detail: "\(session.save.coins) Münzen") {
                                 showShop = true
                             }

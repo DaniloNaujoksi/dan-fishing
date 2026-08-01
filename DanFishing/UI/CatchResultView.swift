@@ -145,6 +145,23 @@ struct FishSilhouette: View {
     var silhouetteOnly: Bool = false
 
     var body: some View {
+        if let image = UIImage(named: "fish_\(species.id)") {
+            // Gezeichnete Grafik. Unbekannte Arten erscheinen als dunkle
+            // Silhouette, damit das Fangbuch nichts vorwegnimmt.
+            Image(uiImage: image)
+                .resizable()
+                .interpolation(.none)
+                .aspectRatio(contentMode: .fit)
+                .scaleEffect(x: -1)
+                .brightness(silhouetteOnly ? -1 : 0)
+                .opacity(silhouetteOnly ? 0.35 : 1)
+        } else {
+            drawnShape
+        }
+    }
+
+    /// Rückfallebene, solange für eine Art keine Grafik vorliegt.
+    private var drawnShape: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
             let height = geometry.size.height

@@ -52,13 +52,15 @@ final class AimPreviewNode: SKNode {
         run(.fadeAlpha(to: 1, duration: 0.12))
     }
 
+    /// Sofort weg. Kein Ausblenden: Sobald der Köder fliegt, hat die Zielhilfe
+    /// nichts mehr auf dem Wasser zu suchen — eine nachhängende gestrichelte
+    /// Linie unter der Schnur sieht aus wie ein Fehler.
     func hide() {
         guard !isHidden else { return }
         removeAllActions()
-        run(.sequence([
-            .fadeAlpha(to: 0, duration: 0.16),
-            .run { [weak self] in self?.isHidden = true }
-        ]))
+        alpha = 0
+        isHidden = true
+        trajectory.path = nil
     }
 
     /// - Parameters:

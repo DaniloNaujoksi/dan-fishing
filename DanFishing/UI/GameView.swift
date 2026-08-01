@@ -106,10 +106,22 @@ struct GameView: View {
 
             Spacer()
 
-            VStack(spacing: 8) {
-                iconButton("book.closed") { showCodex = true }
-                iconButton("bag") { showShop = true }
-                iconButton("checklist") { showMissions = true }
+            // Deutlich größer als zuvor: Mit dem Daumen am oberen Bildrand
+            // trifft man 36 Punkte kaum zuverlässig.
+            VStack(alignment: .trailing, spacing: 10) {
+                iconButton("book.closed", label: "Fangbuch") { showCodex = true }
+                iconButton("bag", label: "Laden") { showShop = true }
+                iconButton("checklist", label: "Aufgaben") { showMissions = true }
+
+                if let minimap = session.minimap {
+                    MinimapView(image: session.minimapImage,
+                                boat: minimap.boat,
+                                heading: minimap.heading,
+                                lure: minimap.lure,
+                                worldSize: minimap.worldSize,
+                                size: 76)
+                        .padding(.top, 4)
+                }
             }
         }
         .padding(.top, 8)
@@ -124,13 +136,21 @@ struct GameView: View {
         }
     }
 
-    private func iconButton(_ symbol: String, action: @escaping () -> Void) -> some View {
+    private func iconButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(Palette.uiInk)
-                .frame(width: 36, height: 36)
-                .background(Circle().fill(Palette.paper.swiftUIColor.opacity(0.88)))
+            VStack(spacing: 2) {
+                Image(systemName: symbol)
+                    .font(.system(size: 19, weight: .medium))
+                Text(label)
+                    .font(.system(size: 9, weight: .medium, design: .rounded))
+            }
+            .foregroundStyle(Palette.uiInk)
+            .frame(width: 54, height: 54)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Palette.paper.swiftUIColor.opacity(0.9))
+                    .shadow(color: .black.opacity(0.12), radius: 4, y: 2)
+            )
         }
     }
 
@@ -182,10 +202,7 @@ struct GameView: View {
             showBaitBox = true
         } label: {
             HStack(spacing: 8) {
-                Circle()
-                    .fill(session.selectedBait.color.swiftUIColor)
-                    .frame(width: 16, height: 16)
-                    .overlay(Circle().strokeBorder(Palette.inkSoft.swiftUIColor.opacity(0.4), lineWidth: 1))
+                BaitIcon(bait: session.selectedBait, size: 26)
                 Text(session.selectedBait.name)
                     .font(.system(size: 14, weight: .medium, design: .serif))
                     .foregroundStyle(Palette.uiInk)
@@ -201,8 +218,10 @@ struct GameView: View {
         Group {
             switch session.fishingPhase {
             case .idle:
-                hintText("Ziehen und loslassen")
-            case .aiming:
+                hintText("1 · Richtung ziehen")
+            case .aimingDirection:
+                hintText("Richtung wählen, dann loslassen")
+            case .aimingPower:
                 castPowerBar
             case .flying:
                 hintText("…")
@@ -270,7 +289,7 @@ struct GameView: View {
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
-                        // Erster Kontakt: entweder anschlagen oder zielen.
+                        // Erster Kontakt: anschlagen, zielen oder ausholen.
                         if !isPressingAction {
                             isPressingAction = true
                             guard session.fishingPhase != .hooked else { return }
@@ -283,7 +302,14 @@ struct GameView: View {
                     }
                     .onEnded { _ in
                         isPressingAction = false
-                        scene?.releaseAim()
+
+                        // Zwei Schritte: Erst wird die Richtung bestätigt,
+                        // beim zweiten Loslassen fliegt der Köder.
+                        if session.fishingPhase == .aimingDirection {
+                            scene?.confirmAimDirection()
+                        } else {
+                            scene?.releaseAim()
+                        }
                     }
             )
     }
@@ -291,7 +317,8 @@ struct GameView: View {
     private var actionColor: Color {
         switch session.fishingPhase {
         case .biteWindow: return Palette.vermilion.swiftUIColor
-        case .aiming: return ColorSpec(0x9A6A3A).swiftUIColor
+        case .aimingDirection: return ColorSpec(0x4E7A6E).swiftUIColor
+        case .aimingPower: return ColorSpec(0x9A6A3A).swiftUIColor
         default: return ColorSpec(0x4E6E7A).swiftUIColor
         }
     }
@@ -299,7 +326,8 @@ struct GameView: View {
     private var actionSymbol: String {
         switch session.fishingPhase {
         case .idle: return "arrow.up.forward"
-        case .aiming: return "scope"
+        case .aimingDirection: return "scope"
+        case .aimingPower: return "arrow.up.forward.circle"
         case .flying: return "hourglass"
         case .waiting, .nibble: return "hand.tap"
         case .biteWindow: return "bolt.fill"
@@ -309,7 +337,9 @@ struct GameView: View {
 
     private var actionTitle: String {
         switch session.fishingPhase {
-        case .idle, .aiming, .flying: return "Werfen"
+        case .idle, .flying: return "Werfen"
+        case .aimingDirection: return "Richtung"
+        case .aimingPower: return "Ausholen"
         case .waiting, .nibble, .biteWindow: return "Anschlag"
         case .hooked: return "Drill"
         }

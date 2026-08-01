@@ -1,6 +1,7 @@
 import Combine
 import CoreGraphics
 import Foundation
+import UIKit
 
 /// Momentaufnahme des Fang-Minispiels für die Oberfläche. Die Oberfläche
 /// bekommt bewusst nur Zahlen, keine Referenz auf die Logik.
@@ -87,6 +88,33 @@ final class GameSession: ObservableObject {
     @Published private(set) var pendingCatch: CatchResult?
     /// Aktueller Tutorialschritt, oder nil wenn keiner läuft.
     @Published private(set) var tutorialStep: TutorialStep?
+
+    /// Stand für die Minimap. Wird ein paar Mal pro Sekunde aufgefrischt —
+    /// öfter wäre für eine Karte in Daumennagelgröße verschwendete Arbeit.
+    @Published private(set) var minimap: MinimapState?
+    /// Das Kartenbild selbst. Einmal erzeugt und danach unverändert, deshalb
+    /// bewusst nicht veröffentlicht.
+    private(set) var minimapImage: UIImage?
+
+    struct MinimapState: Equatable {
+        var boat: CGPoint
+        var heading: CGFloat
+        var lure: CGPoint?
+        var worldSize: CGSize
+    }
+
+    func setMinimapImage(_ image: UIImage, worldSize: CGSize) {
+        minimapImage = image
+        minimap = MinimapState(boat: .zero, heading: 0, lure: nil, worldSize: worldSize)
+    }
+
+    func updateMinimap(boat: CGPoint, heading: CGFloat, lure: CGPoint?) {
+        guard var state = minimap else { return }
+        state.boat = boat
+        state.heading = heading
+        state.lure = lure
+        if state != minimap { minimap = state }
+    }
     @Published private(set) var completedMissions: [Mission] = []
     @Published private(set) var toast: GameToast?
 

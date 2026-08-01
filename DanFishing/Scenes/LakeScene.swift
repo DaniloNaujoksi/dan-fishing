@@ -51,6 +51,7 @@ final class LakeScene: SKScene {
 
     private var ambience: AmbienceEmitter?
     private var wakeTimer: CGFloat = 0
+    private var minimapTimer: CGFloat = 0
     private var configuredBaitID: String?
 
     // MARK: - Aufbau
@@ -101,6 +102,7 @@ final class LakeScene: SKScene {
         spawnInitialFish()
 
         ambience = AmbienceEmitter(layer: weatherLayer, map: map)
+        session.setMinimapImage(TextureFactory.minimapImage(for: map), worldSize: map.worldSize)
 
         camera = cameraNode
         addChild(cameraNode)
@@ -131,7 +133,8 @@ final class LakeScene: SKScene {
                 let waves = SKSpriteNode(texture: stripes)
                 waves.size = CGSize(width: worldSize.width * 1.2, height: worldSize.height * 1.2)
                 waves.position = CGPoint(x: worldSize.width / 2, y: worldSize.height / 2)
-                waves.alpha = index == 0 ? 0.5 : 0.32
+                // Dezent: Das Wasser soll ruhig wirken, nicht gemustert.
+                waves.alpha = index == 0 ? 0.22 : 0.13
                 waves.zPosition = 10 + CGFloat(index)
                 zoneLayer.addChild(waves)
 
@@ -147,7 +150,7 @@ final class LakeScene: SKScene {
             let paper = SKSpriteNode(texture: grain)
             paper.size = worldSize
             paper.position = CGPoint(x: worldSize.width / 2, y: worldSize.height / 2)
-            paper.alpha = 0.55
+            paper.alpha = 0.28
             paper.zPosition = 12
             paper.blendMode = .alpha
             zoneLayer.addChild(paper)
@@ -305,6 +308,7 @@ final class LakeScene: SKScene {
         updateFish(dt: dt)
         updateCamera(dt: dt)
         updateAtmosphere(dt: dt)
+        updateMinimap(dt: dt)
         publishEnvironment()
     }
 
@@ -391,8 +395,9 @@ final class LakeScene: SKScene {
             line.clear()
         }
 
-        // Die Rute lädt sich sichtbar auf, solange gezielt wird.
-        boatNode.setCastPose(fishing.phase == .aiming ? CGFloat(fishing.castPower) : nil,
+        // Die Rute dreht sich beim Zielen mit und lädt sich beim Ausholen auf.
+        let aiming = fishing.phase == .aimingDirection || fishing.phase == .aimingPower
+        boatNode.setCastPose(aiming ? CGFloat(fishing.castPower) : nil,
                              aimDirection: fishing.aimDirection,
                              boatHeading: boat.heading)
 
@@ -553,6 +558,17 @@ final class LakeScene: SKScene {
         ]))
     }
 
+    /// Minimap ein paar Mal pro Sekunde auffrischen.
+    private func updateMinimap(dt: CGFloat) {
+        minimapTimer -= dt
+        guard minimapTimer <= 0 else { return }
+        minimapTimer = 0.15
+
+        session.updateMinimap(boat: boat.position,
+                              heading: boat.heading,
+                              lure: fishing.bobberPosition)
+    }
+
     private func publishEnvironment() {
         let point = fishing.bobberPosition ?? boat.position
         let habitat = map.habitat(at: point)
@@ -612,6 +628,7 @@ final class LakeScene: SKScene {
         case .idle:
             fishing.beginAim(direction: CGVector(dx: cos(boat.heading), dy: sin(boat.heading)))
             aimPreview.show()
+            HapticManager.shared.selection()
         case .waiting, .nibble, .biteWindow:
             fishing.strike(stats: session.stats)
         default:
@@ -621,22 +638,35 @@ final class LakeScene: SKScene {
 
     /// Fingerbewegung. `drag` ist der Vektor vom Aufsetzpunkt zum Finger, in
     /// Punkten und bereits in Weltausrichtung (y zeigt nach oben).
+    ///
+    /// Schritt 1 nimmt daraus die Richtung, Schritt 2 die Länge als Wurfweite.
     func updateAim(drag: CGVector) {
-        guard fishing.phase == .aiming else { return }
-
         let length = hypot(drag.dx, drag.dy)
 
-        // Kurze Fingerbewegung = kurzer Wurf. Nach dieser Strecke ist die
-        // volle Weite erreicht; darüber hinaus ändert sich nichts mehr.
-        let fullPullDistance: CGFloat = 170
-        let power = Double(min(1, length / fullPullDistance))
+        switch fishing.phase {
+        case .aimingDirection:
+            if length > 8 { fishing.updateAimDirection(drag) }
 
-        // Gezogen wird in die Richtung, in die geworfen werden soll.
-        fishing.updateAim(direction: length > 6 ? drag : fishing.aimDirection, power: power)
+        case .aimingPower:
+            // Nach dieser Strecke ist die volle Weite erreicht.
+            let fullPullDistance: CGFloat = 150
+            fishing.updateAimPower(Double(min(1, length / fullPullDistance)))
+
+        default:
+            break
+        }
+    }
+
+    /// Schritt 1 abgeschlossen — ab jetzt zählt die Weite.
+    func confirmAimDirection() {
+        guard fishing.phase == .aimingDirection else { return }
+        fishing.confirmDirection()
+        HapticManager.shared.selection()
+        AudioManager.shared.play(.uiTap)
     }
 
     func releaseAim() {
-        guard fishing.phase == .aiming else { return }
+        guard fishing.phase == .aimingPower || fishing.phase == .aimingDirection else { return }
 
         if fishing.releaseCast(from: boatNode.rodTipPosition,
                                stats: session.stats,
@@ -659,7 +689,7 @@ final class LakeScene: SKScene {
 
     /// Führt die Zielhilfe nach: Bahn, Landepunkt und Reichweite.
     private func updateAimPreview() {
-        guard fishing.phase == .aiming else {
+        guard fishing.phase == .aimingDirection || fishing.phase == .aimingPower else {
             aimPreview.hide()
             return
         }

@@ -50,14 +50,7 @@ struct BaitBoxView: View {
         } label: {
             PaperPanel(padding: 14) {
                 HStack(spacing: 14) {
-                    ZStack {
-                        Circle()
-                            .fill(bait.color.swiftUIColor)
-                            .frame(width: 34, height: 34)
-                        Circle()
-                            .strokeBorder(Palette.inkSoft.swiftUIColor.opacity(0.35), lineWidth: 1)
-                            .frame(width: 34, height: 34)
-                    }
+                    BaitIcon(bait: bait, size: 38)
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text(bait.name)

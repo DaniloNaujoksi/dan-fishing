@@ -22,16 +22,21 @@ final class FishNode: SKNode {
         self.species = species
         super.init()
 
-        if let texture = TextureFactory.fishBody(body: species.bodyColor.skColor,
-                                                 belly: species.bellyColor.skColor,
-                                                 fin: species.finColor.skColor,
-                                                 key: species.id) {
+        if let texture = TextureFactory.fishArtwork(for: species) {
             sprite.texture = texture
+
             // Große Arten sind auch im Wasser deutlich größer zu sehen — das
             // ist der Hinweis, der einen Hecht von einem Rotauge unterscheidet.
+            // Die Höhe folgt dem Seitenverhältnis der Grafik, damit kein Fisch
+            // gestaucht wirkt.
             let sizeFactor = min(1.8, CGFloat(species.maxLength) / 60)
-            sprite.size = CGSize(width: 60 * swimmer.scale * sizeFactor,
-                                 height: 27 * swimmer.scale * sizeFactor)
+            let width = 64 * swimmer.scale * sizeFactor
+            let ratio = texture.size().height / max(texture.size().width, 1)
+            sprite.size = CGSize(width: width, height: width * ratio)
+
+            // Die Grafiken zeigen alle nach links, im Spiel zeigt 0° nach
+            // rechts — einmal spiegeln statt zwölf Bilder neu zu zeichnen.
+            sprite.xScale = -1
         }
         sprite.alpha = 0.55
         addChild(sprite)
@@ -80,7 +85,8 @@ final class FishNode: SKNode {
         // Schwanzschlag: schneller, je eiliger der Fisch unterwegs ist.
         let effort: CGFloat = (swimmer.behaviour == .spooked || swimmer.behaviour == .retreat) ? 2.2 : 1.0
         tailPhase += deltaTime * (3 + swimmer.speed * 0.06) * effort
-        sprite.xScale = 1 - abs(sin(tailPhase)) * 0.06
+        // Spiegelung beibehalten und nur den Betrag stauchen.
+        sprite.xScale = -(1 - abs(sin(tailPhase)) * 0.06)
 
         // Flaches Wasser: besser zu sehen. Tiefes Wasser: nur ein Schemen.
         let depth = map.depth(at: swimmer.position)

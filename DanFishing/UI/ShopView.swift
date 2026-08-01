@@ -46,7 +46,7 @@ struct ShopView: View {
                     }
                 }
             }
-            .navigationTitle("Am Steg")
+            .navigationTitle("Angelladen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -148,12 +148,53 @@ struct ShopView: View {
     // MARK: - Köder
 
     private var baitSection: some View {
+        let owned = UpgradeSystem.ownedBaits(for: session.save)
         let available = UpgradeSystem.purchasableBaits(for: session.save)
         let locked = BaitCatalog.all.filter {
             !session.save.ownedBaitIDs.contains($0.id) && $0.unlockLevel > session.save.level
         }
 
         return VStack(spacing: 14) {
+            // Zuerst die eigene Köderbox: Hier wird gewählt, womit geangelt
+            // wird. Vorher gab es diese Auswahl nur im Spiel selbst, weshalb
+            // der Laden wie ein kaputter Knopf wirkte.
+            PaperPanel {
+                VStack(alignment: .leading, spacing: 12) {
+                    SectionHeading(text: "Deine Köderbox",
+                                   subtitle: "Tippen wählt den Köder aus")
+
+                    ForEach(owned) { bait in
+                        Button {
+                            session.selectBait(bait)
+                        } label: {
+                            HStack(spacing: 12) {
+                                BaitIcon(bait: bait, size: 34)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(bait.name)
+                                        .font(.system(size: 16, weight: .medium, design: .serif))
+                                        .foregroundStyle(Palette.uiInk)
+                                    Text(bait.kind.displayName)
+                                        .font(.system(size: 11, design: .rounded))
+                                        .foregroundStyle(Palette.inkSoft.swiftUIColor)
+                                }
+
+                                Spacer(minLength: 6)
+
+                                if bait.id == session.save.selectedBaitID {
+                                    Label("Gewählt", systemImage: "checkmark.circle.fill")
+                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(Palette.vermilion.swiftUIColor)
+                                }
+                            }
+                            .padding(.vertical, 4)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+
             PaperPanel {
                 VStack(alignment: .leading, spacing: 14) {
                     SectionHeading(text: "Zu kaufen",
@@ -161,9 +202,7 @@ struct ShopView: View {
 
                     ForEach(available) { bait in
                         HStack(spacing: 12) {
-                            Circle()
-                                .fill(bait.color.swiftUIColor)
-                                .frame(width: 26, height: 26)
+                            BaitIcon(bait: bait, size: 30)
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(bait.name)

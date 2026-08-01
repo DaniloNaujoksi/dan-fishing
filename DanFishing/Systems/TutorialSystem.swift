@@ -32,7 +32,7 @@ enum TutorialStep: Int, CaseIterable, Equatable {
         switch self {
         case .welcome: return "Ein stiller See, ein Boot, viel Zeit."
         case .move: return "Zieh am Ring unten links, um zu rudern."
-        case .cast: return "Halte die Wurftaste und zieh in die Wurfrichtung. Weiter ziehen heißt weiter werfen."
+        case .cast: return "Zwei Schritte: erst ziehen und loslassen für die Richtung, dann ziehen und loslassen für die Weite."
         case .wait: return "Der Köder liegt. Jetzt entscheidet der See."
         case .watch: return "Ein Fisch schaut sich den Köder an — der Punkt über ihm verrät ihn."
         case .strike: return "Der Schwimmer taucht weg. Tippe jetzt die Taste!"

@@ -185,8 +185,37 @@ enum TextureFactory {
         }
     }
 
-    /// Fischkörper als Silhouette mit Bauch und Flosse. Wird für jede Art in
-    /// ihren Farben erzeugt und danach zwischengespeichert.
+    /// Bild einer Fischart.
+    ///
+    /// Zuerst wird die gezeichnete Grafik aus dem Asset-Katalog gesucht
+    /// (`fish_<id>`); nur wenn es die nicht gibt, entsteht ersatzweise die
+    /// gemalte Silhouette aus Formen. Dadurch lassen sich einzelne Arten
+    /// austauschen, ohne dass etwas anderes angefasst werden muss.
+    static func fishArtwork(for species: FishSpecies) -> SKTexture? {
+        if let artwork = cached("artwork-\(species.id)", build: {
+            let image = UIImage(named: "fish_\(species.id)")
+            guard let image else { return nil }
+            let texture = SKTexture(image: image)
+            // Pixelgrafik: Beim Skalieren nicht weichzeichnen.
+            texture.filteringMode = .nearest
+            return texture
+        }) {
+            return artwork
+        }
+
+        return fishBody(body: species.bodyColor.skColor,
+                        belly: species.bellyColor.skColor,
+                        fin: species.finColor.skColor,
+                        key: species.id)
+    }
+
+    /// Gibt es für eine Art eine gezeichnete Grafik?
+    static func hasArtwork(for species: FishSpecies) -> Bool {
+        UIImage(named: "fish_\(species.id)") != nil
+    }
+
+    /// Fischkörper als Silhouette mit Bauch und Flosse. Rückfallebene, falls
+    /// für eine Art noch keine Grafik vorliegt.
     static func fishBody(body: UIColor, belly: UIColor, fin: UIColor, key: String) -> SKTexture? {
         cached("fish-\(key)") {
             let size = CGSize(width: 120, height: 54)
@@ -266,55 +295,125 @@ enum TextureFactory {
                                height: map.worldSize.height * scale)
         let cell = map.cellSize * scale
 
-        let rendered = image(size: pixelSize) { context, canvas in
-            // Grundfläche: alles ist erst einmal Wasser.
-            context.setFillColor(Palette.water.skColor.cgColor)
-            context.fill(CGRect(origin: .zero, size: canvas))
-
-            func color(for kind: CellKind) -> UIColor? {
-                switch kind {
-                case .land: return Palette.sand.skColor
-                case .shallows: return Palette.waterShallow.skColor.withAlphaComponent(0.75)
-                case .reeds: return Palette.reed.skColor.withAlphaComponent(0.45)
-                case .lilies: return Palette.lily.skColor.withAlphaComponent(0.40)
-                case .deep: return Palette.waterDeep.skColor.withAlphaComponent(0.7)
-                case .inflow: return ColorSpec(0x9FD0D6).skColor.withAlphaComponent(0.6)
-                case .logs: return ColorSpec(0x3F5A4E).skColor.withAlphaComponent(0.55)
-                }
+        // Farbe je Zelle, in zwei Ebenen: Wassertiefe als Grundton, die
+        // Bewuchszonen als zarte Tönung darüber.
+        func waterTone(for kind: CellKind) -> UIColor {
+            switch kind {
+            case .land: return Palette.sand.skColor
+            case .shallows, .reeds, .lilies: return Palette.waterShallow.skColor
+            case .inflow: return ColorSpec(0x9FD0D6).skColor
+            case .deep, .logs: return Palette.waterDeep.skColor
             }
+        }
 
-            // Zwei Durchgänge: erst das Wasser mit seinen Zonen, dann das Land
-            // darüber. Sonst würden Schilfflächen die Uferlinie überdecken.
-            for pass in 0..<2 {
-                for row in 0..<map.rows {
-                    for column in 0..<map.columns {
-                        let kind = map.kind(column: column, row: row)
-                        let isLand = kind == .land
-                        if (pass == 0) == isLand { continue }
-                        guard let tint = color(for: kind) else { continue }
+        func overlayTone(for kind: CellKind) -> UIColor? {
+            switch kind {
+            case .reeds: return Palette.reed.skColor.withAlphaComponent(0.28)
+            case .lilies: return Palette.lily.skColor.withAlphaComponent(0.24)
+            case .logs: return ColorSpec(0x3F5A4E).skColor.withAlphaComponent(0.3)
+            default: return nil
+            }
+        }
 
-                        // Bildkoordinaten laufen von oben nach unten, die Welt
-                        // von unten nach oben.
-                        let x = CGFloat(column) * cell
-                        let y = pixelSize.height - CGFloat(row + 1) * cell
+        // Erst eine kleine Karte zeichnen — ein Pixel je Rasterzelle. Beim
+        // Hochskalieren glättet CoreGraphics die Übergänge von selbst; das
+        // ergibt weiche Farbverläufe statt der vorherigen Kreismuster.
+        let smallSize = CGSize(width: map.columns, height: map.rows)
+        let small = image(size: smallSize) { context, _ in
+            context.interpolationQuality = .none
+            for row in 0..<map.rows {
+                for column in 0..<map.columns {
+                    let kind = map.kind(column: column, row: row)
+                    let y = map.rows - row - 1   // Bild läuft von oben nach unten
+                    let rect = CGRect(x: CGFloat(column), y: CGFloat(y), width: 1, height: 1)
 
-                        // Tupfen größer als die Zelle: die Ränder verschmelzen.
-                        let bloat = cell * 0.42
-                        let rect = CGRect(x: x - bloat / 2,
-                                          y: y - bloat / 2,
-                                          width: cell + bloat,
-                                          height: cell + bloat)
+                    context.setFillColor(waterTone(for: kind).cgColor)
+                    context.fill(rect)
 
-                        context.setFillColor(tint.cgColor)
-                        context.fillEllipse(in: rect)
+                    if let overlay = overlayTone(for: kind) {
+                        context.setFillColor(overlay.cgColor)
+                        context.fill(rect)
                     }
                 }
             }
         }
 
+        // Weich hochziehen. Das Land bekommt danach eine klare Uferlinie,
+        // damit die Kante trotz Weichzeichnung ablesbar bleibt.
+        let rendered = image(size: pixelSize) { context, canvas in
+            context.interpolationQuality = .high
+            if let cgImage = small.cgImage {
+                context.draw(cgImage, in: CGRect(origin: .zero, size: canvas))
+            }
+
+            context.setStrokeColor(ColorSpec(0xBBA987).skColor.withAlphaComponent(0.75).cgColor)
+            context.setLineWidth(max(1.5, cell * 0.16))
+            context.setLineJoin(.round)
+
+            for row in 0..<map.rows {
+                for column in 0..<map.columns where map.kind(column: column, row: row) == .land {
+                    // Nur Kanten zeichnen, an denen wirklich Wasser anliegt.
+                    let x = CGFloat(column) * cell
+                    let y = pixelSize.height - CGFloat(row + 1) * cell
+
+                    if map.kind(column: column, row: row + 1) != .land {
+                        context.move(to: CGPoint(x: x, y: y + cell))
+                        context.addLine(to: CGPoint(x: x + cell, y: y + cell))
+                    }
+                    if map.kind(column: column, row: row - 1) != .land {
+                        context.move(to: CGPoint(x: x, y: y))
+                        context.addLine(to: CGPoint(x: x + cell, y: y))
+                    }
+                    if map.kind(column: column - 1, row: row) != .land {
+                        context.move(to: CGPoint(x: x, y: y))
+                        context.addLine(to: CGPoint(x: x, y: y + cell))
+                    }
+                    if map.kind(column: column + 1, row: row) != .land {
+                        context.move(to: CGPoint(x: x + cell, y: y))
+                        context.addLine(to: CGPoint(x: x + cell, y: y + cell))
+                    }
+                }
+            }
+            context.strokePath()
+        }
+
         // Nicht zwischenspeichern: Das Bild hängt an der Karte und wird genau
         // einmal pro Szene gebraucht.
         return SKTexture(image: rendered)
+    }
+
+    /// Kleine Übersichtskarte des Sees für die Minimap.
+    ///
+    /// Bewusst grob: vier Bildpunkte je Rasterzelle reichen, um Ufer, Buchten
+    /// und Tiefe zu erkennen, und das Bild bleibt winzig.
+    static func minimapImage(for map: LakeMap, pixelsPerCell: CGFloat = 4) -> UIImage {
+        let size = CGSize(width: CGFloat(map.columns) * pixelsPerCell,
+                          height: CGFloat(map.rows) * pixelsPerCell)
+
+        return image(size: size) { context, _ in
+            for row in 0..<map.rows {
+                for column in 0..<map.columns {
+                    let kind = map.kind(column: column, row: row)
+
+                    let color: UIColor
+                    switch kind {
+                    case .land: color = Palette.sand.skColor
+                    case .shallows: color = Palette.waterShallow.skColor
+                    case .reeds: color = Palette.reed.skColor
+                    case .lilies: color = Palette.lily.skColor
+                    case .deep: color = Palette.waterDeep.skColor
+                    case .inflow: color = ColorSpec(0x9FD0D6).skColor
+                    case .logs: color = ColorSpec(0x3F5A4E).skColor
+                    }
+
+                    // Bild von oben nach unten, Welt von unten nach oben.
+                    let y = CGFloat(map.rows - row - 1) * pixelsPerCell
+                    context.setFillColor(color.cgColor)
+                    context.fill(CGRect(x: CGFloat(column) * pixelsPerCell, y: y,
+                                        width: pixelsPerCell, height: pixelsPerCell))
+                }
+            }
+        }
     }
 
     /// Leert den Zwischenspeicher — nur für Tests und Vorschauen nötig.

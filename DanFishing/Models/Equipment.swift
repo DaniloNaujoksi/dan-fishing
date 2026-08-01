@@ -35,8 +35,9 @@ enum UpgradeCategory: String, Codable, CaseIterable {
 /// Alle Werte, die Ausrüstung im Spiel beeinflusst. Systeme lesen ausschließlich
 /// diese Struktur — sie wissen nicht, aus welchen Upgrades sie entstanden ist.
 struct EquipmentStats: Equatable {
-    /// Maximale Wurfweite in Punkten.
-    var castRange: Double = 520
+    /// Maximale Wurfweite in Punkten. Bewusst knapp gehalten: Ein Wurf über
+    /// den halben See nimmt dem Suchen nach dem richtigen Platz den Sinn.
+    var castRange: Double = 300
     /// 0…1 — Breite des Fangbereichs im Minispiel.
     var control: Double = 0.30
     /// Wie viel Spannung die Schnur aushält (1.0 = Grundschnur).

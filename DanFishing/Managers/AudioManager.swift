@@ -307,60 +307,83 @@ final class AudioManager {
         startMusicLoop()
     }
 
+    /// Gezupfter Ton mit langem Ausklang — der Klang einer Koto.
+    ///
+    /// Aufbau: Grundton plus zwei leise Obertöne, die schneller verklingen als
+    /// der Grundton. Genau das unterscheidet eine gezupfte Saite von einem
+    /// reinen Sinuston.
+    private static func pluck(_ frequency: Double, _ local: Double, decay: Double) -> Double {
+        guard local >= 0 else { return 0 }
+        let attack = min(1, local / 0.006)
+        let body = exp(-local * decay)
+        let fundamental = sin(2 * Double.pi * frequency * local)
+        let second = sin(2 * Double.pi * frequency * 2 * local) * 0.28 * exp(-local * decay * 2.4)
+        let third = sin(2 * Double.pi * frequency * 3 * local) * 0.12 * exp(-local * decay * 4)
+        return (fundamental + second + third) * attack * body
+    }
+
+    /// Atmender Flötenton mit Anblasgeräusch — angelehnt an eine Shakuhachi.
+    private static func flute(_ frequency: Double, _ local: Double, length: Double) -> Double {
+        guard local >= 0 else { return 0 }
+        let attack = min(1, local / 0.35)
+        let release = min(1, (length - local) / 0.5)
+        // Der Ton steht nicht still, sondern schwankt leicht.
+        let breath = 1 + sin(local * 4.5) * 0.012
+        let tone = sin(2 * Double.pi * frequency * local * breath)
+        let air = Double.random(in: -1...1) * 0.05 * attack
+        return (tone * 0.9 + air) * attack * release
+    }
+
     private func makeIntroTheme() -> AVAudioPCMBuffer? {
-        // Halbtonschritte über dem Grundton D3 (146.83 Hz).
-        func note(_ semitones: Int) -> Double {
-            146.83 * pow(2.0, Double(semitones) / 12.0)
+        // Hirajōshi, die klassische japanische Leiter: Grundton, kleine Sekunde,
+        // Quarte, Quinte, kleine Sexte. Ihre Halbtonschritte geben den
+        // charakteristischen Klang — mit einer Dur-Tonleiter klänge es
+        // europäisch, egal wie sanft man spielt.
+        func note(_ step: Int) -> Double {
+            let hirajoshi = [0, 2, 3, 7, 8]     // Halbtöne über dem Grundton
+            let octave = step >= 0 ? step / 5 : (step - 4) / 5
+            var index = step % 5
+            if index < 0 { index += 5 }
+            // Grundton D3.
+            return 146.83 * pow(2.0, (Double(hirajoshi[index]) + Double(octave) * 12) / 12.0)
         }
 
-        // Melodie: (Halbton über D, Startzeit, Dauer). Ruhig, aufsteigend,
-        // mit einer kleinen Schlusswendung — passend zum Sonnenaufgang.
-        let melody: [(Int, Double, Double)] = [
-            (14, 0.00, 0.55), (16, 0.55, 0.55), (19, 1.10, 0.80),
-            (21, 1.90, 0.55), (19, 2.45, 0.55), (16, 3.00, 0.80),
-            (14, 3.80, 0.55), (16, 4.35, 0.55), (19, 4.90, 0.55),
-            (23, 5.45, 1.20), (21, 6.65, 0.60), (19, 7.25, 1.60)
+        // Sparsame Melodie, viel Raum dazwischen: (Stufe, Startzeit, Ausklang).
+        let koto: [(Int, Double, Double)] = [
+            (5, 0.20, 1.1), (7, 1.60, 1.1), (8, 2.90, 0.9),
+            (10, 4.10, 0.8), (9, 5.40, 1.0), (7, 6.60, 1.0),
+            (5, 8.00, 0.8), (8, 9.30, 0.7), (10, 10.60, 0.55),
+            (12, 11.80, 0.45)
         ]
 
-        // Begleitung eine Oktave darunter, in ruhigen Vierteln.
-        let bass: [(Int, Double, Double)] = [
-            (2, 0.00, 1.10), (7, 1.10, 1.10), (9, 2.20, 1.10), (7, 3.30, 1.10),
-            (2, 4.40, 1.10), (7, 5.50, 1.10), (9, 6.60, 1.10), (2, 7.70, 1.15)
+        // Zwei lange Flötentöne, die den Bogen darüber spannen.
+        let shakuhachi: [(Int, Double, Double)] = [
+            (10, 2.20, 3.4),
+            (12, 7.40, 4.2)
         ]
 
-        let duration = 9.2
+        // Tiefer Bordunton, kaum hörbar, trägt das Ganze.
+        let drone = note(0) / 2
+
+        let duration = 13.5
 
         return makeBuffer(duration: duration) { t, _ in
             var sample = 0.0
 
-            for (semitone, start, length) in melody where t >= start && t < start + length {
-                let local = t - start
-                // Kurzer Anschlag, gehaltener Ton, weiches Ende.
-                let attack = min(1, local / 0.015)
-                let release = min(1, (start + length - t) / 0.12)
-                // Leichtes Vibrato ab der Tonmitte — typisch für die Chips.
-                let vibrato = 1 + sin(local * 34) * 0.004 * min(1, local / 0.25)
-                sample += AudioManager.square(note(semitone) * 2 * vibrato, t, duty: 0.5)
-                    * attack * release * 0.16
+            for (step, start, decay) in koto where t >= start {
+                sample += AudioManager.pluck(note(step), t - start, decay: decay) * 0.15
             }
 
-            for (semitone, start, length) in bass where t >= start && t < start + length {
-                let local = t - start
-                let attack = min(1, local / 0.01)
-                let release = min(1, (start + length - t) / 0.1)
-                sample += AudioManager.square(note(semitone), t, duty: 0.25)
-                    * attack * release * 0.11
+            for (step, start, length) in shakuhachi where t >= start && t < start + length {
+                sample += AudioManager.flute(note(step) / 2, t - start, length: length) * 0.085
             }
 
-            // Arpeggio-Flimmern im Hintergrund: drei Töne im Wechsel, wie es
-            // die alten Chips gemacht haben, um Akkorde vorzutäuschen.
-            let arpeggioStep = Int((t * 24).truncatingRemainder(dividingBy: 3))
-            let arpeggioNotes = [14, 18, 21]
-            sample += AudioManager.square(note(arpeggioNotes[arpeggioStep]) * 2, t, duty: 0.125) * 0.035
+            sample += sin(2 * Double.pi * drone * t) * 0.045
+            sample += sin(2 * Double.pi * drone * 1.5 * t) * 0.02
 
-            // Ganz am Anfang und Ende sanft ein- und ausblenden.
-            let fadeIn = min(1, t / 0.4)
-            let fadeOut = min(1, (duration - t) / 1.2)
+            // Weit auf- und abblenden, damit nichts einsetzt oder abbricht.
+            let fadeIn = min(1, t / 1.4)
+            let fadeOut = min(1, (duration - t) / 2.4)
             return sample * fadeIn * fadeOut
         }
     }
