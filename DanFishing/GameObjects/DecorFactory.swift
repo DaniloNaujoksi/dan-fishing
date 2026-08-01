@@ -5,6 +5,11 @@ import SpriteKit
 /// echte Sprites einzusetzen.
 enum DecorFactory {
 
+    /// Mittelpunkt zwischen zwei Punkten — für weiche geschlossene Kurven.
+    private static func midpoint(_ a: CGPoint, _ b: CGPoint) -> CGPoint {
+        CGPoint(x: (a.x + b.x) / 2, y: (a.y + b.y) / 2)
+    }
+
     static func node(for item: DecorItem) -> SKNode? {
         let node: SKNode?
 
@@ -152,21 +157,24 @@ enum DecorFactory {
             path.closeSubpath()
 
             shape.path = path
+            // Warmes, leicht rötliches Grau statt Betongrau, und die Kontur
+            // nur angedeutet: Ein kräftiger Rand ließ die Steine wie
+            // aufgeklebte Formen aussehen.
             shape.fillColor = index == 0
-                ? Palette.stone.skColor
-                : ColorSpec(0x9C988D).skColor
-            shape.strokeColor = ColorSpec(0x625E56).skColor(alpha: 0.85)
-            shape.lineWidth = 1.6
+                ? ColorSpec(0x9B9388).skColor
+                : ColorSpec(0xADA79B).skColor
+            shape.strokeColor = ColorSpec(0x726A5F).skColor(alpha: 0.45)
+            shape.lineWidth = 1.0
             node.addChild(shape)
 
-            // Lichtkante oben links — die Sonne steht im Spiel oben.
-            let highlight = SKShapeNode(ellipseOf: CGSize(width: stone.size * 0.9,
-                                                          height: stone.size * 0.45))
-            highlight.fillColor = SKColor(white: 1, alpha: 0.22)
-            highlight.strokeColor = .clear
-            highlight.position = CGPoint(x: -stone.size * 0.18, y: stone.size * 0.26)
-            highlight.zRotation = -0.25
-            node.addChild(highlight)
+            // Die sonnenabgewandte Hälfte etwas dunkler — das gibt Rundung,
+            // ohne dass ein heller Fleck aufgesetzt wirkt.
+            let shading = SKShapeNode(path: path)
+            shading.fillColor = ColorSpec(0x6E675D).skColor(alpha: 0.3)
+            shading.strokeColor = .clear
+            shading.position = CGPoint(x: stone.size * 0.16, y: -stone.size * 0.16)
+            shading.setScale(0.82)
+            node.addChild(shading)
 
             // Moos an der Nordseite, nur beim größten Stein.
             if index == 0 && variant > 0.35 {
@@ -252,56 +260,71 @@ enum DecorFactory {
         trunk.lineCap = .round
         group.addChild(trunk)
 
-        let base = maple ? ColorSpec(0x9E3F2A) : ColorSpec(0x33492F)
+        let base = maple ? ColorSpec(0x8E3A28) : ColorSpec(0x2F4630)
         let mid = maple ? Palette.maple : Palette.pine
-        let light = maple ? ColorSpec(0xE0764A) : ColorSpec(0x6F8B5A)
+        let light = maple ? ColorSpec(0xD46E45) : ColorSpec(0x6B8757)
 
-        // Lage 1: breite dunkle Grundmasse.
-        for index in 0..<6 {
-            let angle = CGFloat(index) / 6 * .pi * 2 + variant * 4
-            let blob = SKShapeNode(circleOfRadius: (19 + variant * 5) * scale)
-            blob.fillColor = base.skColor
-            blob.strokeColor = .clear
-            blob.position = CGPoint(x: cos(angle) * 18 * scale,
-                                    y: sin(angle) * 13 * scale + 26 * scale)
-            blob.zPosition = 1
-            group.addChild(blob)
+        /// Geschlossene, unregelmäßige Kronenform.
+        ///
+        /// Aus Kreisen zusammengesetzte Kronen bekommen zwangsläufig eine
+        /// Kontur aus Bögen und Knubbeln. Eine einzige weiche Kurve mit
+        /// ungleichen Radien wirkt dagegen wie eine gewachsene Baumkrone.
+        func crownPath(radius: CGFloat, seed: CGFloat, squash: CGFloat = 0.74) -> CGPath {
+            let path = CGMutablePath()
+            let steps = 18
+            var points: [CGPoint] = []
+
+            for step in 0..<steps {
+                let angle = CGFloat(step) / CGFloat(steps) * .pi * 2
+                // Drei überlagerte Wellen ergeben eine Kontur, die nirgends
+                // regelmäßig wirkt.
+                let wobble = 1
+                    + sin(angle * 3 + seed) * 0.12
+                    + sin(angle * 5 - seed * 1.7) * 0.07
+                    + sin(angle * 2 + seed * 0.6) * 0.05
+                points.append(CGPoint(x: cos(angle) * radius * wobble,
+                                      y: sin(angle) * radius * wobble * squash))
+            }
+
+            // Durch die Punkte eine geschlossene weiche Kurve legen.
+            path.move(to: midpoint(points[points.count - 1], points[0]))
+            for index in 0..<points.count {
+                let current = points[index]
+                let next = points[(index + 1) % points.count]
+                path.addQuadCurve(to: midpoint(current, next), control: current)
+            }
+            path.closeSubpath()
+            return path
         }
 
-        // Lage 2: mittlere Tupfen, etwas nach oben versetzt.
-        for index in 0..<5 {
-            let angle = CGFloat(index) / 5 * .pi * 2 + variant * 2.2
-            let blob = SKShapeNode(circleOfRadius: (14 + variant * 4) * scale)
-            blob.fillColor = mid.skColor
-            blob.strokeColor = .clear
-            blob.position = CGPoint(x: cos(angle) * 13 * scale,
-                                    y: sin(angle) * 9 * scale + 31 * scale)
-            blob.zPosition = 2
-            group.addChild(blob)
-        }
+        // Lage 1: die Grundmasse, dunkel und am breitesten.
+        let outer = SKShapeNode(path: crownPath(radius: 34 * scale, seed: variant * 6))
+        outer.fillColor = base.skColor
+        outer.strokeColor = base.skColor
+        outer.lineWidth = 2
+        outer.position = CGPoint(x: 0, y: 27 * scale)
+        outer.zPosition = 1
+        group.addChild(outer)
 
-        // Lage 3: Lichter dort, wo die Sonne hinfällt.
+        // Lage 2: mittlerer Ton, nach oben links versetzt — dorthin fällt das Licht.
+        let middle = SKShapeNode(path: crownPath(radius: 26 * scale, seed: variant * 6 + 2.1))
+        middle.fillColor = mid.skColor
+        middle.strokeColor = .clear
+        middle.position = CGPoint(x: -4 * scale, y: 32 * scale)
+        middle.zPosition = 2
+        group.addChild(middle)
+
+        // Lage 3: kleine Lichtinseln im oberen Drittel.
         for index in 0..<3 {
-            let blob = SKShapeNode(circleOfRadius: (8 + variant * 3) * scale)
-            blob.fillColor = light.skColor(alpha: 0.9)
-            blob.strokeColor = .clear
-            blob.position = CGPoint(x: (-9 + CGFloat(index) * 9) * scale,
-                                    y: (38 + CGFloat(index % 2) * 6) * scale)
-            blob.zPosition = 3
-            group.addChild(blob)
-        }
-
-        // Einzelne Blätter am Rand lösen die Kontur auf.
-        for index in 0..<7 {
-            let angle = CGFloat(index) / 7 * .pi * 2 + variant
-            let leaf = SKShapeNode(ellipseOf: CGSize(width: 7 * scale, height: 5 * scale))
-            leaf.fillColor = (maple ? light : mid).skColor(alpha: 0.85)
-            leaf.strokeColor = .clear
-            leaf.position = CGPoint(x: cos(angle) * 32 * scale,
-                                    y: sin(angle) * 22 * scale + 28 * scale)
-            leaf.zRotation = angle
-            leaf.zPosition = 4
-            group.addChild(leaf)
+            let patch = SKShapeNode(path: crownPath(radius: (9 + variant * 4) * scale,
+                                                    seed: variant * 3 + CGFloat(index) * 1.9,
+                                                    squash: 0.85))
+            patch.fillColor = light.skColor(alpha: 0.85)
+            patch.strokeColor = .clear
+            patch.position = CGPoint(x: (-11 + CGFloat(index) * 11) * scale,
+                                     y: (38 + CGFloat(index % 2) * 5) * scale)
+            patch.zPosition = 3
+            group.addChild(patch)
         }
 
         // Der ganze Baum wiegt sich im Wind, jeder mit eigenem Takt.
