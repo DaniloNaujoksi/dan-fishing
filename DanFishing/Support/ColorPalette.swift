@@ -53,6 +53,7 @@ extension Rarity {
         case .rare: return Palette.water.swiftUIColor
         case .veryRare: return Palette.vermilion.swiftUIColor
         case .legendary: return Palette.gold.swiftUIColor
+        case .monster: return ColorSpec(0xA8382C).swiftUIColor
         }
     }
 }

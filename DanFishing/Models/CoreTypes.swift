@@ -7,6 +7,9 @@ enum Rarity: String, Codable, CaseIterable, Comparable {
     case rare
     case veryRare
     case legendary
+    /// Eine Stufe über legendär: Fische, von denen es im ganzen See vielleicht
+    /// einen gibt. Sie sind das Fernziel, nicht der nächste Fang.
+    case monster
 
     var displayName: String {
         switch self {
@@ -15,6 +18,7 @@ enum Rarity: String, Codable, CaseIterable, Comparable {
         case .rare: return "Selten"
         case .veryRare: return "Sehr selten"
         case .legendary: return "Legendär"
+        case .monster: return "Legendärer Monsterfisch"
         }
     }
 
@@ -26,6 +30,7 @@ enum Rarity: String, Codable, CaseIterable, Comparable {
         case .rare: return 0.22
         case .veryRare: return 0.08
         case .legendary: return 0.02
+        case .monster: return 0.004
         }
     }
 
@@ -37,6 +42,7 @@ enum Rarity: String, Codable, CaseIterable, Comparable {
         case .rare: return 2.1
         case .veryRare: return 3.4
         case .legendary: return 6.0
+        case .monster: return 11.0
         }
     }
 
@@ -47,6 +53,7 @@ enum Rarity: String, Codable, CaseIterable, Comparable {
         case .rare: return 2
         case .veryRare: return 3
         case .legendary: return 4
+        case .monster: return 5
         }
     }
 

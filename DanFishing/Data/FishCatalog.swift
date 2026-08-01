@@ -247,6 +247,24 @@ enum FishCatalog {
         ),
 
         FishSpecies(
+            id: "beluga",
+            name: "Hausen",
+            summary: "Der größte Süßwasserfisch überhaupt. Panzerplatten, mächtige Schwanzflosse, Barteln wie Taue. Alte Angler behaupten, er sei älter als der See selbst.",
+            rarity: .monster,
+            feeding: .omnivore,
+            minLength: 100, maxLength: 450,
+            minWeight: 25.0, maxWeight: 320.0,
+            habitats: [.deep],
+            activeTimes: [.night, .dawn],
+            preferredBaitIDs: ["wormbundle", "minnow", "moonbait"],
+            fightStrength: 1.0,
+            motion: .diving,
+            valuePerKilo: 240,
+            minPlayerLevel: 10,
+            bodyColor: ColorSpec(0x6E6A52), bellyColor: ColorSpec(0xD2CBA8), finColor: ColorSpec(0x565241)
+        ),
+
+        FishSpecies(
             id: "grayling",
             name: "Äsche",
             summary: "Schlanke Schönheit mit großer gefleckter Rückenfahne. Steht in der Strömung des Zuflusses und nimmt fast nur Insekten.",
