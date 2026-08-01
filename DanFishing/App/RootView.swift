@@ -7,6 +7,9 @@ struct RootView: View {
     var body: some View {
         ZStack {
             switch session.screen {
+            case .intro:
+                IntroView()
+                    .transition(.opacity)
             case .menu:
                 MainMenuView()
                     .transition(.opacity)

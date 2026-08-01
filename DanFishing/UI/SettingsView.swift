@@ -51,6 +51,13 @@ struct SettingsView: View {
                                     .foregroundStyle(Palette.inkSoft.swiftUIColor)
                                     .fixedSize(horizontal: false, vertical: true)
 
+                                Button("Vorspann noch einmal ansehen") {
+                                    dismiss()
+                                    session.replayIntro()
+                                }
+                                .buttonStyle(BrushButtonStyle(tint: Palette.inkSoft.swiftUIColor,
+                                                              filled: false))
+
                                 Button("Spielstand löschen") {
                                     confirmReset = true
                                 }

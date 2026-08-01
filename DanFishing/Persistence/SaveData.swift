@@ -57,6 +57,11 @@ struct SaveData: Codable, Equatable {
 
     var totalCatches: Int = 0
     var totalReleased: Int = 0
+
+    /// Wurde das Tutorial schon einmal durchlaufen?
+    var tutorialDone: Bool = false
+    /// Wurde der Vorspann schon gezeigt?
+    var introSeen: Bool = false
     var settings = GameSettings()
     var lastPlayed: Date = Date()
 

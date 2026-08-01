@@ -43,6 +43,10 @@ struct GameView: View {
                         .transition(.scale(scale: 0.92).combined(with: .opacity))
                 }
 
+                if let step = session.tutorialStep, session.pendingCatch == nil {
+                    TutorialOverlay(step: step) { session.skipTutorial() }
+                }
+
                 if let toast = session.toast {
                     toastView(toast)
                         .padding(.bottom, 220)
@@ -56,6 +60,7 @@ struct GameView: View {
             }
             .animation(.easeInOut(duration: 0.25), value: session.miniGame == nil)
             .animation(.easeOut(duration: 0.25), value: session.pendingCatch)
+            .animation(.easeInOut(duration: 0.3), value: session.tutorialStep)
         }
         .sheet(isPresented: $showBaitBox) { BaitBoxView() }
         .sheet(isPresented: $showCodex) { CodexView() }
@@ -135,6 +140,9 @@ struct GameView: View {
         HStack(alignment: .bottom) {
             JoystickView { vector in
                 session.joystick = vector
+                if hypot(vector.dx, vector.dy) > 0.4 {
+                    session.reportTutorial(.boatMoved)
+                }
             }
 
             Spacer()

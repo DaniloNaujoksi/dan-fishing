@@ -35,11 +35,26 @@ final class GameSession: ObservableObject {
     // MARK: - Bildschirme
 
     enum Screen: Equatable {
+        case intro
         case menu
         case playing
     }
 
     @Published var screen: Screen = .menu
+
+    /// Vorspann beendet oder übersprungen.
+    func finishIntro() {
+        if !save.introSeen {
+            save.introSeen = true
+            persist()
+        }
+        screen = .menu
+    }
+
+    /// Vorspann noch einmal ansehen.
+    func replayIntro() {
+        screen = .intro
+    }
 
     // MARK: - Spielstand
 
@@ -70,6 +85,8 @@ final class GameSession: ObservableObject {
 
     @Published private(set) var miniGame: MiniGameSnapshot?
     @Published private(set) var pendingCatch: CatchResult?
+    /// Aktueller Tutorialschritt, oder nil wenn keiner läuft.
+    @Published private(set) var tutorialStep: TutorialStep?
     @Published private(set) var completedMissions: [Mission] = []
     @Published private(set) var toast: GameToast?
 
@@ -87,6 +104,7 @@ final class GameSession: ObservableObject {
     private var fight: CatchMiniGame?
     private var toastTimer: Timer?
     private var lastReelTick: Double = 0
+    private var tutorial = TutorialSystem(active: false)
 
     init(saveManager: SaveGameManager = .shared) {
         self.saveManager = saveManager
@@ -96,11 +114,19 @@ final class GameSession: ObservableObject {
         refreshMissions()
         applySettingsToManagers()
 
+        // Beim allerersten Start läuft der Vorspann.
+        if !loaded.introSeen {
+            screen = .intro
+        }
+
         // Startschalter für automatisierte Läufe: Damit springt die App am
         // Menü vorbei direkt auf den See, sodass die Szene selbst geprüft
         // werden kann. Im normalen Betrieb ist das Argument nie gesetzt.
-        if ProcessInfo.processInfo.arguments.contains("-autostart") {
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-autostart") {
             screen = .playing
+        } else if arguments.contains("-showIntro") {
+            screen = .intro
         }
     }
 
@@ -115,6 +141,7 @@ final class GameSession: ObservableObject {
         }
         refreshMissions()
         applySettingsToManagers()
+        startTutorialIfNeeded()
         screen = .playing
     }
 
@@ -124,7 +151,45 @@ final class GameSession: ObservableObject {
         saveManager.save(save)
         refreshMissions()
         applySettingsToManagers()
+        startTutorialIfNeeded()
         screen = .playing
+    }
+
+    // MARK: - Tutorial
+
+    private func startTutorialIfNeeded() {
+        tutorial = TutorialSystem(active: !save.tutorialDone)
+        tutorialStep = tutorial.step
+    }
+
+    /// Wird aus der Spielschleife aufgerufen.
+    func updateTutorial(deltaTime: TimeInterval) {
+        guard tutorial.isRunning else { return }
+        tutorial.update(deltaTime: deltaTime)
+        syncTutorial()
+    }
+
+    func reportTutorial(_ trigger: TutorialTrigger) {
+        guard tutorial.isRunning else { return }
+        tutorial.report(trigger)
+        syncTutorial()
+    }
+
+    func skipTutorial() {
+        tutorial.skip()
+        syncTutorial()
+    }
+
+    private func syncTutorial() {
+        if tutorialStep != tutorial.step {
+            tutorialStep = tutorial.step
+
+            // Durchgelaufen: nicht noch einmal zeigen.
+            if tutorial.step == nil && !save.tutorialDone {
+                save.tutorialDone = true
+                persist()
+            }
+        }
     }
 
     func returnToMenu() {
@@ -257,6 +322,7 @@ final class GameSession: ObservableObject {
         switch event {
         case .castLanded:
             AudioManager.shared.play(.splash)
+            reportTutorial(.castLanded)
         case .castFailed:
             showToast("Da ist Land — flacher werfen.")
             HapticManager.shared.failure()
@@ -266,12 +332,14 @@ final class GameSession: ObservableObject {
         case .bite:
             AudioManager.shared.play(.bite)
             HapticManager.shared.bite()
+            reportTutorial(.bite)
         case .missedStrike:
             showToast("Zu spät — der Köder ist weg.")
         case .slippedOff:
             showToast("Der Haken hat nicht gefasst.")
             HapticManager.shared.failure()
         case .hooked(let fish):
+            reportTutorial(.hooked)
             beginFight(with: fish)
         case .reeledIn:
             break
@@ -336,6 +404,7 @@ final class GameSession: ObservableObject {
         fight = nil
         miniGame = nil
         isReeling = false
+        reportTutorial(landed ? .fishLanded : .lineLost)
 
         guard landed else { return }
 

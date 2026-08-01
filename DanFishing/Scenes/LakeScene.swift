@@ -293,6 +293,7 @@ final class LakeScene: SKScene {
         let dt = CGFloat(delta)
 
         dayNight.update(deltaTime: delta)
+        session.updateTutorial(deltaTime: delta)
         updateBoat(dt: dt)
         updateFishing(delta: delta)
         updateFish(dt: dt)
@@ -403,6 +404,12 @@ final class LakeScene: SKScene {
                                       lure: lure,
                                       interest: interest,
                                       biteAllowed: biteAllowed)
+
+            // Fürs Tutorial: Sobald der erste Fisch den Köder prüft, wird der
+            // Spieler darauf hingewiesen.
+            if node.swimmer.behaviour == .inspect {
+                session.reportTutorial(.fishInspecting)
+            }
 
             switch outcome {
             case .nibbled:

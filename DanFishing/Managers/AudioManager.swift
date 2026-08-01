@@ -34,6 +34,7 @@ final class AudioManager {
     private var effectBuffers: [String: AVAudioPCMBuffer] = [:]
     private var ambienceBuffer: AVAudioPCMBuffer?
     private var noteBuffers: [AVAudioPCMBuffer] = []
+    private var introBuffer: AVAudioPCMBuffer?
 
     private var musicTimer: Timer?
     private var isRunning = false
@@ -265,6 +266,103 @@ final class AudioManager {
                                 generator: (Double, Double) -> Double) {
         guard let buffer = makeBuffer(duration: duration, generator: generator) else { return }
         effectBuffers[key] = buffer
+    }
+
+    // MARK: - Vorspannmusik
+
+    /// Rechteckwelle mit einstellbarem Tastverhältnis — der Grundklang alter
+    /// Handheld-Konsolen. Zwei Kanäle Melodie plus ein Basskanal reichen, um
+    /// den Charakter zu treffen.
+    private static func square(_ frequency: Double, _ t: Double, duty: Double = 0.5) -> Double {
+        guard frequency > 0 else { return 0 }
+        let phase = (t * frequency).truncatingRemainder(dividingBy: 1)
+        return phase < duty ? 1 : -1
+    }
+
+    /// Spielt das Titelstück des Vorspanns.
+    ///
+    /// Das Stück wird beim ersten Aufruf einmal berechnet und liegt danach
+    /// fertig im Speicher. Es ist eine eigene, hier komponierte Melodie in
+    /// D-Dur — keine Anleihe bei bestehenden Stücken.
+    func playIntroTheme() {
+        guard isRunning, musicEnabled else { return }
+
+        if introBuffer == nil {
+            introBuffer = makeIntroTheme()
+        }
+        guard let buffer = introBuffer else { return }
+
+        musicTimer?.invalidate()
+        musicTimer = nil
+
+        musicPlayer.stop()
+        musicPlayer.scheduleBuffer(buffer, at: nil, options: .interrupts, completionHandler: nil)
+        musicPlayer.volume = musicEnabled ? 0.55 : 0
+        musicPlayer.play()
+    }
+
+    /// Beendet die Vorspannmusik und schaltet zurück auf die ruhige Kulisse.
+    func stopIntroTheme() {
+        musicPlayer.stop()
+        startMusicLoop()
+    }
+
+    private func makeIntroTheme() -> AVAudioPCMBuffer? {
+        // Halbtonschritte über dem Grundton D3 (146.83 Hz).
+        func note(_ semitones: Int) -> Double {
+            146.83 * pow(2.0, Double(semitones) / 12.0)
+        }
+
+        // Melodie: (Halbton über D, Startzeit, Dauer). Ruhig, aufsteigend,
+        // mit einer kleinen Schlusswendung — passend zum Sonnenaufgang.
+        let melody: [(Int, Double, Double)] = [
+            (14, 0.00, 0.55), (16, 0.55, 0.55), (19, 1.10, 0.80),
+            (21, 1.90, 0.55), (19, 2.45, 0.55), (16, 3.00, 0.80),
+            (14, 3.80, 0.55), (16, 4.35, 0.55), (19, 4.90, 0.55),
+            (23, 5.45, 1.20), (21, 6.65, 0.60), (19, 7.25, 1.60)
+        ]
+
+        // Begleitung eine Oktave darunter, in ruhigen Vierteln.
+        let bass: [(Int, Double, Double)] = [
+            (2, 0.00, 1.10), (7, 1.10, 1.10), (9, 2.20, 1.10), (7, 3.30, 1.10),
+            (2, 4.40, 1.10), (7, 5.50, 1.10), (9, 6.60, 1.10), (2, 7.70, 1.15)
+        ]
+
+        let duration = 9.2
+
+        return makeBuffer(duration: duration) { t, _ in
+            var sample = 0.0
+
+            for (semitone, start, length) in melody where t >= start && t < start + length {
+                let local = t - start
+                // Kurzer Anschlag, gehaltener Ton, weiches Ende.
+                let attack = min(1, local / 0.015)
+                let release = min(1, (start + length - t) / 0.12)
+                // Leichtes Vibrato ab der Tonmitte — typisch für die Chips.
+                let vibrato = 1 + sin(local * 34) * 0.004 * min(1, local / 0.25)
+                sample += AudioManager.square(note(semitone) * 2 * vibrato, t, duty: 0.5)
+                    * attack * release * 0.16
+            }
+
+            for (semitone, start, length) in bass where t >= start && t < start + length {
+                let local = t - start
+                let attack = min(1, local / 0.01)
+                let release = min(1, (start + length - t) / 0.1)
+                sample += AudioManager.square(note(semitone), t, duty: 0.25)
+                    * attack * release * 0.11
+            }
+
+            // Arpeggio-Flimmern im Hintergrund: drei Töne im Wechsel, wie es
+            // die alten Chips gemacht haben, um Akkorde vorzutäuschen.
+            let arpeggioStep = Int((t * 24).truncatingRemainder(dividingBy: 3))
+            let arpeggioNotes = [14, 18, 21]
+            sample += AudioManager.square(note(arpeggioNotes[arpeggioStep]) * 2, t, duty: 0.125) * 0.035
+
+            // Ganz am Anfang und Ende sanft ein- und ausblenden.
+            let fadeIn = min(1, t / 0.4)
+            let fadeOut = min(1, (duration - t) / 1.2)
+            return sample * fadeIn * fadeOut
+        }
     }
 
     /// Erzeugt einen Mono-Puffer. `generator` bekommt die Zeit in Sekunden und
