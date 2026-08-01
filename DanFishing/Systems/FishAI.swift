@@ -247,7 +247,7 @@ struct FishAI {
     }
 
     private static func turn(from current: CGFloat, to target: CGFloat, maxStep: CGFloat) -> CGFloat {
-        BoatController.turn(from: current, to: target, maxStep: maxStep)
+        MovementController.turn(from: current, to: target, maxStep: maxStep)
     }
 
     /// Sucht eine Startposition in einer Zone. Gibt nil zurück, wenn die Zone

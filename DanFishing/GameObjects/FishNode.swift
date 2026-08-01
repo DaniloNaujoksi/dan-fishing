@@ -77,7 +77,7 @@ final class FishNode: SKNode {
                                     biteAllowed: biteAllowed)
 
         position = swimmer.position
-        zRotation = BoatController.turn(from: zRotation, to: swimmer.heading, maxStep: deltaTime * 3)
+        zRotation = MovementController.turn(from: zRotation, to: swimmer.heading, maxStep: deltaTime * 3)
 
         // Schwanzschlag: schneller, je eiliger der Fisch unterwegs ist.
         let effort: CGFloat = (swimmer.behaviour == .spooked || swimmer.behaviour == .retreat) ? 2.2 : 1.0

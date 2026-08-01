@@ -2,7 +2,7 @@ import SpriteKit
 
 /// Ruderboot mit Angler, aus Formen gezeichnet. Die Ruder bewegen sich nur,
 /// wenn wirklich gerudert wird — das gibt der Fahrt Gewicht.
-final class BoatNode: SKNode {
+final class BoatNode: SKNode, ActorNode {
 
     private let hull = SKShapeNode()
     private let hullInner = SKShapeNode()
@@ -274,8 +274,8 @@ final class BoatNode: SKNode {
         ])))
     }
 
-    /// Wird jeden Frame aufgerufen.
-    func update(deltaTime: CGFloat, rowing: CGFloat, speed: CGFloat) {
+    /// Wird jeden Frame aufgerufen. `effort` ist hier die Ruderkraft.
+    func update(deltaTime: CGFloat, effort rowing: CGFloat, speed: CGFloat) {
         idlePhase += deltaTime
 
         // Ruderschlag: Die Blätter fahren nach vorn, tauchen ein und ziehen
@@ -319,7 +319,7 @@ final class BoatNode: SKNode {
     /// Wichtig ist das Nachführen nach dem Wurf: Sonst schnappt die Rute in
     /// ihre Ruhelage zurück und zeigt plötzlich auf die andere Seite des
     /// Bootes, während die Schnur nach vorn läuft.
-    func setCastPose(_ power: CGFloat?, direction: CGVector?, boatHeading: CGFloat) {
+    func setCastPose(_ power: CGFloat?, direction: CGVector?, heading boatHeading: CGFloat) {
         let target: CGFloat
 
         if let direction, hypot(direction.dx, direction.dy) > 0.001 {
@@ -331,6 +331,6 @@ final class BoatNode: SKNode {
             target = 0.5   // Ruhestellung, schräg nach vorn
         }
 
-        rod.zRotation += BoatController.angleDifference(rod.zRotation, target) * 0.35
+        rod.zRotation += MovementController.angleDifference(rod.zRotation, target) * 0.35
     }
 }

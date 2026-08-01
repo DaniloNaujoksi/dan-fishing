@@ -95,6 +95,11 @@ struct WaterSelectionView: View {
                                      value: "bis \(Int(biggest.maxLength)) cm",
                                      tint: biggest.rarity.tint)
                         }
+
+                        // Am Bach gibt es kein Boot — das gehört vor die Anreise.
+                        if water.movement == .wading {
+                            StatChip(symbol: "figure.walk", value: "zu Fuß")
+                        }
                     }
                 }
             }

@@ -1,7 +1,7 @@
 import SpriteKit
 
 /// Die Spielszene. Sie hält die Schleife zusammen und zeichnet — gerechnet wird
-/// in den Systemen (`BoatController`, `FishingSystem`, `FishAI`, `DayNightSystem`).
+/// in den Systemen (`MovementController`, `FishingSystem`, `FishAI`, `DayNightSystem`).
 ///
 /// Aufbau der Ebenen von hinten nach vorn:
 /// Wasser → Bodenzonen → Kulisse unter Wasser → Fische → Boot und Schnur →
@@ -17,7 +17,7 @@ final class LakeScene: SKScene {
 
     // MARK: - Systeme
 
-    private var boat: BoatController
+    private var player: MovementController
     private let fishing = FishingSystem()
     private var dayNight = DayNightSystem()
 
@@ -37,7 +37,10 @@ final class LakeScene: SKScene {
     private let weatherLayer = SKNode()
     private let cameraNode = SKCameraNode()
 
-    private let boatNode = BoatNode()
+    /// Boot oder Angler zu Fuß — das Gewässer entscheidet.
+    private let actorNode: ActorNode
+    /// Der Angler zu Fuß, falls dieses Gewässer ohne Boot gefischt wird.
+    private var anglerNode: AnglerNode? { actorNode as? AnglerNode }
     private let bobber = BobberNode()
     private let line = FishingLineNode()
     private let aimPreview = AimPreviewNode()
@@ -61,10 +64,29 @@ final class LakeScene: SKScene {
 
     init(size: CGSize, session: GameSession) {
         self.session = session
-        self.water = session.currentWater
-        self.map = LakeMap.generate(for: session.currentWater)
-        let start = session.storedBoatPosition ?? map.startPosition
-        self.boat = BoatController(position: map.nearestWater(from: start))
+        let water = session.currentWater
+        let map = LakeMap.generate(for: water)
+        self.water = water
+        self.map = map
+
+        let stored = session.storedBoatPosition ?? map.startPosition
+        var controller = MovementController(position: stored)
+
+        switch water.movement {
+        case .boat:
+            controller.place(at: map.nearestWater(from: stored))
+            self.actorNode = BoatNode()
+        case .wading:
+            // Zu Fuß gelten umgekehrte Regeln, deshalb wird der Startplatz
+            // erst gesucht, wenn die Bewegungsart feststeht.
+            controller.mode = .wading(maxDepth: session.stats.wadingDepth)
+            controller.place(at: LakeScene.freeSpot(near: stored,
+                                                    controller: controller,
+                                                    map: map))
+            self.actorNode = AnglerNode()
+        }
+
+        self.player = controller
         super.init(size: size)
 
         scaleMode = .resizeFill
@@ -73,6 +95,28 @@ final class LakeScene: SKScene {
 
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) wird nicht verwendet")
+    }
+
+    /// Sucht spiralförmig einen Punkt, an dem die Figur stehen darf.
+    ///
+    /// Nötig, weil ein gespeicherter Platz nach dem Kauf einer Wathose noch
+    /// passen kann, ohne sie aber mitten im Wasser läge.
+    private static func freeSpot(near point: CGPoint,
+                                 controller: MovementController,
+                                 map: LakeMap) -> CGPoint {
+        if !controller.isBlocked(point, map: map) { return point }
+
+        var radius = map.cellSize
+        while radius <= map.cellSize * 12 {
+            for step in 0..<24 {
+                let angle = CGFloat(step) / 24 * .pi * 2
+                let probe = CGPoint(x: point.x + cos(angle) * radius,
+                                    y: point.y + sin(angle) * radius)
+                if !controller.isBlocked(probe, map: map) { return probe }
+            }
+            radius += map.cellSize
+        }
+        return map.startPosition
     }
 
     override func didMove(to view: SKView) {
@@ -112,7 +156,7 @@ final class LakeScene: SKScene {
 
         camera = cameraNode
         addChild(cameraNode)
-        cameraNode.position = boat.position
+        cameraNode.position = player.position
         // Etwas herausgezoomt: Man soll die nächste Schilfkante und das
         // Seerosenfeld sehen, ohne erst hinrudern zu müssen.
         cameraNode.setScale(1.35)
@@ -280,9 +324,9 @@ final class LakeScene: SKScene {
     }
 
     private func buildActors() {
-        boatNode.position = boat.position
-        boatNode.zRotation = boat.heading
-        actorLayer.addChild(boatNode)
+        actorNode.position = player.position
+        actorNode.zRotation = player.heading
+        actorLayer.addChild(actorNode)
 
         // Schnur und Köder liegen zusammen über dem Boot. Innerhalb der Ebene
         // gilt: Schnur unten, Köder darüber.
@@ -338,14 +382,18 @@ final class LakeScene: SKScene {
         // erste Blick auf den See leer, und der Spieler weiß nicht, worauf er
         // achten soll.
         for habitat in Habitat.allCases {
-            addFish(in: habitat, count: 4, near: boat.position, radius: 1100)
+            addFish(in: habitat, count: 4, near: player.position, radius: 1100)
         }
     }
 
     private func addFish(in habitat: Habitat, count: Int, near point: CGPoint?, radius: CGFloat) {
         // Nur Arten, die es in diesem Gewässer gibt — im Teich schwimmt kein
         // Stör herum, auch nicht als Kulisse.
-        let candidates = water.species.filter { $0.habitats.contains(habitat) }
+        // Auch die Kulisse folgt der Uhr: Nachts stehen die Räuber sichtbar im
+        // Flachen, tagsüber sieht man dort nur Weißfisch.
+        let candidates = water.species.filter {
+            $0.habitats(at: dayNight.phase).contains(habitat)
+        }
         guard !candidates.isEmpty else { return }
 
         for _ in 0..<count {
@@ -378,11 +426,12 @@ final class LakeScene: SKScene {
     // MARK: - Eingaben
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        // Antippen des Wassers: das Boot rudert selbstständig dorthin.
+        // Antippen: die Figur geht selbstständig dorthin. Was erreichbar ist,
+        // hängt an der Bewegungsart — im Boot Wasser, zu Fuß Ufer und Flachwasser.
         guard session.miniGame == nil, let touch = touches.first else { return }
         let point = touch.location(in: worldNode)
-        guard !map.isLand(at: point) else { return }
-        boat.setAutoTarget(point)
+        guard !player.isBlocked(point, map: map) else { return }
+        player.setAutoTarget(point)
     }
 
     // MARK: - Schleife
@@ -394,7 +443,7 @@ final class LakeScene: SKScene {
 
         dayNight.update(deltaTime: delta)
         session.updateTutorial(deltaTime: delta)
-        updateBoat(dt: dt)
+        updateMovement(dt: dt)
         updateFishing(delta: delta)
         updateFish(dt: dt)
         updateCamera(dt: dt)
@@ -403,22 +452,27 @@ final class LakeScene: SKScene {
         publishEnvironment()
     }
 
-    private func updateBoat(dt: CGFloat) {
-        // Während des Drills bleibt das Boot stehen — sonst kämpft man gegen
+    private func updateMovement(dt: CGFloat) {
+        // Während des Drills bleibt die Figur stehen — sonst kämpft man gegen
         // zwei Dinge gleichzeitig.
         let input = session.miniGame == nil ? session.joystick : .zero
 
+        // Eine neu gekaufte Wathose wirkt sofort, ohne Neustart der Szene.
+        if water.movement == .wading {
+            player.mode = .wading(maxDepth: session.stats.wadingDepth)
+        }
+
         if let target = session.tapTarget {
-            boat.setAutoTarget(target)
+            player.setAutoTarget(target)
             session.tapTarget = nil
         }
 
-        boat.update(deltaTime: dt, input: input, stats: session.stats, map: map)
+        player.update(deltaTime: dt, input: input, stats: session.stats, map: map)
 
         // Liegt der Köder im Wasser, hängt das Boot an der Schnur.
         if let anchor = fishing.bobberPosition, fishing.phase != .flying {
             let maxLength = CGFloat(session.stats.castRange) * 1.2 + 140
-            lineTension = boat.applyLineTether(anchor: anchor,
+            lineTension = player.applyLineTether(anchor: anchor,
                                                maxLength: maxLength,
                                                deltaTime: dt)
 
@@ -438,23 +492,30 @@ final class LakeScene: SKScene {
             wasLineTaut = false
         }
 
-        boatNode.position = boat.position
-        boatNode.zRotation = boat.heading
-        boatNode.update(deltaTime: dt, rowing: boat.rowingIntensity, speed: boat.speed)
-        boatNode.applyUpgrade(level: session.save.upgradeLevels["boat"] ?? 0)
+        actorNode.position = player.position
+        actorNode.zRotation = player.heading
+        actorNode.update(deltaTime: dt, effort: player.rowingIntensity, speed: player.speed)
 
-        // Kielwasser: je schneller, desto dichter die Ringe.
-        if boat.speed > 25 {
-            wakeTimer -= dt * (0.6 + boat.speed / 90)
+        // Sichtbare Ausrüstung: am See der Bootsausbau, am Bach die Wathose.
+        let upgradeID = water.movement == .wading ? "waders" : "boat"
+        actorNode.applyUpgrade(level: session.save.upgradeLevels[upgradeID] ?? 0)
+
+        // Zu Fuß entscheidet der Untergrund, ob er geht oder watet.
+        anglerNode?.isWading = player.isInWater(map: map)
+
+        // Kielwasser: je schneller, desto dichter die Ringe. Zu Fuß gibt es
+        // stattdessen Spritzer direkt an der Figur.
+        if water.movement == .boat, player.speed > 25 {
+            wakeTimer -= dt * (0.6 + player.speed / 90)
             if wakeTimer <= 0 {
                 wakeTimer = 0.4
-                ambience?.spawnWake(at: boat.position,
-                                    heading: boat.heading,
-                                    strength: min(1, boat.speed / 120))
+                ambience?.spawnWake(at: player.position,
+                                    heading: player.heading,
+                                    strength: min(1, player.speed / 120))
             }
         }
 
-        session.rememberBoatPosition(boat.position)
+        session.rememberBoatPosition(player.position)
     }
 
     private func updateFishing(delta: TimeInterval) {
@@ -481,7 +542,7 @@ final class LakeScene: SKScene {
             // Im Drill zeigt die Schnur die Spannung des Fisches, sonst die
             // Straffung durch die Bootsfahrt.
             let tension = max(CGFloat(session.miniGame?.tension ?? 0), lineTension)
-            line.update(from: boatNode.rodTipPosition, to: position, tension: tension)
+            line.update(from: actorNode.rodTipPosition, to: position, tension: tension)
         } else {
             bobber.isHidden = true
             line.clear()
@@ -490,15 +551,15 @@ final class LakeScene: SKScene {
         // Die Rute zeigt beim Zielen in die Wurfrichtung und danach dorthin,
         // wo der Schwimmer liegt — sie folgt also immer der Schnur.
         if fishing.phase == .aiming {
-            boatNode.setCastPose(CGFloat(fishing.castPower),
+            actorNode.setCastPose(CGFloat(fishing.castPower),
                                  direction: fishing.aimDirection,
-                                 boatHeading: boat.heading)
+                                 heading: player.heading)
         } else if let bobberPosition = fishing.bobberPosition {
-            let toBobber = CGVector(dx: bobberPosition.x - boat.position.x,
-                                    dy: bobberPosition.y - boat.position.y)
-            boatNode.setCastPose(0, direction: toBobber, boatHeading: boat.heading)
+            let toBobber = CGVector(dx: bobberPosition.x - player.position.x,
+                                    dy: bobberPosition.y - player.position.y)
+            actorNode.setCastPose(0, direction: toBobber, heading: player.heading)
         } else {
-            boatNode.setCastPose(nil, direction: nil, boatHeading: boat.heading)
+            actorNode.setCastPose(nil, direction: nil, heading: player.heading)
         }
 
         // Drill weiterrechnen; endet er, wird die Angel eingeholt.
@@ -580,8 +641,8 @@ final class LakeScene: SKScene {
 
     private func updateCamera(dt: CGFloat) {
         // Die Kamera zieht weich nach und schaut leicht in Fahrtrichtung voraus.
-        let lead = CGPoint(x: boat.position.x + boat.velocity.dx * 0.35,
-                           y: boat.position.y + boat.velocity.dy * 0.35)
+        let lead = CGPoint(x: player.position.x + player.velocity.dx * 0.35,
+                           y: player.position.y + player.velocity.dy * 0.35)
         let smoothing = min(1, dt * 3.2)
         cameraNode.position = CGPoint(x: cameraNode.position.x + (lead.x - cameraNode.position.x) * smoothing,
                                       y: cameraNode.position.y + (lead.y - cameraNode.position.y) * smoothing)
@@ -664,13 +725,13 @@ final class LakeScene: SKScene {
         guard minimapTimer <= 0 else { return }
         minimapTimer = 0.15
 
-        session.updateMinimap(boat: boat.position,
-                              heading: boat.heading,
+        session.updateMinimap(boat: player.position,
+                              heading: player.heading,
                               lure: fishing.bobberPosition)
     }
 
     private func publishEnvironment() {
-        let point = fishing.bobberPosition ?? boat.position
+        let point = fishing.bobberPosition ?? player.position
         let habitat = map.habitat(at: point)
         let depth = map.depth(at: point)
 
@@ -689,7 +750,7 @@ final class LakeScene: SKScene {
     /// Bedingungen dort, wo der Köder liegt (oder wo das Boot steht, solange
     /// nicht geworfen wurde).
     private func fishingContext() -> BaitSystem.Context? {
-        let point = fishing.bobberPosition ?? boat.position
+        let point = fishing.bobberPosition ?? player.position
         guard let habitat = map.habitat(at: point) else { return nil }
         return BaitSystem.Context(habitat: habitat,
                                   timeOfDay: dayNight.phase,
@@ -727,7 +788,7 @@ final class LakeScene: SKScene {
 
         switch fishing.phase {
         case .idle:
-            fishing.beginAim(direction: CGVector(dx: cos(boat.heading), dy: sin(boat.heading)))
+            fishing.beginAim(direction: CGVector(dx: cos(player.heading), dy: sin(player.heading)))
             aimPreview.show()
             HapticManager.shared.selection()
         case .waiting, .nibble, .biteWindow:
@@ -757,7 +818,7 @@ final class LakeScene: SKScene {
     func releaseAim() {
         guard fishing.phase == .aiming else { return }
 
-        if fishing.releaseCast(from: boatNode.rodTipPosition,
+        if fishing.releaseCast(from: actorNode.rodTipPosition,
                                stats: session.stats,
                                map: map) != nil {
             AudioManager.shared.play(.cast)
@@ -783,7 +844,7 @@ final class LakeScene: SKScene {
             return
         }
 
-        let origin = boatNode.rodTipPosition
+        let origin = actorNode.rodTipPosition
         let target = fishing.previewTarget(from: origin, stats: session.stats)
         let landing = firstWaterPoint(from: origin, to: target)
 

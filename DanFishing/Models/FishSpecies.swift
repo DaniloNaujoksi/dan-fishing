@@ -22,6 +22,15 @@ struct FishSpecies: Identifiable, Equatable {
     let maxWeight: Double
 
     let habitats: [Habitat]
+
+    /// Zonen, in die die Art nachts zusätzlich zieht.
+    ///
+    /// Raubfische stehen tagsüber tief oder im Totholz und kommen im Dunkeln
+    /// zum Jagen ins Flache. Wer nachts am Schilfrand wirft, fängt deshalb
+    /// Zander, die dort mittags nie zu holen wären. Leer heißt: Die Art bleibt
+    /// rund um die Uhr, wo sie ist.
+    var nightHabitats: [Habitat] = []
+
     let activeTimes: [TimeOfDay]
 
     /// IDs bevorzugter Köder. Steht ein Köder hier, steigt die Bisschance stark.
@@ -56,6 +65,15 @@ struct FishSpecies: Identifiable, Equatable {
 }
 
 extension FishSpecies {
+    /// Wo die Art zu dieser Tageszeit steht.
+    ///
+    /// In der Dämmerung zieht sie schon los, aber noch nicht so weit — deshalb
+    /// zählt der Nachtstand ab der Abenddämmerung mit.
+    func habitats(at time: TimeOfDay) -> [Habitat] {
+        guard time == .night || time == .dusk, !nightHabitats.isEmpty else { return habitats }
+        return habitats + nightHabitats.filter { !habitats.contains($0) }
+    }
+
     /// Gewicht passend zu einer Länge. Fische wachsen kubisch, deshalb wird
     /// die Länge relativ zur Spanne hoch drei genommen und in die
     /// Gewichtsspanne abgebildet.

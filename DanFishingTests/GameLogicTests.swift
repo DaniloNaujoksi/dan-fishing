@@ -32,6 +32,17 @@ final class FishModelTests: XCTestCase {
         XCTAssertEqual(baitIDs.count, BaitCatalog.all.count)
     }
 
+    func testBaitsAreSortedByLevelThenPrice() {
+        // Die Reihenfolge im Katalog ist die Reihenfolge im Laden. Ein neuer
+        // Köder an der falschen Stelle fällt sonst niemandem auf.
+        for (previous, next) in zip(BaitCatalog.all, BaitCatalog.all.dropFirst()) {
+            XCTAssertTrue(previous.unlockLevel < next.unlockLevel
+                          || (previous.unlockLevel == next.unlockLevel && previous.price <= next.price),
+                          "\(previous.name) (Stufe \(previous.unlockLevel), \(previous.price)) "
+                          + "steht vor \(next.name) (Stufe \(next.unlockLevel), \(next.price))")
+        }
+    }
+
     func testPreferredBaitsExist() {
         // Ein Tippfehler in einer Köder-ID würde die Art unfangbar machen.
         for species in FishCatalog.all {
@@ -69,6 +80,34 @@ final class BaitSystemTests: XCTestCase {
             let species = FishCatalog.species(id: id)!
             XCTAssertGreaterThanOrEqual(species.maxLength, 95,
                                         "\(species.name) sollte groß genug sein")
+        }
+    }
+
+    func testPredatorsMoveIntoTheShallowsAtNight() {
+        let zander = FishCatalog.species(id: "zander")!
+        let minnow = BaitCatalog.bait(id: "minnow")!
+
+        // Tagsüber steht der Zander tief — im Flachen ist er gar nicht da.
+        let day = context(habitat: .shallows, time: .day, level: 12)
+        XCTAssertEqual(BaitSystem.attraction(species: zander, bait: minnow, context: day), 0)
+
+        // Nachts jagt er dort, und zwar nicht nur nebenbei.
+        let night = context(habitat: .shallows, time: .night, level: 12)
+        XCTAssertGreaterThan(BaitSystem.attraction(species: zander, bait: minnow, context: night), 0)
+
+        // Sein Tagesplatz bleibt aber erhalten.
+        let deepDay = context(habitat: .deep, time: .day, level: 12)
+        XCTAssertGreaterThan(BaitSystem.attraction(species: zander, bait: minnow, context: deepDay), 0)
+    }
+
+    func testNightHabitatsAreExtraSpots() {
+        // Ein Nachtplatz, der ohnehin schon Tagesplatz ist, wäre nur ein
+        // versteckter Bonus — dann stimmt die Beschreibung im Fangbuch nicht.
+        for species in FishCatalog.all {
+            for habitat in species.nightHabitats {
+                XCTAssertFalse(species.habitats.contains(habitat),
+                               "\(species.name): \(habitat.rawValue) steht doppelt")
+            }
         }
     }
 
@@ -573,11 +612,11 @@ final class LakeMapTests: XCTestCase {
     }
 }
 
-final class BoatControllerTests: XCTestCase {
+final class MovementControllerTests: XCTestCase {
 
     func testBoatMovesWithInput() {
         let map = LakeMap.generate()
-        var boat = BoatController(position: map.startPosition, heading: 0)
+        var boat = MovementController(position: map.startPosition, heading: 0)
         let start = boat.position
 
         for _ in 0..<60 {
@@ -592,7 +631,7 @@ final class BoatControllerTests: XCTestCase {
 
     func testBoatNeverEntersLand() {
         let map = LakeMap.generate()
-        var boat = BoatController(position: map.startPosition, heading: 0)
+        var boat = MovementController(position: map.startPosition, heading: 0)
 
         // Vollgas in alle Richtungen — das Boot muss trotzdem im Wasser bleiben.
         let directions = [CGVector(dx: 1, dy: 0), CGVector(dx: 0, dy: 1),
@@ -610,8 +649,113 @@ final class BoatControllerTests: XCTestCase {
     }
 
     func testAngleDifferenceWrapsAround() {
-        let difference = BoatController.angleDifference(3.0, -3.0)
+        let difference = MovementController.angleDifference(3.0, -3.0)
         XCTAssertLessThan(abs(difference), .pi)
+    }
+
+    func testWadingStaysOutOfDeepWater() {
+        let stream = WaterCatalog.water(id: "stream")!
+        let map = LakeMap.generate(for: stream)
+
+        // Ohne Wathose kommt man über den Uferstreifen nicht hinaus.
+        var angler = MovementController(position: map.startPosition, heading: 0)
+        angler.mode = .wading(maxDepth: EquipmentStats().wadingDepth)
+
+        let directions = [CGVector(dx: 1, dy: 0), CGVector(dx: 0, dy: 1),
+                          CGVector(dx: -1, dy: 0), CGVector(dx: 0, dy: -1)]
+
+        for direction in directions {
+            for _ in 0..<600 {
+                angler.update(deltaTime: 1.0 / 60.0,
+                              input: direction,
+                              stats: EquipmentStats(),
+                              map: map)
+                let depth = map.kind(at: angler.position).habitat?.depthMeters ?? 0
+                XCTAssertLessThanOrEqual(depth, EquipmentStats().wadingDepth)
+            }
+        }
+    }
+
+    func testWadersOpenUpDeeperWater() {
+        let stream = WaterCatalog.water(id: "stream")!
+        let map = LakeMap.generate(for: stream)
+
+        // Flachwasser (0,8 m) ist ohne Stiefel gesperrt und mit Stiefeln frei.
+        guard let shallow = firstPoint(in: map, kind: .shallows) else {
+            return XCTFail("Der Bach hat kein Flachwasser")
+        }
+
+        var barefoot = MovementController(position: map.startPosition)
+        barefoot.mode = .wading(maxDepth: 0.35)
+        XCTAssertTrue(barefoot.isBlocked(shallow, map: map))
+
+        var booted = MovementController(position: map.startPosition)
+        booted.mode = .wading(maxDepth: 0.85)
+        XCTAssertFalse(booted.isBlocked(shallow, map: map))
+    }
+
+    /// Mittelpunkt der ersten Zelle einer Art, mit Abstand zu allem Tieferen —
+    /// sonst schlägt der Umkreis der Kollisionsprüfung an.
+    private func firstPoint(in map: LakeMap, kind target: CellKind) -> CGPoint? {
+        for row in 1..<(map.rows - 1) {
+            for column in 1..<(map.columns - 1) {
+                guard map.kind(column: column, row: row) == target else { continue }
+
+                var clean = true
+                for dy in -1...1 where clean {
+                    for dx in -1...1 {
+                        let neighbour = map.kind(column: column + dx, row: row + dy)
+                        let depth = neighbour.habitat?.depthMeters ?? 0
+                        if depth > target.habitat!.depthMeters { clean = false; break }
+                    }
+                }
+                guard clean else { continue }
+
+                return CGPoint(x: (CGFloat(column) + 0.5) * map.cellSize,
+                               y: (CGFloat(row) + 0.5) * map.cellSize)
+            }
+        }
+        return nil
+    }
+}
+
+final class WaterCatalogTests: XCTestCase {
+
+    func testEveryWaterGeneratesFishableMap() {
+        for water in WaterCatalog.all {
+            let map = LakeMap.generate(for: water)
+
+            XCTAssertEqual(map.columns, water.columns)
+            XCTAssertEqual(map.rows, water.rows)
+
+            // Jede Art des Gewässers braucht ihre Zone, sonst ist sie nicht
+            // fangbar und der Fangbuch-Eintrag bleibt für immer leer.
+            var found = Set<Habitat>()
+            for cell in map.cells {
+                if let habitat = cell.habitat { found.insert(habitat) }
+            }
+            for species in water.species {
+                XCTAssertTrue(species.habitats.contains(where: found.contains),
+                              "\(species.name) hat im \(water.name) keine Zone")
+            }
+        }
+    }
+
+    func testWadingWaterStartsOnLand() {
+        for water in WaterCatalog.all where water.movement == .wading {
+            let map = LakeMap.generate(for: water)
+            XCTAssertTrue(map.isLand(at: map.startPosition),
+                          "\(water.name): Start liegt im Wasser, aber es gibt kein Boot")
+        }
+    }
+
+    func testSpeciesIDsExist() {
+        for water in WaterCatalog.all {
+            for id in water.speciesIDs {
+                XCTAssertNotNil(FishCatalog.species(id: id),
+                                "Unbekannte Art \(id) im \(water.name)")
+            }
+        }
     }
 }
 

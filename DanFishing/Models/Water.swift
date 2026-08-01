@@ -9,6 +9,16 @@ enum WaterShape: String, Codable {
     case lake
     /// Langer Flusslauf mit Windungen, Kiesbänken und tiefen Gumpen.
     case river
+    /// Schmaler Gebirgsbach mit Schwällen und Gumpen. Zu eng für ein Boot.
+    case stream
+}
+
+/// Wie man sich an einem Gewässer fortbewegt.
+enum WaterMovement: String, Codable {
+    /// Im Ruderboot. Wasser ist frei, Land blockiert.
+    case boat
+    /// Zu Fuß. Land trägt, Wasser nur so tief, wie die Wathose reicht.
+    case wading
 }
 
 /// Ein Gewässer, an dem geangelt wird.
@@ -25,6 +35,8 @@ struct Water: Identifiable, Equatable {
     let summary: String
 
     let shape: WaterShape
+    /// Boot oder zu Fuß. Ein Bach ist zu eng zum Rudern.
+    var movement: WaterMovement = .boat
     /// Startwert der Kartenerzeugung — gleicher Wert, gleiche Karte.
     let seed: UInt64
     let columns: Int

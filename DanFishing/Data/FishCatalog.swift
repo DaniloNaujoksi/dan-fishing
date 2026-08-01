@@ -122,6 +122,7 @@ enum FishCatalog {
             // Auch im Seerosenfeld: Der Hecht steht gern unter Deckung und
             // wartet auf alles, was zwischen den Blättern durchzieht.
             habitats: [.sunkenLogs, .reeds, .lilies, .deep],
+            nightHabitats: [.shallows],
             activeTimes: [.dawn, .dusk],
             preferredBaitIDs: ["big_minnow", "minnow", "wobbler", "softbait"],
             fightStrength: 0.78,
@@ -139,6 +140,9 @@ enum FishCatalog {
             minLength: 35, maxLength: 105,
             minWeight: 0.5, maxWeight: 12.0,
             habitats: [.deep, .sunkenLogs],
+            // Der Zander ist der klassische Nachtjäger: tagsüber tief oder im
+            // Holz, nach Sonnenuntergang auf der Kiesbank direkt am Ufer.
+            nightHabitats: [.shallows, .reeds],
             activeTimes: [.dusk, .night],
             preferredBaitIDs: ["minnow", "big_minnow", "wobbler", "softbait", "spoon"],
             fightStrength: 0.7,
@@ -173,6 +177,7 @@ enum FishCatalog {
             minLength: 60, maxLength: 210,
             minWeight: 2.0, maxWeight: 60.0,
             habitats: [.deep, .sunkenLogs, .lilies],
+            nightHabitats: [.shallows, .reeds],
             activeTimes: [.night],
             preferredBaitIDs: ["wormbundle", "big_minnow", "wobbler", "minnow", "worm", "softbait"],
             fightStrength: 0.90,
@@ -207,6 +212,7 @@ enum FishCatalog {
             minLength: 40, maxLength: 130,
             minWeight: 0.3, maxWeight: 5.5,
             habitats: [.reeds, .sunkenLogs, .deep],
+            nightHabitats: [.shallows],
             activeTimes: [.night],
             preferredBaitIDs: ["worm", "wormbundle", "big_minnow", "minnow", "maggot"],
             fightStrength: 0.68,
@@ -409,6 +415,7 @@ enum FishCatalog {
             minLength: 120, maxLength: 250,
             minWeight: 12.0, maxWeight: 70.0,
             habitats: [.deep, .inflow],
+            nightHabitats: [.shallows],
             activeTimes: [.dawn, .night],
             preferredBaitIDs: ["wormbundle", "big_minnow", "worm", "minnow"],
             fightStrength: 0.92,

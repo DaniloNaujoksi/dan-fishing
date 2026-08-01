@@ -83,6 +83,22 @@ enum UpgradeCatalog {
         ),
 
         UpgradeTrack(
+            id: "waders",
+            name: "Wathose",
+            category: .special,
+            summary: "Am Gebirgsbach gibt es kein Boot — man geht selbst ins Wasser. "
+                + "Je besser die Hose, desto weiter kommt man hinaus.",
+            levels: [
+                UpgradeLevel(title: "Gummistiefel", effect: "bis 0,85 m — Kiesbänke und Flachwasser", price: 260,
+                             delta: EquipmentStatDelta(wadingDepth: 0.5)),
+                UpgradeLevel(title: "Wathose", effect: "bis 1,35 m — Krautfelder und Rinnen", price: 950,
+                             delta: EquipmentStatDelta(wadingDepth: 0.5)),
+                UpgradeLevel(title: "Brustwathose", effect: "bis 2,25 m — mitten in die Strömung", price: 2400,
+                             delta: EquipmentStatDelta(wadingDepth: 0.9))
+            ]
+        ),
+
+        UpgradeTrack(
             id: "lantern",
             name: "Laterne",
             category: .special,

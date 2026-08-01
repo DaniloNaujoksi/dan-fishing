@@ -171,6 +171,8 @@ extension LakeMap {
             return generatePond(water: water)
         case .river:
             return generateRiver(water: water)
+        case .stream:
+            return generateStream(water: water)
         }
     }
 
@@ -424,14 +426,91 @@ extension LakeMap {
         return assemble(cells: cells, water: water, rng: &rng)
     }
 
+    /// Der Gebirgsbach.
+    ///
+    /// Schmal, schnell und steinig: ein paar Zellen breit, mit Schwällen über
+    /// Kies und ausgewaschenen Gumpen unter den Kurven. Für ein Boot ist hier
+    /// kein Platz — man geht am Ufer entlang und steigt hinein, so weit die
+    /// Wathose reicht.
+    private static func generateStream(water: Water) -> LakeMap {
+        var rng = SeededGenerator(seed: water.seed)
+        let bankNoise = ValueNoise(seed: water.seed &+ 23)
+        let poolNoise = ValueNoise(seed: water.seed &+ 91)
+
+        let columns = water.columns
+        let rows = water.rows
+        var cells = [CellKind](repeating: .land, count: columns * rows)
+
+        let centerBase = Double(columns) / 2
+
+        for row in 0..<rows {
+            let y = Double(row)
+
+            // Enger und unruhiger als der Fluss: kurze Wellenlänge, kräftiger
+            // Ausschlag. Der Bach schlängelt sich sichtbar durchs Tal.
+            let bend = sin(y * 0.16) * 3.4 + sin(y * 0.061 + 2.2) * 2.6
+            let center = centerBase + bend
+            let curvature = cos(y * 0.16) * 0.16 * 3.4 + cos(y * 0.061 + 2.2) * 0.061 * 2.6
+
+            // 2 bis knapp 4 Zellen halbe Breite — zu eng zum Rudern.
+            let halfWidth = 2.1 + bankNoise.fractal(y * 0.14, 0.5, octaves: 2) * 1.7
+
+            // Abwechselnd rauschende Schwälle und ruhige Gumpen.
+            let pool = poolNoise.fractal(y * 0.07, 3.5, octaves: 2)
+
+            for column in 0..<columns {
+                let x = Double(column)
+                let offset = x - center
+                guard abs(offset) < halfWidth else { continue }
+
+                let toBank = abs(offset) / halfWidth
+                let outerSide = curvature > 0 ? 1.0 : -1.0
+                let onOuter = (offset * outerSide) > 0
+
+                var kind: CellKind
+
+                if pool > 0.62 && toBank < 0.72 {
+                    // Gumpen: ausgewaschener Kolk hinter einem Schwall.
+                    kind = onOuter || toBank < 0.35 ? .deep : .inflow
+                } else if toBank > 0.78 {
+                    // Kiesrand, knöcheltief.
+                    kind = .shallows
+                } else if onOuter && toBank > 0.3 {
+                    // Prallhang: die Rinne, in der die Forellen stehen.
+                    kind = .inflow
+                } else {
+                    kind = .shallows
+                }
+
+                // Totholz, das sich an den Steinen verfangen hat.
+                if toBank > 0.5 && pool < 0.24 && bankNoise.fractal(x * 0.4, y * 0.4, octaves: 1) > 0.72 {
+                    kind = .logs
+                }
+
+                cells[row * columns + column] = kind
+            }
+        }
+
+        return assemble(cells: cells, water: water, rng: &rng)
+    }
+
     /// Baut aus fertigen Zellen die Karte samt Kulisse und Startplatz.
     private static func assemble(cells: [CellKind],
                                  water: Water,
                                  rng: inout SeededGenerator) -> LakeMap {
-        let start = findStartingSpot(cells: cells,
+        let start: CGPoint
+        switch water.movement {
+        case .boat:
+            start = findStartingSpot(cells: cells,
                                      columns: water.columns,
                                      rows: water.rows,
                                      cellSize: water.cellSize)
+        case .wading:
+            start = findBankSpot(cells: cells,
+                                 columns: water.columns,
+                                 rows: water.rows,
+                                 cellSize: water.cellSize)
+        }
 
         return LakeMap(columns: water.columns,
                        rows: water.rows,
@@ -488,6 +567,52 @@ extension LakeMap {
 
         return best?.point ?? CGPoint(x: CGFloat(columns) * 0.5 * cellSize,
                                       y: CGFloat(rows) * 0.5 * cellSize)
+    }
+
+    /// Sucht für den Angler zu Fuß einen Platz am Ufer: fester Boden, aber
+    /// direkt am Wasser und mit Auslauf nach beiden Seiten.
+    private static func findBankSpot(cells: [CellKind],
+                                     columns: Int,
+                                     rows: Int,
+                                     cellSize: CGFloat) -> CGPoint {
+        func kind(_ column: Int, _ row: Int) -> CellKind {
+            guard column >= 0, column < columns, row >= 0, row < rows else { return .land }
+            return cells[row * columns + column]
+        }
+
+        var best: (score: Int, point: CGPoint)?
+
+        // Von unten nach oben suchen: der Bach wird talwärts breiter, dort
+        // fängt man an und arbeitet sich nach oben.
+        for row in 2..<(rows / 3) {
+            for column in 2..<(columns - 2) {
+                guard kind(column, row) == .land else { continue }
+
+                var landAround = 0
+                var waterNear = 0
+                for dy in -2...2 {
+                    for dx in -2...2 {
+                        if kind(column + dx, row + dy) == .land {
+                            landAround += 1
+                        } else {
+                            waterNear += 1
+                        }
+                    }
+                }
+
+                // Genug Land zum Stehen und Wasser in Wurfweite.
+                guard landAround >= 14, waterNear >= 4 else { continue }
+                let score = waterNear * 10 + landAround
+
+                if best == nil || score > best!.score {
+                    best = (score, CGPoint(x: (CGFloat(column) + 0.5) * cellSize,
+                                           y: (CGFloat(row) + 0.5) * cellSize))
+                }
+            }
+        }
+
+        return best?.point ?? CGPoint(x: CGFloat(columns) * 0.2 * cellSize,
+                                      y: CGFloat(rows) * 0.2 * cellSize)
     }
 
     /// Streut Pflanzen, Steine und Bäume passend zu den Zonen.

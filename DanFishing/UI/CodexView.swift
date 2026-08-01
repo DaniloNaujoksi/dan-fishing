@@ -211,6 +211,15 @@ struct CodexDetailView: View {
                                     if detailLevel >= 2 {
                                         row("Aktiv", species.activeTimes.map(\.displayName).joined(separator: ", "))
                                         row("Kampf", species.motion.displayName)
+
+                                        // Der Nachtzug ist die wertvollste
+                                        // Beobachtung: Er sagt, wo man im
+                                        // Dunkeln werfen muss.
+                                        if !species.nightHabitats.isEmpty {
+                                            row("Nachts",
+                                                species.nightHabitats.map(\.displayName)
+                                                    .joined(separator: ", "))
+                                        }
                                     } else if detailLevel >= 1 {
                                         Text("Nach fünf Fängen kennst du auch die Beißzeiten.")
                                             .font(.system(size: 13, design: .serif))

@@ -63,6 +63,10 @@ struct EquipmentStats: Equatable {
     /// Größere Fische lassen sich überhaupt erst ab einer gewissen Rute fangen.
     var maxFishWeight: Double = 6.0
 
+    /// Wie tief man zu Fuß ins Wasser kann, in Metern. Ohne Wathose reicht es
+    /// nur für den Uferstreifen; mit ihr kommt man bis in die Rinne.
+    var wadingDepth: Double = 0.35
+
     mutating func apply(_ delta: EquipmentStatDelta) {
         castRange += delta.castRange
         control += delta.control
@@ -76,6 +80,7 @@ struct EquipmentStats: Equatable {
         luck += delta.luck
         lanternRadius += delta.lanternRadius
         maxFishWeight += delta.maxFishWeight
+        wadingDepth += delta.wadingDepth
         if delta.enablesFishFinder { hasFishFinder = true }
     }
 }
@@ -94,6 +99,7 @@ struct EquipmentStatDelta: Equatable {
     var luck: Double = 0
     var lanternRadius: Double = 0
     var maxFishWeight: Double = 0
+    var wadingDepth: Double = 0
     var enablesFishFinder: Bool = false
 }
 

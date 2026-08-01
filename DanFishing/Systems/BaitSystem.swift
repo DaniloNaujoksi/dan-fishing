@@ -22,7 +22,9 @@ enum BaitSystem {
 
     /// Gewicht einer Art beim Auswürfeln. 0 = beißt hier gerade gar nicht.
     static func attraction(species: FishSpecies, bait: Bait, context: Context) -> Double {
-        guard species.habitats.contains(context.habitat) else { return 0 }
+        // Wo eine Art steht, hängt an der Uhrzeit: Nachts ziehen die Räuber
+        // aus dem Tiefen ins Flache und jagen am Schilfrand.
+        guard species.habitats(at: context.timeOfDay).contains(context.habitat) else { return 0 }
         guard species.minPlayerLevel <= context.playerLevel else { return 0 }
 
         // Harte Regel vor allen Feinheiten: Ein Karpfen jagt keine Beutefische
@@ -44,6 +46,16 @@ enum BaitSystem {
 
         // Tageszeit: außerhalb der aktiven Phase beißt kaum etwas.
         score *= species.activeTimes.contains(context.timeOfDay) ? 1.0 : 0.18
+
+        // Auf dem Nachtzug ist ein Räuber im Flachen kein Zufall, sondern das
+        // Ziel: Er sucht dort aktiv nach Beute und beißt entsprechend hart.
+        if species.nightHabitats.contains(context.habitat) {
+            switch context.timeOfDay {
+            case .night: score *= 1.9
+            case .dusk: score *= 1.3
+            default: break
+            }
+        }
 
         // Der Köder ist genau auf diese Art abgestimmt — Fliege auf Äsche,
         // Köderfisch auf Zander, Wurmbündel auf Wels.

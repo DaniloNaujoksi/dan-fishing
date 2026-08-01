@@ -3,7 +3,19 @@ import Foundation
 
 /// Bewegung des Ruderboots. Reine Rechnung ohne SpriteKit, damit sich das
 /// Fahrverhalten testen lässt und die Szene nur noch die Werte übernimmt.
-struct BoatController {
+struct MovementController {
+
+    /// Wie sich der Angler fortbewegt.
+    enum Mode: Equatable {
+        /// Im Ruderboot: Wasser ist frei, Land blockiert.
+        case boat
+        /// Zu Fuß am Bach: Land ist frei, Wasser nur bis zur Wattiefe.
+        /// Ohne Wathose reicht das nur für ein paar Zentimeter am Rand.
+        case wading(maxDepth: Double)
+    }
+
+    /// Bestimmt, wo man hinkommt — im Boot oder zu Fuß.
+    var mode: Mode = .boat
 
     /// Radius für die Kollisionsprüfung gegen Ufer, Inseln und Steine.
     let collisionRadius: CGFloat = 34
@@ -67,7 +79,16 @@ struct BoatController {
         // nicht direkt die Geschwindigkeit gesetzt, sondern eine Wunschfahrt
         // vorgegeben, der sich das Boot annähert — einmal beim Antreten, einmal
         // beim Ausrollen, mit unterschiedlichem Tempo.
-        let maxSpeed = CGFloat(stats.boatSpeed) * BoatController.cruiseFactor
+        // Zu Fuß gilt eine feste Schrittgeschwindigkeit — ein besseres Boot
+        // macht niemanden zum schnelleren Läufer. Im Wasser wird es zäh.
+        let maxSpeed: CGFloat
+        switch mode {
+        case .boat:
+            maxSpeed = CGFloat(stats.boatSpeed) * MovementController.cruiseFactor
+        case .wading:
+            let inWater = map.kind(at: position).habitat != nil
+            maxSpeed = MovementController.walkSpeed * (inWater ? 0.55 : 1.0)
+        }
         var targetVelocity = CGVector.zero
 
         if desiredLength > 0.05 {
@@ -77,11 +98,13 @@ struct BoatController {
             // Wasser an und verhindert das nervöse Zappeln bei kleinen
             // Fingerbewegungen.
             let speedShare = min(1, hypot(velocity.dx, velocity.dy) / max(maxSpeed, 1))
-            let turnRate = CGFloat(stats.boatTurnRate) * (1.0 - speedShare * 0.45)
-            heading = BoatController.turn(from: heading, to: targetHeading, maxStep: turnRate * dt)
+            // Ein Mensch dreht sich auf der Stelle, ein Kahn nicht.
+            let agility: CGFloat = mode == .boat ? 1.0 : 2.6
+            let turnRate = CGFloat(stats.boatTurnRate) * agility * (1.0 - speedShare * 0.45)
+            heading = MovementController.turn(from: heading, to: targetHeading, maxStep: turnRate * dt)
 
             // Schräg zum Ziel gibt es weniger Schub: Erst drehen, dann fahren.
-            let alignment = max(0, cos(BoatController.angleDifference(heading, targetHeading)))
+            let alignment = max(0, cos(MovementController.angleDifference(heading, targetHeading)))
             let power = desiredLength * (0.25 + alignment * 0.75)
             targetVelocity = CGVector(dx: cos(heading) * maxSpeed * power,
                                       dy: sin(heading) * maxSpeed * power)
@@ -93,7 +116,9 @@ struct BoatController {
 
         // Anfahren spürbar träge, Ausrollen noch träger — das Boot gleitet aus,
         // statt stehen zu bleiben.
-        let rate = desiredLength > 0.05 ? BoatController.accelerationRate : BoatController.dragRate
+        var rate = desiredLength > 0.05 ? MovementController.accelerationRate : MovementController.dragRate
+        // Zu Fuß gibt es kein Ausgleiten: Schritt an, Schritt aus.
+        if mode != .boat { rate *= 4 }
         let blend = 1 - exp(-rate * dt)
         velocity.dx += (targetVelocity.dx - velocity.dx) * blend
         velocity.dy += (targetVelocity.dy - velocity.dy) * blend
@@ -113,6 +138,8 @@ struct BoatController {
     private static let accelerationRate: CGFloat = 1.9
     /// Wie schnell es ohne Ruderschlag ausläuft.
     private static let dragRate: CGFloat = 0.85
+    /// Schrittgeschwindigkeit an Land, in Punkten pro Sekunde.
+    private static let walkSpeed: CGFloat = 135
 
     /// Hält das Boot im Umkreis der ausgeworfenen Schnur.
     ///
@@ -154,20 +181,56 @@ struct BoatController {
         return tension
     }
 
-    /// Bewegt das Boot und lässt es an Hindernissen entlanggleiten, statt
+    /// Prüft, ob ein Punkt versperrt ist.
+    ///
+    /// Im Boot gilt: Land blockiert. Zu Fuß gilt das Gegenteil — Land trägt,
+    /// und Wasser nur so tief, wie die Wathose reicht. Deshalb steckt die
+    /// Prüfung hier und nicht in der Karte.
+    func isBlocked(_ point: CGPoint, map: LakeMap) -> Bool {
+        switch mode {
+        case .boat:
+            return map.isBlocked(circleAt: point, radius: collisionRadius)
+
+        case .wading(let maxDepth):
+            // Der Angler ist schmaler als ein Boot; geprüft wird sein Stand
+            // und ein kleiner Umkreis.
+            let probes: [CGPoint] = [
+                point,
+                CGPoint(x: point.x + 14, y: point.y),
+                CGPoint(x: point.x - 14, y: point.y),
+                CGPoint(x: point.x, y: point.y + 14),
+                CGPoint(x: point.x, y: point.y - 14)
+            ]
+
+            for probe in probes {
+                let kind = map.kind(at: probe)
+                guard let habitat = kind.habitat else { continue }   // Land trägt
+                if habitat.depthMeters > maxDepth { return true }
+            }
+            return false
+        }
+    }
+
+    /// Steht der Angler gerade im Wasser? Die Szene macht daraus Spritzer und
+    /// einen anderen Gang.
+    func isInWater(map: LakeMap) -> Bool {
+        map.kind(at: position).habitat != nil
+    }
+
+    /// Bewegt die Figur und lässt sie an Hindernissen entlanggleiten, statt
     /// hart stehen zu bleiben.
     private mutating func move(dt: CGFloat, map: LakeMap) {
         let step = CGPoint(x: position.x + velocity.dx * dt,
                            y: position.y + velocity.dy * dt)
 
-        if !map.isBlocked(circleAt: step, radius: collisionRadius) {
+        if !isBlocked(step, map: map) {
             position = step
             return
         }
 
         // Nur in X bewegen …
         let stepX = CGPoint(x: step.x, y: position.y)
-        if !map.isBlocked(circleAt: stepX, radius: collisionRadius) {
+        if !isBlocked(stepX, map: map) {
             position = stepX
             velocity.dy *= 0.2
             return
@@ -175,7 +238,7 @@ struct BoatController {
 
         // … oder nur in Y.
         let stepY = CGPoint(x: position.x, y: step.y)
-        if !map.isBlocked(circleAt: stepY, radius: collisionRadius) {
+        if !isBlocked(stepY, map: map) {
             position = stepY
             velocity.dx *= 0.2
             return

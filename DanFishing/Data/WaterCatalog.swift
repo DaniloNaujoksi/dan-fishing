@@ -65,6 +65,27 @@ enum WaterCatalog {
             shallowColor: ColorSpec(0xA9C6C0),
             deepColor: ColorSpec(0x35606A),
             shoreColor: ColorSpec(0xCFC3A0)
+        ),
+
+        Water(
+            id: "stream",
+            name: "Gebirgsbach",
+            subtitle: "Zu Fuß, ohne Boot",
+            summary: "Oben im Tal rauscht der Bach über Blöcke und Kies. Zu eng für ein "
+                + "Boot — hier geht man am Ufer entlang und steigt ins Wasser, so weit die "
+                + "Hose reicht. In den Gumpen unter den Schwällen stehen die Forellen.",
+            shape: .stream,
+            movement: .wading,
+            seed: 51_180_733,
+            columns: 24,
+            rows: 88,
+            cellSize: 72,
+            requiredLevel: 6,
+            speciesIDs: ["bleak", "goby", "grayling", "barbel", "rainbow_trout",
+                         "char", "golden_trout", "salmon"],
+            shallowColor: ColorSpec(0xB7D2C9),
+            deepColor: ColorSpec(0x3E7A79),
+            shoreColor: ColorSpec(0xC2BCAA)
         )
     ]
 
