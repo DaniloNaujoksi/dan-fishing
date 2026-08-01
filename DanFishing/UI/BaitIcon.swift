@@ -89,6 +89,31 @@ struct BaitIcon: View {
             context.fill(Circle().path(in: CGRect(x: 21, y: 15, width: 3, height: 3)),
                          with: .color(dark))
 
+        case "big_minnow":
+            // Derselbe Fisch, deutlich größer, mit Doppelhaken.
+            var body = Path()
+            body.addEllipse(in: CGRect(x: 7, y: 11, width: 21, height: 11))
+            context.fill(body, with: .color(tint))
+
+            var tail = Path()
+            tail.move(to: CGPoint(x: 8, y: 16))
+            tail.addLine(to: CGPoint(x: 1, y: 9))
+            tail.addLine(to: CGPoint(x: 1, y: 23))
+            tail.closeSubpath()
+            context.fill(tail, with: .color(tint))
+
+            context.fill(Circle().path(in: CGRect(x: 23, y: 13, width: 3.5, height: 3.5)),
+                         with: .color(dark))
+
+            // Zwei Haken darunter.
+            for offset in [CGFloat(12), CGFloat(20)] {
+                var hook = Path()
+                hook.move(to: CGPoint(x: offset, y: 22))
+                hook.addQuadCurve(to: CGPoint(x: offset + 4, y: 28),
+                                  control: CGPoint(x: offset - 2, y: 28))
+                context.stroke(hook, with: .color(dark), lineWidth: 1.4)
+            }
+
         case "spinner":
             // Achse mit rotierendem Blatt.
             var axis = Path()

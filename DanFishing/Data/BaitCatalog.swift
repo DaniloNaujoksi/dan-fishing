@@ -50,12 +50,21 @@ enum BaitCatalog {
              strongHabitats: [.deep, .sunkenLogs], strongTimes: [.dusk, .night],
              sizeBias: 0.82, rarityBias: 0.42, baseAppeal: 0.60, color: ColorSpec(0x8E5140)),
 
-        Bait(id: "minnow", name: "Köderfisch",
-             summary: "Kleiner Weißfisch. Genau das, worauf große Räuber warten.",
+        Bait(id: "minnow", name: "Kleiner Köderfisch",
+             summary: "Fingerlanger Weißfisch am Haken. Räuber jeder Größe nehmen ihn — auch die mittleren.",
              kind: .natural, targets: [.predator, .omnivore], specialty: "zander",
              price: 260, unlockLevel: 4,
              strongHabitats: [.sunkenLogs, .deep], strongTimes: [.dusk, .night],
              sizeBias: 0.75, rarityBias: 0.45, baseAppeal: 0.58, color: ColorSpec(0xBFC9CF)),
+
+        Bait(id: "big_minnow", name: "Großer Köderfisch",
+             summary: "Ein halbes Pfund Fisch am Doppelhaken. Was darauf beißt, hat ein Maul dafür — alles andere lässt ihn liegen.",
+             kind: .natural, targets: [.predator, .omnivore], specialty: nil,
+             // Nur Arten, die mindestens einen Meter erreichen können.
+             minSpeciesLength: 95,
+             price: 620, unlockLevel: 6,
+             strongHabitats: [.deep, .sunkenLogs], strongTimes: [.dusk, .night],
+             sizeBias: 0.94, rarityBias: 0.62, baseAppeal: 0.44, color: ColorSpec(0x9BA9B2)),
 
         Bait(id: "spinner", name: "Spinner",
              summary: "Rotierendes Blatt, das Druckwellen erzeugt. Reizt nur jagende Fische.",

@@ -56,6 +56,22 @@ final class BaitSystemTests: XCTestCase {
                            stats: stats)
     }
 
+    func testBigBaitFishOnlyForLargeSpecies() {
+        let big = BaitCatalog.bait(id: "big_minnow")!
+        let ctx = context(habitat: .deep, time: .night, level: 12)
+
+        // Kleine Räuber bekommen ihn gar nicht erst ins Maul.
+        let perch = FishCatalog.species(id: "perch")!
+        XCTAssertEqual(BaitSystem.attraction(species: perch, bait: big, context: ctx), 0)
+
+        // Die Großen dagegen schon.
+        for id in ["pike", "catfish", "sturgeon", "beluga", "salmon", "eel", "zander"] {
+            let species = FishCatalog.species(id: id)!
+            XCTAssertGreaterThanOrEqual(species.maxLength, 95,
+                                        "\(species.name) sollte groß genug sein")
+        }
+    }
+
     func testPickyFishRefuseEverythingOutsideTheirList() {
         let goby = FishCatalog.species(id: "goby")!
         let spoon = BaitCatalog.bait(id: "spoon")!

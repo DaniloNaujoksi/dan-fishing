@@ -168,6 +168,28 @@ final class BobberNode: SKNode {
                 shape.addChild(wing)
             }
 
+        case "big_minnow":
+            // Ein ganzer Fisch am Haken — träge, mit schwerem Schwanzschlag.
+            shape = SKShapeNode(ellipseOf: CGSize(width: 24, height: 11))
+            shape.fillColor = bait.color.skColor
+            shape.strokeColor = ColorSpec(0x5A6A72).skColor
+            shape.lineWidth = 1
+
+            let tail = SKShapeNode()
+            let tailPath = CGMutablePath()
+            tailPath.move(to: CGPoint(x: -11, y: 0))
+            tailPath.addLine(to: CGPoint(x: -19, y: 6))
+            tailPath.addLine(to: CGPoint(x: -19, y: -6))
+            tailPath.closeSubpath()
+            tail.path = tailPath
+            tail.fillColor = bait.color.skColor(alpha: 0.85)
+            tail.strokeColor = .clear
+            tail.run(.repeatForever(.sequence([
+                .rotate(toAngle: 0.35, duration: 0.5),
+                .rotate(toAngle: -0.35, duration: 0.5)
+            ])))
+            shape.addChild(tail)
+
         case "red_october":
             // Großes rotes Blech, das im Wechsel aufblitzt. Deutlich größer
             // als jeder andere Köder — man sieht ihn im Wasser stehen.

@@ -31,6 +31,9 @@ enum BaitSystem {
         // ihrer Ernährungsgruppe.
         if let allowed = species.onlyBaitIDs, !allowed.contains(bait.id) { return 0 }
 
+        // Zu großer Köder für zu kleines Maul.
+        if let minimum = bait.minSpeciesLength, species.maxLength < minimum { return 0 }
+
         // Grundgewicht aus der Seltenheit, angehoben durch Glücksbringer und
         // die Seltenheitsneigung des Köders.
         let luckBoost = 1.0 + (context.stats.luck - 1.0) + bait.rarityBias * 0.8

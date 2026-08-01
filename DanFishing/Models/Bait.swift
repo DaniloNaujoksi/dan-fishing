@@ -34,6 +34,14 @@ struct Bait: Identifiable, Equatable {
     /// Köder hat eine.
     let specialty: String?
 
+    /// Mindestgröße der Art, damit sie diesen Köder überhaupt nimmt (in
+    /// Zentimetern, gemessen an der Maximallänge der Art).
+    ///
+    /// Ein handlanger Köderfisch am Haken passt schlicht nicht ins Maul eines
+    /// Rotauges. Damit lässt sich ein Köder bauen, der Kleinfisch nicht nur
+    /// unwahrscheinlicher macht, sondern vollständig ausschließt.
+    var minSpeciesLength: Double?
+
     /// Wie stark die Spezialität wirkt. Der Regelfall reicht, um einen Köder
     /// erkennbar besser zu machen; für Köder, die eigens für einen einzigen
     /// Fisch gebaut wurden, lässt sich der Wert anheben.
