@@ -44,8 +44,8 @@ enum BaitCatalog {
              sizeBias: 0.35, rarityBias: 0.30, baseAppeal: 0.65, color: ColorSpec(0x8C9A5B)),
 
         Bait(id: "wormbundle", name: "Wurmbündel",
-             summary: "Eine ganze Handvoll Tauwürmer am großen Haken. Genau das, wonach ein Wels sucht.",
-             kind: .natural, targets: [.omnivore, .predator], specialty: "catfish",
+             summary: "Eine ganze Handvoll Tauwürmer am großen Haken. Genau das, wonach ein Wels sucht — auch schwere Friedfische lassen ihn nicht liegen.",
+             kind: .natural, targets: [.omnivore, .predator, .peaceful], specialty: "catfish",
              price: 320, unlockLevel: 5,
              strongHabitats: [.deep, .sunkenLogs], strongTimes: [.dusk, .night],
              sizeBias: 0.82, rarityBias: 0.42, baseAppeal: 0.60, color: ColorSpec(0x8E5140)),
@@ -73,7 +73,9 @@ enum BaitCatalog {
 
         Bait(id: "wobbler", name: "Wobbler",
              summary: "Tauchschaufel und unruhiger Lauf. Holt Hechte aus der Deckung.",
-             kind: .artificial, targets: [.predator], specialty: "pike",
+             // Auch der Wels nimmt einen Wobbler, deshalb stehen hier die
+             // Allesfresser mit in der Liste.
+             kind: .artificial, targets: [.predator, .omnivore], specialty: "pike",
              price: 340, unlockLevel: 5,
              strongHabitats: [.sunkenLogs, .deep], strongTimes: [.dawn, .dusk],
              sizeBias: 0.72, rarityBias: 0.50, baseAppeal: 0.54, color: ColorSpec(0xA05B45)),
@@ -86,8 +88,8 @@ enum BaitCatalog {
              sizeBias: 0.68, rarityBias: 0.48, baseAppeal: 0.58, color: ColorSpec(0x6B7F8E)),
 
         Bait(id: "fly", name: "Fliege",
-             summary: "Fast gewichtslos. Verlangt ruhiges Wasser, bringt dafür feine Forellen und Äschen.",
-             kind: .artificial, targets: [.peaceful, .omnivore], specialty: "grayling",
+             summary: "Fast gewichtslos. Verlangt ruhiges Wasser, bringt dafür feine Forellen, Äschen — und mit Glück einen Lachs.",
+             kind: .artificial, targets: [.peaceful, .omnivore, .predator], specialty: "grayling",
              price: 380, unlockLevel: 6,
              strongHabitats: [.inflow], strongTimes: [.dawn, .dusk],
              sizeBias: 0.45, rarityBias: 0.65, baseAppeal: 0.50, color: ColorSpec(0xD8CDB5)),
