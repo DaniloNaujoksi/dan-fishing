@@ -73,15 +73,18 @@ jobs:
           sleep 8
           xcrun simctl io "$DEVICE" screenshot artefakte/see-spaeter.png
 
-          # Der Vorspann, in drei Momenten: Sonnenaufgang, Wurf, Titel.
-          xcrun simctl terminate "$DEVICE" com.example.danfishing || true
-          xcrun simctl launch "$DEVICE" com.example.danfishing -showIntro
-          sleep 4
-          xcrun simctl io "$DEVICE" screenshot artefakte/intro-morgen.png
-          sleep 3
-          xcrun simctl io "$DEVICE" screenshot artefakte/intro-wurf.png
-          sleep 3
-          xcrun simctl io "$DEVICE" screenshot artefakte/intro-titel.png
+          # Der Vorspann. Jeder Moment bekommt einen eigenen Start: Ein
+          # Bildschirmfoto kostet selbst ein bis zwei Sekunden, hintereinander
+          # weg würden die späteren Aufnahmen hinter das Ende rutschen.
+          for MOMENT in "morgen:3" "wurf:6" "kampf:7" "titel:8"; do
+            NAME="${MOMENT%%:*}"
+            WAIT="${MOMENT##*:}"
+            xcrun simctl terminate "$DEVICE" com.example.danfishing || true
+            sleep 1
+            xcrun simctl launch "$DEVICE" com.example.danfishing -showIntro
+            sleep "$WAIT"
+            xcrun simctl io "$DEVICE" screenshot "artefakte/intro-$NAME.png"
+          done
 
           # Läuft der Prozess überhaupt noch?
           xcrun simctl spawn "$DEVICE" launchctl list | grep -i danfishing || echo "App laeuft nicht mehr"
