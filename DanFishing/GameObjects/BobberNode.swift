@@ -168,6 +168,29 @@ final class BobberNode: SKNode {
                 shape.addChild(wing)
             }
 
+        case "red_october":
+            // Großes rotes Blech, das im Wechsel aufblitzt. Deutlich größer
+            // als jeder andere Köder — man sieht ihn im Wasser stehen.
+            shape = SKShapeNode(ellipseOf: CGSize(width: 13, height: 26))
+            shape.fillColor = bait.color.skColor
+            shape.strokeColor = Palette.gold.skColor
+            shape.lineWidth = 1.5
+            shape.glowWidth = 3
+
+            let star = SKShapeNode(circleOfRadius: 3.5)
+            star.fillColor = Palette.gold.skColor
+            star.strokeColor = .clear
+            shape.addChild(star)
+
+            // Der Blitz: kurz hell, dann lange dunkel — wie ein Leuchtfeuer.
+            shape.run(.repeatForever(.sequence([
+                .group([.scaleX(to: 0.25, duration: 0.35),
+                        .fadeAlpha(to: 1.0, duration: 0.35)]),
+                .group([.scaleX(to: 1.0, duration: 0.35),
+                        .fadeAlpha(to: 0.7, duration: 0.35)]),
+                .wait(forDuration: 0.5)
+            ])))
+
         case "moonbait":
             // Blasse Perle mit Leuchten.
             shape = SKShapeNode(circleOfRadius: 6)

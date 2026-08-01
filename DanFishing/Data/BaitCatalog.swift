@@ -92,6 +92,13 @@ enum BaitCatalog {
              strongHabitats: [.inflow], strongTimes: [.dawn, .dusk],
              sizeBias: 0.45, rarityBias: 0.65, baseAppeal: 0.50, color: ColorSpec(0xD8CDB5)),
 
+        Bait(id: "red_october", name: "Roter Oktober",
+             summary: "Ein Riesenblinker aus Messing und rotem Lack, schwer wie ein Türgriff. Unter Wasser blitzt er wie ein Leuchtturm. Kleinfische verziehen sich, die ganz Großen kommen schauen.",
+             kind: .artificial, targets: [.predator, .omnivore], specialty: "beluga",
+             price: 1500, unlockLevel: 9,
+             strongHabitats: [.deep, .sunkenLogs], strongTimes: [.dusk, .night],
+             sizeBias: 0.98, rarityBias: 0.88, baseAppeal: 0.34, color: ColorSpec(0xB3261F)),
+
         Bait(id: "moonbait", name: "Mondköder",
              summary: "Blass schimmernde Perle aus dem alten Schrein. Nur in klaren Nächten wirksam.",
              kind: .special, targets: [.peaceful, .predator, .omnivore], specialty: "moon_carp",

@@ -137,6 +137,30 @@ struct BaitIcon: View {
             hook.addQuadCurve(to: CGPoint(x: 20, y: 26), control: CGPoint(x: 13, y: 26))
             context.stroke(hook, with: .color(dark), lineWidth: 1.6)
 
+        case "red_october":
+            // Schwerer Blinker in Rot mit goldenem Stern.
+            var blade = Path()
+            blade.addEllipse(in: CGRect(x: 9, y: 5, width: 16, height: 24))
+            context.fill(blade, with: .color(tint))
+            context.stroke(blade, with: .color(Palette.gold.swiftUIColor.opacity(0.8)), lineWidth: 1.4)
+
+            // Fünfzackiger Stern in der Mitte.
+            var star = Path()
+            let center = CGPoint(x: 17, y: 17)
+            for index in 0..<10 {
+                let angle = Double(index) * .pi / 5 - .pi / 2
+                let radius: Double = index % 2 == 0 ? 6 : 2.6
+                let point = CGPoint(x: center.x + cos(angle) * radius,
+                                    y: center.y + sin(angle) * radius)
+                if index == 0 { star.move(to: point) } else { star.addLine(to: point) }
+            }
+            star.closeSubpath()
+            context.fill(star, with: .color(Palette.gold.swiftUIColor))
+
+            // Lichtblitz an der Kante.
+            context.fill(Ellipse().path(in: CGRect(x: 11, y: 8, width: 4, height: 8)),
+                         with: .color(.white.opacity(0.55)))
+
         case "moonbait":
             // Perle mit Mondsichel.
             context.fill(Circle().path(in: CGRect(x: 10, y: 10, width: 15, height: 15)),

@@ -61,6 +61,13 @@ enum BaitSystem {
             score *= 0.08
         }
 
+        // Grobe Brocken schrecken Kleinfisch ab. Wer mit einem handtellergroßen
+        // Blinker fischt, fängt keine Ukelei — dafür kommt vielleicht etwas,
+        // das den halben Nachmittag kostet.
+        if bait.sizeBias > 0.9 && species.maxLength < 70 {
+            score *= 0.12
+        }
+
         return max(0, score)
     }
 
