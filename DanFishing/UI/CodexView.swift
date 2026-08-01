@@ -153,9 +153,15 @@ struct CodexDetailView: View {
                                 FishSilhouette(species: species, silhouetteOnly: entry == nil)
                                     .frame(height: 80)
 
-                                Text(species.name)
+                                // Solange die Art nicht gefangen wurde, gibt
+                                // auch die Detailseite nichts preis — nicht
+                                // einmal den Namen. Sonst wäre der Reiz weg,
+                                // bevor man ihr überhaupt begegnet ist.
+                                Text(entry != nil ? species.name : "? ? ?")
                                     .font(.system(size: 26, weight: .semibold, design: .serif))
-                                    .foregroundStyle(Palette.uiInk)
+                                    .foregroundStyle(entry != nil
+                                                     ? Palette.uiInk
+                                                     : Palette.inkSoft.swiftUIColor)
 
                                 Text(species.rarity.displayName)
                                     .font(.system(size: 12, weight: .semibold, design: .rounded))
