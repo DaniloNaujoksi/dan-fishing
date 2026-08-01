@@ -2,6 +2,11 @@ import SwiftUI
 
 /// Das Fang-Minispiel. Links die Bahn mit Fisch und Fangbereich, rechts die
 /// Spannung der Schnur, unten die große Einholtaste.
+///
+/// Bewusst ohne SwiftUI-Animationen auf Fisch, Balken und Anzeigen: Die Werte
+/// kommen bereits mit jedem Bild aus der Spielschleife. Eine zusätzliche
+/// Animation läuft dieser Aktualisierung hinterher und lässt die Anzeige
+/// ruckeln, statt sie zu glätten.
 struct CatchMiniGameView: View {
     let state: MiniGameSnapshot
     let onReelChanged: (Bool) -> Void
@@ -66,7 +71,7 @@ struct CatchMiniGameView: View {
                       : Palette.paper.swiftUIColor.opacity(0.4))
                 .frame(width: 62, height: barHeight)
                 .offset(y: -(barCenter * trackHeight - barHeight / 2))
-                .animation(.linear(duration: 0.05), value: state.barLower)
+
 
             // Fisch
             Image(systemName: "fish.fill")
@@ -74,7 +79,7 @@ struct CatchMiniGameView: View {
                 .foregroundStyle(Palette.paper.swiftUIColor)
                 .rotationEffect(.degrees(-90))
                 .offset(y: -trackHeight * CGFloat(state.fishPosition) + 14)
-                .animation(.linear(duration: 0.05), value: state.fishPosition)
+
         }
         .frame(width: 74, height: trackHeight)
     }
@@ -95,7 +100,7 @@ struct CatchMiniGameView: View {
                 Capsule()
                     .fill(tensionColor)
                     .frame(width: 22, height: max(6, (trackHeight - 30) * CGFloat(min(1, state.tension))))
-                    .animation(.linear(duration: 0.05), value: state.tension)
+
 
                 // Markierung, ab wo es kritisch wird.
                 Rectangle()
@@ -123,7 +128,7 @@ struct CatchMiniGameView: View {
                 Capsule()
                     .fill(Palette.paper.swiftUIColor)
                     .frame(width: max(8, 240 * CGFloat(state.progress)), height: 12)
-                    .animation(.linear(duration: 0.05), value: state.progress)
+
             }
             Text("eingeholt")
                 .font(.system(size: 11, design: .rounded))

@@ -45,13 +45,25 @@ struct MissionsView: View {
         let target = mission.goal.target
         let done = progress.progress >= target
 
-        return PaperPanel {
+        // Erfüllte Aufgaben bekommen einen grünen Rahmen und einen leichten
+        // grünen Schimmer — auf einen Blick sichtbar, was erledigt ist.
+        return PaperPanel(accent: done ? Palette.moss.swiftUIColor : nil) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(mission.title)
-                            .font(.system(size: 18, weight: .semibold, design: .serif))
-                            .foregroundStyle(Palette.uiInk)
+                        HStack(spacing: 6) {
+                            if done {
+                                Image(systemName: progress.claimed
+                                      ? "checkmark.seal.fill" : "checkmark.circle.fill")
+                                    .font(.system(size: 15))
+                                    .foregroundStyle(Palette.moss.swiftUIColor)
+                            }
+                            Text(mission.title)
+                                .font(.system(size: 18, weight: .semibold, design: .serif))
+                                .foregroundStyle(done
+                                                 ? Palette.moss.swiftUIColor
+                                                 : Palette.uiInk)
+                        }
                         Text(mission.detail)
                             .font(.system(size: 13, design: .serif))
                             .foregroundStyle(Palette.inkSoft.swiftUIColor)
@@ -89,7 +101,7 @@ struct MissionsView: View {
                         Button("Belohnung abholen") {
                             session.claim(mission: mission)
                         }
-                        .buttonStyle(BrushButtonStyle())
+                        .buttonStyle(BrushButtonStyle(tint: Palette.moss.swiftUIColor))
                     }
                 }
             }

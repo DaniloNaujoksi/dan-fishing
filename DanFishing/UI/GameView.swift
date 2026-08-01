@@ -56,10 +56,12 @@ struct GameView: View {
                     TutorialOverlay(step: step) { session.skipTutorial() }
                 }
 
+                // Meldungen stehen mittig im Bild: Am unteren Rand gingen sie
+                // zwischen Wurftaste und Köderanzeige unter.
                 if let toast = session.toast {
                     toastView(toast)
-                        .padding(.bottom, 220)
-                        .frame(maxHeight: .infinity, alignment: .bottom)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                        .allowsHitTesting(false)
                 }
             }
             .onAppear {
@@ -87,44 +89,55 @@ struct GameView: View {
     /// Zeile und die Werte dürfen notfalls seitlich scrollen.
     private var topBar: some View {
         HStack(alignment: .top, spacing: 10) {
-            VStack(alignment: .leading, spacing: 8) {
-                Button {
-                    session.returnToMenu()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(Palette.uiInk)
-                        .frame(width: 38, height: 38)
-                        .background(Circle().fill(Palette.paper.swiftUIColor.opacity(0.9)))
+            VStack(alignment: .leading, spacing: 7) {
+                HStack(spacing: 8) {
+                    Button {
+                        session.returnToMenu()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(Palette.uiInk)
+                            .frame(width: 34, height: 34)
+                            .background(Circle().fill(Palette.paper.swiftUIColor.opacity(0.92)))
+                    }
+
+                    // Münzen, Stufe und Uhrzeit stehen zusammen auf einer
+                    // Tafel statt als drei einzelne Kacheln. Eine feste Gruppe
+                    // kann nicht mehr am Rand anstoßen, egal wie lang die
+                    // Zahlen werden.
+                    HStack(spacing: 0) {
+                        hudValue("circle.hexagongrid.fill", "\(session.save.coins)",
+                                 tint: Palette.gold.swiftUIColor)
+                        hudDivider
+                        hudValue("star.fill", "\(session.save.level)")
+                        hudDivider
+                        hudValue("clock", session.clockText)
+                    }
+                    .background(
+                        Capsule().fill(Palette.paper.swiftUIColor.opacity(0.92))
+                    )
                 }
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        StatChip(symbol: "circle.hexagongrid.fill",
-                                 value: "\(session.save.coins)",
-                                 tint: ColorSpec(0x9A7B24).swiftUIColor)
-                        StatChip(symbol: "star.fill", value: "St. \(session.save.level)")
-                        StatChip(symbol: "clock", value: session.clockText)
-
-                        if session.save.settings.showDepthHint {
-                            StatChip(symbol: "water.waves", value: session.habitatText)
-                            StatChip(symbol: "arrow.down.to.line", value: session.depthText)
-                            if session.stats.hasFishFinder {
-                                StatChip(symbol: "dot.radiowaves.up.forward",
-                                         value: activityText,
-                                         tint: Palette.moss.swiftUIColor)
-                            }
+                if session.save.settings.showDepthHint {
+                    HStack(spacing: 0) {
+                        hudValue("water.waves", session.habitatText)
+                        hudDivider
+                        hudValue("arrow.down.to.line", session.depthText)
+                        if session.stats.hasFishFinder {
+                            hudDivider
+                            hudValue("dot.radiowaves.up.forward", activityText,
+                                     tint: Palette.moss.swiftUIColor)
                         }
                     }
-                    .padding(.trailing, 10)
+                    .background(
+                        Capsule().fill(Palette.paper.swiftUIColor.opacity(UIStyle.overlayOpacity))
+                    )
+                    .padding(.leading, 42)
                 }
-                // Breit genug für Münzen, Stufe und volle Uhrzeit; alles
-                // Weitere scrollt. Vorher schnitt die Grenze die Uhr ab.
-                .frame(maxWidth: 268)
-                .fixedSize(horizontal: false, vertical: true)
             }
+            .layoutPriority(1)
 
-            Spacer(minLength: 8)
+            Spacer(minLength: 6)
 
             VStack(alignment: .trailing, spacing: 8) {
                 iconButton("book.closed", label: "Fangbuch") { showCodex = true }
@@ -133,6 +146,29 @@ struct GameView: View {
             }
         }
         .padding(.top, 8)
+    }
+
+    /// Ein Wert in der Kopfzeile.
+    private func hudValue(_ symbol: String, _ value: String,
+                          tint: Color = Palette.uiInk) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: symbol)
+                .font(.system(size: 11, weight: .semibold))
+            Text(value)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 7)
+    }
+
+    private var hudDivider: some View {
+        Rectangle()
+            .fill(Palette.inkSoft.swiftUIColor.opacity(0.22))
+            .frame(width: 1, height: 15)
     }
 
     /// Die Minimap sitzt frei über dem Wasser und lässt sich antippen.
@@ -175,8 +211,8 @@ struct GameView: View {
             .foregroundStyle(Palette.uiInk)
             .frame(width: 64, height: 52)
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Palette.paper.swiftUIColor.opacity(0.9))
+                RoundedRectangle(cornerRadius: UIStyle.controlRadius, style: .continuous)
+                    .fill(Palette.paper.swiftUIColor.opacity(UIStyle.overlayOpacity))
                     .shadow(color: .black.opacity(0.12), radius: 4, y: 2)
             )
         }
@@ -221,7 +257,7 @@ struct GameView: View {
             .foregroundStyle(Palette.uiInk)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Capsule().fill(Palette.paper.swiftUIColor.opacity(0.88)))
+            .background(Capsule().fill(Palette.paper.swiftUIColor.opacity(UIStyle.overlayOpacity)))
         }
     }
 
@@ -237,7 +273,7 @@ struct GameView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Capsule().fill(Palette.paper.swiftUIColor.opacity(0.88)))
+            .background(Capsule().fill(Palette.paper.swiftUIColor.opacity(UIStyle.overlayOpacity)))
         }
     }
 
@@ -341,8 +377,8 @@ struct GameView: View {
     private var actionColor: Color {
         switch session.fishingPhase {
         case .biteWindow: return Palette.vermilion.swiftUIColor
-        case .aiming: return ColorSpec(0x9A6A3A).swiftUIColor
-        default: return ColorSpec(0x4E6E7A).swiftUIColor
+        case .aiming: return Palette.gold.swiftUIColor
+        default: return Palette.waterDeep.swiftUIColor
         }
     }
 
@@ -377,7 +413,7 @@ struct GameView: View {
                                ? Palette.vermilion.swiftUIColor
                                : Palette.paper.swiftUIColor.opacity(0.92))
             )
-            .shadow(color: .black.opacity(0.2), radius: 8, y: 3)
-            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .shadow(color: .black.opacity(0.22), radius: 10, y: 3)
+            .transition(.scale(scale: 0.94).combined(with: .opacity))
     }
 }

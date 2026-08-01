@@ -4,22 +4,47 @@ import SwiftUI
 /// und Knöpfe. An einer Stelle gesammelt, damit die Menüs zusammenpassen.
 struct PaperPanel<Content: View>: View {
     var padding: CGFloat = 18
+    /// Farbe für Rand und Schimmer. Nil lässt die Tafel neutral.
+    var accent: Color?
     @ViewBuilder var content: Content
 
     var body: some View {
         content
             .padding(padding)
             .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                RoundedRectangle(cornerRadius: UIStyle.panelRadius, style: .continuous)
                     .fill(Palette.paper.swiftUIColor)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .strokeBorder(Palette.inkSoft.swiftUIColor.opacity(0.22), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: UIStyle.panelRadius, style: .continuous)
+                            .fill((accent ?? .clear).opacity(0.10))
                     )
-                    .overlay(PaperTexture().clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous)))
-                    .shadow(color: .black.opacity(0.18), radius: 14, x: 0, y: 6)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: UIStyle.panelRadius, style: .continuous)
+                            .strokeBorder(accent?.opacity(0.55)
+                                          ?? Palette.inkSoft.swiftUIColor.opacity(0.22),
+                                          lineWidth: accent == nil ? 1 : 1.6)
+                    )
+                    .overlay(
+                        PaperTexture()
+                            .clipShape(RoundedRectangle(cornerRadius: UIStyle.panelRadius,
+                                                        style: .continuous))
+                    )
+                    .shadow(color: .black.opacity(0.16), radius: 14, x: 0, y: 6)
             )
     }
+}
+
+/// Gemeinsame Maße der Oberfläche.
+///
+/// Vorher stand jeder Radius und jede Deckkraft einzeln im Code, wodurch sich
+/// Menüs, Karten und Knöpfe leicht unterschieden. Hier stehen sie einmal.
+enum UIStyle {
+    /// Radius großer Flächen (Tafeln, Karten).
+    static let panelRadius: CGFloat = 20
+    /// Radius kleiner Flächen (Knöpfe, Kacheln).
+    static let controlRadius: CGFloat = 14
+    /// Deckkraft der Papierflächen über dem Spielfeld.
+    static let overlayOpacity: CGFloat = 0.92
 }
 
 /// Feine Struktur auf Papierflächen. Bewusst sehr dezent — sie soll spürbar,

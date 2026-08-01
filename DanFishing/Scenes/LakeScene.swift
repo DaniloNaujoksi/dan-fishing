@@ -26,6 +26,7 @@ final class LakeScene: SKScene {
     private let zoneLayer = SKNode()
     private let underwaterLayer = SKNode()
     private let fishLayer = SKNode()
+    private let foamLayer = SKNode()
     private let shadowLayer = SKNode()
     private let plantLayer = SKNode()
     private let actorLayer = SKNode()
@@ -82,6 +83,7 @@ final class LakeScene: SKScene {
             (zoneLayer, .zones),
             (underwaterLayer, .underwaterPlants),
             (fishLayer, .fish),
+            (foamLayer, .shadows),
             (shadowLayer, .shadows),
             (plantLayer, .floatingPlants),
             (actorLayer, .boat),
@@ -96,6 +98,7 @@ final class LakeScene: SKScene {
 
         buildWater()
         buildZones()
+        buildShoreFoam()
         buildDecor()
         buildActors()
         buildOverlay()
@@ -169,6 +172,89 @@ final class LakeScene: SKScene {
         zones.position = CGPoint(x: map.worldSize.width / 2, y: map.worldSize.height / 2)
         zones.zPosition = 1
         zoneLayer.addChild(zones)
+    }
+
+    /// Brandungssaum am Ufer.
+    ///
+    /// Entlang jeder Wasserzelle, die an Land grenzt, liegt ein heller Bogen,
+    /// der langsam anschwillt und wieder zurückläuft. Die Bögen sind zeitlich
+    /// versetzt, sodass die Wellen die Uferlinie entlangwandern, statt im
+    /// Gleichtakt zu blinken.
+    private func buildShoreFoam() {
+        let cell = map.cellSize
+        var placed = 0
+
+        for row in 0..<map.rows {
+            for column in 0..<map.columns {
+                guard map.kind(column: column, row: row) != .land else { continue }
+
+                // Richtung zum angrenzenden Land bestimmen.
+                var landDirection: CGVector?
+                if map.kind(column: column, row: row + 1) == .land {
+                    landDirection = CGVector(dx: 0, dy: 1)
+                } else if map.kind(column: column, row: row - 1) == .land {
+                    landDirection = CGVector(dx: 0, dy: -1)
+                } else if map.kind(column: column + 1, row: row) == .land {
+                    landDirection = CGVector(dx: 1, dy: 0)
+                } else if map.kind(column: column - 1, row: row) == .land {
+                    landDirection = CGVector(dx: -1, dy: 0)
+                }
+
+                guard let direction = landDirection else { continue }
+
+                let center = CGPoint(x: (CGFloat(column) + 0.5) * cell,
+                                     y: (CGFloat(row) + 0.5) * cell)
+
+                let foam = SKShapeNode()
+                let path = CGMutablePath()
+                let width = cell * 0.9
+                let bulge = cell * 0.18
+
+                // Bogen quer zur Uferrichtung, zum Land hin gewölbt.
+                let across = CGVector(dx: -direction.dy, dy: direction.dx)
+                let start = CGPoint(x: center.x - across.dx * width / 2,
+                                    y: center.y - across.dy * width / 2)
+                let end = CGPoint(x: center.x + across.dx * width / 2,
+                                  y: center.y + across.dy * width / 2)
+                let control = CGPoint(x: center.x + direction.dx * bulge * 2,
+                                      y: center.y + direction.dy * bulge * 2)
+
+                path.move(to: start)
+                path.addQuadCurve(to: end, control: control)
+
+                foam.path = path
+                foam.strokeColor = SKColor(white: 1, alpha: 0.55)
+                foam.lineWidth = 3
+                foam.lineCap = .round
+                foam.alpha = 0
+                foam.position = CGPoint(x: direction.dx * cell * 0.22,
+                                        y: direction.dy * cell * 0.22)
+                foamLayer.addChild(foam)
+
+                // Zeitversatz aus der Lage: benachbarte Bögen laufen kurz
+                // nacheinander an, das ergibt die wandernde Welle.
+                let offset = Double((column + row * 2) % 9) * 0.42
+                let swell = SKAction.sequence([
+                    .wait(forDuration: offset),
+                    .repeatForever(.sequence([
+                        .group([
+                            .fadeAlpha(to: 0.75, duration: 1.5),
+                            .moveBy(x: direction.dx * cell * 0.16,
+                                    y: direction.dy * cell * 0.16, duration: 1.5)
+                        ]),
+                        .group([
+                            .fadeAlpha(to: 0.05, duration: 2.0),
+                            .moveBy(x: -direction.dx * cell * 0.16,
+                                    y: -direction.dy * cell * 0.16, duration: 2.0)
+                        ])
+                    ]))
+                ])
+                foam.run(swell)
+
+                placed += 1
+                if placed > 900 { return }   // Sicherheitsnetz für sehr zerklüftete Ufer
+            }
+        }
     }
 
     private func buildDecor() {
