@@ -86,6 +86,12 @@ final class GameSession: ObservableObject {
 
     @Published private(set) var miniGame: MiniGameSnapshot?
     @Published private(set) var pendingCatch: CatchResult?
+
+    /// Art, die gerade zum ersten Mal gefangen wurde. Trägt die Einblendung
+    /// mit Fanfare; sie blendet sich nach kurzer Zeit selbst aus.
+    @Published private(set) var discoveredSpecies: FishSpecies?
+    /// Entdeckerbonus, der zu dieser Einblendung gehört.
+    @Published private(set) var discoveryBonus: Int = 0
     /// Aktueller Tutorialschritt, oder nil wenn keiner läuft.
     @Published private(set) var tutorialStep: TutorialStep?
 
@@ -131,6 +137,7 @@ final class GameSession: ObservableObject {
 
     private var fight: CatchMiniGame?
     private var toastTimer: Timer?
+    private var discoveryTimer: Timer?
     private var lastReelTick: Double = 0
     private var tutorial = TutorialSystem(active: false)
 
@@ -494,6 +501,12 @@ final class GameSession: ObservableObject {
             showToast("Stufe \(save.level) erreicht", emphasis: true)
         }
 
+        // Neue Art: eigene Einblendung mit Fanfare, bevor die Fangkarte
+        // übernimmt.
+        if isNew {
+            celebrateDiscovery(of: fish.species)
+        }
+
         completedMissions = MissionSystem.apply(result: result,
                                                 timeOfDay: timeOfDay,
                                                 missions: missions,
@@ -501,6 +514,21 @@ final class GameSession: ObservableObject {
         stats = UpgradeSystem.stats(for: save)
         persist()
         return result
+    }
+
+    /// Zeigt die Entdeckung einer Art und blendet sie nach knapp drei
+    /// Sekunden wieder aus.
+    private func celebrateDiscovery(of species: FishSpecies) {
+        discoveredSpecies = species
+        discoveryBonus = EconomySystem.newSpeciesBonus
+
+        AudioManager.shared.play(.discovery)
+        HapticManager.shared.success()
+
+        discoveryTimer?.invalidate()
+        discoveryTimer = Timer.scheduledTimer(withTimeInterval: 2.8, repeats: false) { [weak self] _ in
+            self?.discoveredSpecies = nil
+        }
     }
 
     // MARK: - Entscheidung nach dem Fang

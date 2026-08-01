@@ -53,6 +53,13 @@ struct GameView: View {
                         .transition(.scale(scale: 0.92).combined(with: .opacity))
                 }
 
+                // Liegt über der Fangkarte: Die Entdeckung kommt zuerst, die
+                // Zahlen danach.
+                if let species = session.discoveredSpecies {
+                    NewSpeciesBanner(species: species, bonusCoins: session.discoveryBonus)
+                        .transition(.opacity)
+                }
+
                 if let step = session.tutorialStep, session.pendingCatch == nil {
                     TutorialOverlay(step: step) { session.skipTutorial() }
                 }
@@ -73,6 +80,7 @@ struct GameView: View {
             .animation(.easeInOut(duration: 0.25), value: session.miniGame == nil)
             .animation(.easeOut(duration: 0.25), value: session.pendingCatch)
             .animation(.easeInOut(duration: 0.3), value: session.tutorialStep)
+            .animation(.easeInOut(duration: 0.35), value: session.discoveredSpecies?.id)
         }
         .sheet(isPresented: $showBaitBox) { BaitBoxView() }
         .sheet(isPresented: $showCodex) { CodexView() }

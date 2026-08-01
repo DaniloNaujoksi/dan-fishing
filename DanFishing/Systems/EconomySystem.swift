@@ -25,9 +25,12 @@ enum EconomySystem {
     ///
     /// Ein neuer Eintrag im Fangbuch und ein persönlicher Rekord zahlen extra —
     /// das sind die Momente, für die man weiterangelt.
+    /// Entdeckerbonus für eine Art, die noch nie im Fangbuch stand.
+    static let newSpeciesBonus = 120
+
     static func bonusCoins(for result: CatchResult) -> Int {
         var bonus = 0
-        if result.isNewSpecies { bonus += 60 }
+        if result.isNewSpecies { bonus += newSpeciesBonus }
         if result.isPersonalRecord { bonus += 25 }
         if result.fish.isTrophy { bonus += 40 }
         return bonus

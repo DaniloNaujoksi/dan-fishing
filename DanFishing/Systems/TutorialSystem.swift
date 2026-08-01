@@ -37,7 +37,7 @@ enum TutorialStep: Int, CaseIterable, Equatable {
         case .watch: return "Ein Fisch schaut sich den Köder an — der Punkt über ihm verrät ihn."
         case .strike: return "Der Schwimmer taucht weg. Tippe jetzt die Taste!"
         case .fight: return "Halte gedrückt, um einzuholen. Loslassen entlastet die Schnur."
-        case .done: return "Verkaufen, behalten oder freilassen — du entscheidest."
+        case .done: return "Jeder Fang bringt Münzen und Erfahrung. Petri Heil."
         }
     }
 

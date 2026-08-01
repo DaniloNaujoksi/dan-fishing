@@ -20,6 +20,8 @@ final class AudioManager {
         case reel
         case catchSmall
         case catchBig
+        /// Fanfare für eine neu entdeckte Art.
+        case discovery
         case lineSnap
         case uiTap
     }
@@ -156,6 +158,7 @@ final class AudioManager {
         case .reel: return "reel"
         case .catchSmall: return "catchSmall"
         case .catchBig: return "catchBig"
+        case .discovery: return "discovery"
         case .lineSnap: return "lineSnap"
         case .uiTap: return "uiTap"
         }
@@ -218,6 +221,34 @@ final class AudioManager {
             let b: Double = AudioManager.tone(587.33, t) * AudioManager.decay(2.2, max(0, t - 0.2))
             let c: Double = AudioManager.tone(783.99, t) * AudioManager.decay(2.0, max(0, t - 0.42))
             return (a + b + c) * 0.24
+        }
+
+        // Entdeckung einer neuen Art: aufsteigende Folge in der japanischen
+        // Leiter, dazu ein leises Glitzern darüber. Kein Trompetenstoß —
+        // der Moment soll freudig sein, nicht laut.
+        registerEffect("discovery", duration: 2.0) { t, _ in
+            let steps: [(Double, Double)] = [
+                (587.33, 0.00),   // D5
+                (659.25, 0.14),   // E5
+                (783.99, 0.28),   // G5
+                (880.00, 0.42),   // A5
+                (1174.66, 0.60)   // D6, der Schlusston
+            ]
+
+            var sample = 0.0
+            for (frequency, start) in steps where t >= start {
+                let local = t - start
+                let decay = start >= 0.6 ? 1.6 : 3.2
+                sample += AudioManager.pluck(frequency, local, decay: decay) * 0.16
+            }
+
+            // Feines Glitzern nach dem letzten Ton.
+            if t > 0.6 {
+                let shimmer = sin(2 * Double.pi * 2637 * t) * 0.02 * exp(-(t - 0.6) * 2.4)
+                sample += shimmer * (0.6 + 0.4 * sin(t * 26))
+            }
+
+            return sample * min(1, (2.0 - t) / 0.4)
         }
 
         registerEffect("lineSnap", duration: 0.5) { t, _ in
