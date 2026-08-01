@@ -118,10 +118,12 @@ enum DecorFactory {
     private static func lilyPad(variant: CGFloat) -> SKNode {
         let group = SKNode()
 
+        // Ohne Kontur: Der dunkle Rand hat die Blätter wie Aufkleber wirken
+        // lassen. Die Fläche allein liegt ruhiger auf dem Wasser.
         let pad = SKShapeNode(circleOfRadius: 17 + variant * 7)
         pad.fillColor = Palette.lily.skColor(alpha: 0.92)
-        pad.strokeColor = ColorSpec(0x3F5C3B).skColor(alpha: 0.8)
-        pad.lineWidth = 1.5
+        pad.strokeColor = .clear
+        pad.lineWidth = 0
         group.addChild(pad)
 
         // Einschnitt, damit das Blatt nicht wie ein Kreis wirkt
