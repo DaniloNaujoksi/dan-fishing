@@ -19,6 +19,9 @@ final class AnglerNode: SKNode, ActorNode {
     /// Wellenring um die Hüfte, sobald er im Wasser steht.
     private let bowWave = SKShapeNode(circleOfRadius: 20)
 
+    /// Am Bach hängt dieselbe Laterne am Rucksack.
+    private let lantern = LanternNode()
+
     private var stepPhase: CGFloat = 0
     private var idlePhase: CGFloat = 0
     private var splashTimer: CGFloat = 0
@@ -35,6 +38,16 @@ final class AnglerNode: SKNode, ActorNode {
         buildLegs()
         buildBody()
         buildRod()
+
+        // Sie baumelt hinten am Rucksack, damit sie die Rutenhand frei lässt.
+        lantern.position = CGPoint(x: -14, y: -10)
+        lantern.zRotation = -1.4
+        lantern.zPosition = 6
+        addChild(lantern)
+    }
+
+    func setLantern(level: Int) {
+        lantern.configure(level: level)
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -163,7 +176,7 @@ final class AnglerNode: SKNode, ActorNode {
             : ColorSpec(0x3C4A5A).skColor
     }
 
-    func update(deltaTime: CGFloat, effort: CGFloat, speed: CGFloat) {
+    func update(deltaTime: CGFloat, effort: CGFloat, speed: CGFloat, night: CGFloat) {
         idlePhase += deltaTime
 
         // Schritttempo hängt an der Geschwindigkeit; im Wasser geht es zäher.

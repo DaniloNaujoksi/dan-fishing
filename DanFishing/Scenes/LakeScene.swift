@@ -494,7 +494,11 @@ final class LakeScene: SKScene {
 
         actorNode.position = player.position
         actorNode.zRotation = player.heading
-        actorNode.update(deltaTime: dt, effort: player.rowingIntensity, speed: player.speed)
+        actorNode.update(deltaTime: dt,
+                         effort: player.rowingIntensity,
+                         speed: player.speed,
+                         night: CGFloat(dayNight.darkness))
+        actorNode.setLantern(level: session.save.upgradeLevels["lantern"] ?? 0)
 
         // Sichtbare Ausrüstung: am See der Bootsausbau, am Bach die Wathose.
         let upgradeID = water.movement == .wading ? "waders" : "boat"
@@ -668,28 +672,55 @@ final class LakeScene: SKScene {
         ambience?.update(deltaTime: dt, center: cameraNode.position, darkness: darkness)
     }
 
-    /// Laterne: nur nachts und nur, wenn gekauft. Sie schneidet einen hellen
-    /// Kreis in den Nachtschleier.
+    /// Der Schein der Laterne auf dem Wasser.
+    ///
+    /// Er liegt über dem Nachtschleier — sonst würde ihn genau die Dunkelheit
+    /// schlucken, gegen die er leuchten soll — und hängt am Boot, nicht an der
+    /// Bildmitte. Warm, weich und leicht unruhig: Man soll nachts hinausfahren
+    /// wollen, nicht nur besser sehen.
     private func updateLantern(darkness: CGFloat) {
         let radius = CGFloat(session.stats.lanternRadius)
-        guard radius > 0, darkness > 0.15 else {
+        guard radius > 0, darkness > 0.12 else {
             lanternNode?.removeFromParent()
             lanternNode = nil
             return
         }
 
-        if lanternNode == nil, let texture = TextureFactory.softDisc(color: UIColor(white: 1, alpha: 0.9)) {
+        if lanternNode == nil,
+           let texture = TextureFactory.softDisc(color: UIColor(red: 1.0, green: 0.84, blue: 0.56, alpha: 0.9)) {
             let node = SKSpriteNode(texture: texture)
             node.blendMode = .add
-            node.zPosition = 480
+            // Über dem Farbschleier der Nacht (zPosition 500).
+            node.zPosition = 520
             cameraNode.addChild(node)
+
+            // Ein zweiter, kleinerer Kern direkt unter der Laterne macht den
+            // Übergang vom hellen Fleck zum Rand weicher.
+            let core = SKSpriteNode(texture: texture)
+            core.blendMode = .add
+            core.alpha = 0.5
+            core.name = "core"
+            node.addChild(core)
+
             lanternNode = node
         }
 
-        lanternNode?.size = CGSize(width: radius * 2, height: radius * 2)
-        lanternNode?.alpha = darkness * 0.32
-        // Leichtes Flackern der Flamme.
-        lanternNode?.setScale(1 + sin(CGFloat(lastUpdate) * 3) * 0.02)
+        guard let glow = lanternNode else { return }
+
+        glow.size = CGSize(width: radius * 2, height: radius * 2)
+        (glow.childNode(withName: "core") as? SKSpriteNode)?.size =
+            CGSize(width: radius * 0.9, height: radius * 0.9)
+
+        // Der Schein sitzt dort, wo die Laterne hängt: leicht vor dem Boot.
+        let offset = CGPoint(x: player.position.x + cos(player.heading) * 30 - cameraNode.position.x,
+                             y: player.position.y + sin(player.heading) * 30 - cameraNode.position.y)
+        glow.position = offset
+
+        // Flackern aus zwei ungleichen Wellen — nie ganz derselbe Rhythmus.
+        let t = CGFloat(lastUpdate)
+        let flicker = 1 + sin(t * 3.1) * 0.03 + sin(t * 7.7 + 1.2) * 0.018
+        glow.alpha = darkness * 0.46 * flicker
+        glow.setScale(flicker)
     }
 
     /// Kirschblüten, die über das Bild treiben.

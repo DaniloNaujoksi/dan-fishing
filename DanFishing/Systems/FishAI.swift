@@ -81,6 +81,9 @@ struct FishAI {
         var nibblesLeft: Int = 0
         /// Sperre, damit ein Fisch nicht sofort erneut anbeißt.
         var cooldown: CGFloat = 0
+        /// Wie lange er schon keinen freien Weg findet. Ab einer Sekunde wird
+        /// er aus der Klemme geholt.
+        var stuckTimer: CGFloat = 0
     }
 
     /// Wie weit ein Fisch den Köder überhaupt bemerkt.
@@ -231,18 +234,64 @@ struct FishAI {
         case .spooked:  speed = swimmer.speed * 2.4
         }
 
-        let step = CGPoint(x: swimmer.position.x + cos(swimmer.heading) * speed * dt,
-                           y: swimmer.position.y + sin(swimmer.heading) * speed * dt)
+        let reach = speed * dt
 
-        if map.habitat(at: step) == swimmer.habitat {
-            swimmer.position = step
-        } else if !map.isLand(at: step) && swimmer.behaviour != .cruise {
-            // Beim Verfolgen des Köders darf er seine Zone kurz verlassen,
-            // solange er nicht auf Land schwimmt.
-            swimmer.position = step
-        } else {
-            swimmer.heading += .pi * CGFloat.random(in: 0.6...1.4)
-            swimmer.turnTimer = CGFloat.random(in: 0.6...1.4)
+        // Erst geradeaus, dann in immer weiteren Bögen zur Seite. Die alte
+        // Fassung hat bei jedem Hindernis um 180 Grad gedreht — an einer
+        // Zonenkante kippte die Richtung dadurch jeden Frame hin und her und
+        // der Fisch stand fest. Ein Ausweichen in kleinen Schritten löst genau
+        // das, und der Fisch schwimmt am Ufer entlang statt davor zu zappeln.
+        let offsets: [CGFloat] = [0, 0.4, -0.4, 0.9, -0.9, 1.5, -1.5, 2.2, -2.2, .pi]
+
+        // Erster Durchgang: in der eigenen Zone bleiben.
+        for offset in offsets {
+            let heading = swimmer.heading + offset
+            let step = advance(from: swimmer.position, heading: heading, reach: reach)
+            guard map.habitat(at: step) == swimmer.habitat else { continue }
+            commit(&swimmer, to: step, heading: heading, turned: offset != 0)
+            return
+        }
+
+        // Zweiter Durchgang: raus aus der Zone ist besser als steckenbleiben.
+        // Land bleibt tabu.
+        for offset in offsets {
+            let heading = swimmer.heading + offset
+            let step = advance(from: swimmer.position, heading: heading, reach: reach)
+            guard !map.isLand(at: step) else { continue }
+            commit(&swimmer, to: step, heading: heading, turned: offset != 0)
+            return
+        }
+
+        // Rundum blockiert — das passiert nur in einer Sackgasse aus einer
+        // Zelle. Nach kurzem Zappeln wird der Fisch ins nächste offene Wasser
+        // gesetzt, damit er nicht für immer dort klebt.
+        swimmer.stuckTimer += dt
+        if swimmer.stuckTimer > 1.0 {
+            let free = map.nearestWater(from: swimmer.position)
+            swimmer.heading = atan2(free.y - swimmer.position.y, free.x - swimmer.position.x)
+            swimmer.position = free
+            swimmer.stuckTimer = 0
+            swimmer.turnTimer = CGFloat.random(in: 1.0...2.2)
+        }
+    }
+
+    private static func advance(from point: CGPoint, heading: CGFloat, reach: CGFloat) -> CGPoint {
+        CGPoint(x: point.x + cos(heading) * reach,
+                y: point.y + sin(heading) * reach)
+    }
+
+    /// Übernimmt einen Schritt. Nach einem Ausweichmanöver bleibt die neue
+    /// Richtung eine Weile stehen, sonst dreht der Fisch sofort zurück ins
+    /// Hindernis.
+    private static func commit(_ swimmer: inout Swimmer,
+                               to point: CGPoint,
+                               heading: CGFloat,
+                               turned: Bool) {
+        swimmer.position = point
+        swimmer.stuckTimer = 0
+        if turned {
+            swimmer.heading = heading
+            swimmer.turnTimer = max(swimmer.turnTimer, CGFloat.random(in: 0.8...1.8))
         }
     }
 

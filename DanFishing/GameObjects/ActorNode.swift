@@ -14,8 +14,13 @@ protocol ActorNode: SKNode {
     func applyUpgrade(level: Int)
 
     /// Ein Frame.
-    /// - Parameter effort: 0…1 — wie kräftig gerade gerudert oder gelaufen wird.
-    func update(deltaTime: CGFloat, effort: CGFloat, speed: CGFloat)
+    /// - Parameters:
+    ///   - effort: 0…1 — wie kräftig gerade gerudert oder gelaufen wird.
+    ///   - night: 0…1 — wie dunkel es ist; danach richtet sich die Laterne.
+    func update(deltaTime: CGFloat, effort: CGFloat, speed: CGFloat, night: CGFloat)
+
+    /// Ausbaustufe der Papierlaterne. 0 heißt: noch nicht gekauft.
+    func setLantern(level: Int)
 
     /// Haltung der Rute. `direction` zeigt in Weltkoordinaten dorthin, wo die
     /// Schnur hinläuft; nil ist Ruhestellung.

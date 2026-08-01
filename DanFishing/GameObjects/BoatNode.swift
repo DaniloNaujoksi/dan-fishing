@@ -14,6 +14,10 @@ final class BoatNode: SKNode, ActorNode {
     private let rod = SKShapeNode()
     private let shadow = SKSpriteNode()
 
+    /// Papierlaterne am Steven. Sie hat eine eigene Ausbaureihe und leuchtet
+    /// nur nachts.
+    private let lantern = LanternNode()
+
     /// Zierrat, der mit den Ausbaustufen dazukommt.
     private let trim = SKNode()
     private var appliedUpgradeLevel = -1
@@ -31,6 +35,17 @@ final class BoatNode: SKNode, ActorNode {
 
         buildOars()
         buildAngler()
+
+        // Der Stab steht vorn an der Bordwand, die Laterne hängt nach außen
+        // über dem Wasser — dorthin fällt auch der Schein.
+        lantern.position = CGPoint(x: 30, y: 12)
+        lantern.zRotation = 0.5
+        lantern.zPosition = 6
+        addChild(lantern)
+    }
+
+    func setLantern(level: Int) {
+        lantern.configure(level: level)
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -188,7 +203,7 @@ final class BoatNode: SKNode, ActorNode {
     ///
     /// Wer für ein Upgrade bezahlt, soll es sehen: Stufe 1 bringt neue Riemen
     /// mit hellen Blättern, Stufe 2 einen lackierten Rumpf mit Zierstreifen
-    /// und Messingbeschlägen, Stufe 3 zusätzlich Laterne und Wimpel.
+    /// und Messingbeschlägen, Stufe 3 zusätzlich einen Wimpel am Heck.
     func applyUpgrade(level: Int) {
         guard level != appliedUpgradeLevel else { return }
         appliedUpgradeLevel = level
@@ -236,25 +251,8 @@ final class BoatNode: SKNode, ActorNode {
 
         guard level >= 3 else { return }
 
-        // Laterne am Bug, mit warmem Schein.
-        let lantern = SKShapeNode(rectOf: CGSize(width: 9, height: 12), cornerRadius: 2)
-        lantern.fillColor = ColorSpec(0xF2D98C).skColor
-        lantern.strokeColor = ColorSpec(0x6B4E30).skColor
-        lantern.lineWidth = 1.5
-        lantern.position = CGPoint(x: 36, y: 0)
-        lantern.zPosition = 1
-        trim.addChild(lantern)
-
-        if let glow = TextureFactory.softDisc(color: UIColor(red: 1, green: 0.87, blue: 0.6, alpha: 0.6)) {
-            let halo = SKSpriteNode(texture: glow)
-            halo.size = CGSize(width: 70, height: 70)
-            halo.blendMode = .add
-            halo.alpha = 0.55
-            halo.position = lantern.position
-            trim.addChild(halo)
-        }
-
-        // Wimpel am Heck, der im Fahrtwind flattert.
+        // Wimpel am Heck, der im Fahrtwind flattert. Die Laterne gehört nicht
+        // mehr zum Bootsausbau — sie hat eine eigene Reihe im Laden.
         let pennant = SKShapeNode()
         let path = CGMutablePath()
         path.move(to: CGPoint(x: -40, y: 0))
@@ -275,7 +273,7 @@ final class BoatNode: SKNode, ActorNode {
     }
 
     /// Wird jeden Frame aufgerufen. `effort` ist hier die Ruderkraft.
-    func update(deltaTime: CGFloat, effort rowing: CGFloat, speed: CGFloat) {
+    func update(deltaTime: CGFloat, effort rowing: CGFloat, speed: CGFloat, night: CGFloat) {
         idlePhase += deltaTime
 
         // Ruderschlag: Die Blätter fahren nach vorn, tauchen ein und ziehen
@@ -306,6 +304,9 @@ final class BoatNode: SKNode, ActorNode {
                                y: sin(idlePhase * 1.3) * 0.5)
 
         shadow.alpha = 0.35 + min(0.25, speed / 400)
+
+        // Die Laterne schwingt mit dem Kahn und flackert für sich.
+        lantern.update(deltaTime: deltaTime, night: night, sway: bob * 6 + rowing * 0.12)
     }
 
     /// Haltung der Rute.

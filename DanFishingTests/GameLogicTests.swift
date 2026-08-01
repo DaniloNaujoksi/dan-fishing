@@ -254,6 +254,65 @@ final class FishSpawnerTests: XCTestCase {
     }
 }
 
+final class FishAITests: XCTestCase {
+
+    private func swimmer(at point: CGPoint, habitat: Habitat, heading: CGFloat) -> FishAI.Swimmer {
+        let species = FishCatalog.species(id: "roach")!
+        return FishAI.Swimmer(position: point,
+                              heading: heading,
+                              speed: 40,
+                              habitat: habitat,
+                              speciesID: species.id,
+                              scale: 1,
+                              turnTimer: 1,
+                              traits: FishAI.Traits.random(for: species))
+    }
+
+    func testFishKeepsMovingAlongTheShore() {
+        let map = LakeMap.generate()
+
+        // Ein Fisch, der direkt aufs Ufer zuschwimmt, muss daran entlang
+        // ausweichen. Früher hat er an der Kante nur noch hin und her gekippt.
+        guard let start = FishAI.randomPosition(in: .shallows, map: map) else {
+            return XCTFail("Keine Flachwasserzone gefunden")
+        }
+
+        for direction in stride(from: 0.0, to: 6.2, by: 0.7) {
+            var fish = swimmer(at: start, habitat: .shallows, heading: CGFloat(direction))
+            let from = fish.position
+
+            var travelled: CGFloat = 0
+            var previous = fish.position
+            for _ in 0..<600 {
+                FishAI.update(&fish, deltaTime: 1.0 / 60.0, map: map,
+                              lure: nil, interest: 0, biteAllowed: false)
+                travelled += hypot(fish.position.x - previous.x, fish.position.y - previous.y)
+                previous = fish.position
+
+                XCTAssertFalse(map.isLand(at: fish.position), "Fisch im Ufer gelandet")
+            }
+
+            // In zehn Sekunden legt selbst ein bummelnder Fisch eine deutliche
+            // Strecke zurück — steht er fest, bleibt der Wert nahe null.
+            XCTAssertGreaterThan(travelled, 60, "Fisch klebt fest (Start \(from))")
+        }
+    }
+
+    func testTrappedFishGetsFreed() {
+        let map = LakeMap.generate()
+
+        // Ein Fisch mitten im Ufer — so etwas kann durch einen Rundungsfehler
+        // entstehen. Er muss sich innerhalb weniger Sekunden befreien.
+        var fish = swimmer(at: CGPoint(x: 30, y: 30), habitat: .shallows, heading: 0)
+        for _ in 0..<300 {
+            FishAI.update(&fish, deltaTime: 1.0 / 60.0, map: map,
+                          lure: nil, interest: 0, biteAllowed: false)
+        }
+
+        XCTAssertFalse(map.isLand(at: fish.position))
+    }
+}
+
 final class CatchMiniGameTests: XCTestCase {
 
     private func fish(_ id: String, length: Double) -> HookedFish {

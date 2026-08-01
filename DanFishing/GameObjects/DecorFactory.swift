@@ -10,6 +10,39 @@ enum DecorFactory {
         CGPoint(x: (a.x + b.x) / 2, y: (a.y + b.y) / 2)
     }
 
+    // MARK: - Wind
+
+    /// Ein Windzug: langsam hin, langsam zurück, mit weichem Umkehrpunkt.
+    ///
+    /// Zwei Dinge machen den Unterschied zwischen „wackelt“ und „weht“: Die
+    /// Bewegung muss an den Enden abbremsen statt umzuschnappen, und keine
+    /// zwei Pflanzen dürfen im selben Takt laufen. Deshalb bekommt jede über
+    /// `phase` einen eigenen Startversatz.
+    private static func breeze(angle: CGFloat, period: Double, phase: CGFloat) -> SKAction {
+        let out = SKAction.rotate(byAngle: angle, duration: period)
+        out.timingMode = .easeInEaseOut
+        let back = SKAction.rotate(byAngle: -angle, duration: period)
+        back.timingMode = .easeInEaseOut
+
+        return .sequence([
+            .wait(forDuration: Double(phase) * period * 2),
+            .repeatForever(.sequence([out, back]))
+        ])
+    }
+
+    /// Dasselbe für eine Verschiebung — für alles, was auf dem Wasser treibt.
+    private static func drift(by delta: CGVector, period: Double, phase: CGFloat) -> SKAction {
+        let out = SKAction.moveBy(x: delta.dx, y: delta.dy, duration: period)
+        out.timingMode = .easeInEaseOut
+        let back = SKAction.moveBy(x: -delta.dx, y: -delta.dy, duration: period)
+        back.timingMode = .easeInEaseOut
+
+        return .sequence([
+            .wait(forDuration: Double(phase) * period * 2),
+            .repeatForever(.sequence([out, back]))
+        ])
+    }
+
     static func node(for item: DecorItem) -> SKNode? {
         let node: SKNode?
 
@@ -37,35 +70,47 @@ enum DecorFactory {
         let group = SKNode()
         let count = 3 + Int(variant * 3)
 
+        // Der ganze Horst neigt sich langsam im Windzug; darin bewegt sich
+        // jeder Halm noch einmal für sich. Übereinandergelegt ergibt das ein
+        // Wehen statt eines gleichmäßigen Wackelns.
+        let gust = SKNode()
+        group.addChild(gust)
+        gust.run(breeze(angle: 0.045, period: 5.4 + Double(variant) * 2.2, phase: variant))
+
         for index in 0..<count {
             let height = 34 + variant * 26 + CGFloat(index) * 4
+            let lean = CGFloat(index - count / 2) * 3
+
+            // Jeder Halm dreht um seinen eigenen Fuß, deshalb ein Drehpunkt
+            // pro Halm statt einer gemeinsamen Drehung.
+            let pivot = SKNode()
+            pivot.position = CGPoint(x: CGFloat(index) * 5 - CGFloat(count) * 2.5, y: 0)
+            gust.addChild(pivot)
+
             let stalk = SKShapeNode()
             let path = CGMutablePath()
-            let lean = CGFloat(index - count / 2) * 3
             path.move(to: .zero)
             path.addQuadCurve(to: CGPoint(x: lean, y: height),
                               control: CGPoint(x: lean * 0.3, y: height * 0.6))
             stalk.path = path
             stalk.strokeColor = Palette.reed.skColor(alpha: 0.95)
             stalk.lineWidth = 2.4
-            stalk.position = CGPoint(x: CGFloat(index) * 5 - CGFloat(count) * 2.5, y: 0)
-            group.addChild(stalk)
+            pivot.addChild(stalk)
 
             // Kolben oben drauf
             if index % 2 == 0 {
                 let head = SKShapeNode(ellipseOf: CGSize(width: 5, height: 13))
                 head.fillColor = ColorSpec(0x7A5C39).skColor
                 head.strokeColor = .clear
-                head.position = CGPoint(x: stalk.position.x + lean, y: height + 5)
-                group.addChild(head)
+                head.position = CGPoint(x: lean, y: height + 5)
+                pivot.addChild(head)
             }
 
-            // Sanftes Wiegen im Wind — jede Pflanze mit eigenem Takt.
-            let sway = SKAction.sequence([
-                .rotate(byAngle: 0.05, duration: 1.6 + Double(variant)),
-                .rotate(byAngle: -0.05, duration: 1.6 + Double(variant))
-            ])
-            stalk.run(.repeatForever(sway))
+            // Der einzelne Halm zittert schneller, aber viel schwächer.
+            let phase = variant + CGFloat(index) * 0.17
+            pivot.run(breeze(angle: 0.022,
+                             period: 2.1 + Double(variant) * 0.9 + Double(index) * 0.13,
+                             phase: phase.truncatingRemainder(dividingBy: 1)))
         }
         return group
     }
@@ -102,10 +147,29 @@ enum DecorFactory {
             group.addChild(flower)
         }
 
-        group.run(.repeatForever(.sequence([
-            .moveBy(x: 2, y: 1, duration: 2.4 + Double(variant)),
-            .moveBy(x: -2, y: -1, duration: 2.4 + Double(variant))
-        ])))
+        // Seerosen liegen auf dem Wasser, sie werden also nicht geschoben,
+        // sondern getragen: ein langes Wandern über wenige Punkte, dazu ein
+        // kaum sichtbares Drehen. Beides mit eigener Dauer, damit sich das
+        // Feld nie im Gleichschritt bewegt.
+        let period = 5.6 + Double(variant) * 3.4
+        group.run(drift(by: CGVector(dx: 2.6, dy: 1.4), period: period, phase: variant))
+
+        // Drehen und Wandern laufen nebeneinander — verschiedene Werte,
+        // deshalb stören sich die beiden Aktionen nicht.
+        group.run(breeze(angle: 0.05,
+                         period: period * 1.37,
+                         phase: (variant + 0.4).truncatingRemainder(dividingBy: 1)))
+
+        // Ganz leichtes Heben und Senken auf der Dünung.
+        let lift = SKAction.scale(to: 1.015, duration: period * 0.5)
+        lift.timingMode = .easeInEaseOut
+        let settle = SKAction.scale(to: 1.0, duration: period * 0.5)
+        settle.timingMode = .easeInEaseOut
+        pad.run(.sequence([
+            .wait(forDuration: Double(variant) * period),
+            .repeatForever(.sequence([lift, settle]))
+        ]))
+
         return group
     }
 
@@ -327,11 +391,31 @@ enum DecorFactory {
             group.addChild(patch)
         }
 
-        // Der ganze Baum wiegt sich im Wind, jeder mit eigenem Takt.
-        group.run(.repeatForever(.sequence([
-            .rotate(byAngle: 0.018, duration: 2.6 + Double(variant) * 1.4),
-            .rotate(byAngle: -0.018, duration: 2.6 + Double(variant) * 1.4)
-        ])))
+        // Der ganze Baum atmet im Wind: eine sehr lange, weiche Neigung. Kurze
+        // Ausschläge sähen aus, als stünde er im Sturm.
+        group.run(breeze(angle: 0.016,
+                         period: 6.2 + Double(variant) * 3.0,
+                         phase: variant))
+
+        // Dazu die Krone selbst — Laub bewegt sich anders als der Stamm, und
+        // gerade dieser kleine Versatz macht das Bild lebendig.
+        for (index, layer) in [outer, middle].enumerated() {
+            let period = 3.4 + Double(variant) * 1.6 + Double(index) * 0.8
+            layer.run(breeze(angle: 0.02,
+                             period: period,
+                             phase: (variant + CGFloat(index) * 0.35)
+                                .truncatingRemainder(dividingBy: 1)))
+
+            let swell = SKAction.scale(to: 1.012, duration: period * 0.8)
+            swell.timingMode = .easeInEaseOut
+            let ease = SKAction.scale(to: 1.0, duration: period * 0.8)
+            ease.timingMode = .easeInEaseOut
+            layer.run(.sequence([
+                .wait(forDuration: Double(variant) * period),
+                .repeatForever(.sequence([swell, ease]))
+            ]))
+        }
+
         return group
     }
 
