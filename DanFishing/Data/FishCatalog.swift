@@ -134,7 +134,8 @@ enum FishCatalog {
         FishSpecies(
             id: "zander",
             name: "Zander",
-            summary: "Dämmerungsjäger mit Glasauge. Hält sich an Kanten zum tiefen Wasser auf.",
+            summary: "Dämmerungsjäger mit Glasauge. Hält sich an Kanten zum tiefen Wasser auf. "
+                + "Im Drill geht er hart auf Grund und schnellt ohne Vorwarnung wieder hoch.",
             rarity: .rare,
             feeding: .predator,
             minLength: 35, maxLength: 105,
@@ -145,8 +146,11 @@ enum FishCatalog {
             nightHabitats: [.shallows, .reeds],
             activeTimes: [.dusk, .night],
             preferredBaitIDs: ["minnow", "big_minnow", "wobbler", "softbait", "spoon"],
-            fightStrength: 0.7,
-            motion: .diving,
+            // Ein Zander geht nicht spazieren: Er steht wie ein Brett, geht
+            // dann mit voller Kraft auf Grund und schnellt ohne Vorwarnung
+            // wieder hoch. Deshalb liegt er über dem Hecht.
+            fightStrength: 0.84,
+            motion: .plunging,
             valuePerKilo: 62,
             minPlayerLevel: 4,
             bodyColor: ColorSpec(0x6E6B4C), bellyColor: ColorSpec(0xE6E2CC), finColor: ColorSpec(0x4A4632)

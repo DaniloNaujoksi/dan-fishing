@@ -104,6 +104,13 @@ struct CatchMiniGame {
             case .thrashing:
                 fishTarget = clamp(randomSource())
                 nextDecision = 0.2 + randomSource() * 0.35
+            case .plunging:
+                // Wie das Abtauchen, aber härter und schneller: meist ein Zug
+                // bis ganz auf Grund, dazwischen ein plötzlicher Satz nach
+                // oben. Man kommt nie zur Ruhe.
+                fishTarget = randomSource() < 0.62 ? clamp(randomSource() * 0.18)
+                                                   : clamp(0.55 + randomSource() * 0.45)
+                nextDecision = 0.3 + randomSource() * 0.4
             }
         }
 

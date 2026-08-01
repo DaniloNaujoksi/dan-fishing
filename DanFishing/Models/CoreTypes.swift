@@ -142,6 +142,9 @@ enum FightMotion: String, Codable, CaseIterable {
     case circling    // weiche Sinuskurve
     case diving      // zieht immer wieder in eine Ecke
     case thrashing   // unruhig, viele Richtungswechsel
+    /// Kurze harte Grundflucht mit plötzlichen Ausbrüchen nach oben. Der Fisch
+    /// steht nie still: kaum hat man ihn hoch, geht er wieder auf Grund.
+    case plunging
 
     var displayName: String {
         switch self {
@@ -150,6 +153,7 @@ enum FightMotion: String, Codable, CaseIterable {
         case .circling: return "Kreisend"
         case .diving: return "Abtauchend"
         case .thrashing: return "Wild"
+        case .plunging: return "Ruckartig abtauchend"
         }
     }
 }
