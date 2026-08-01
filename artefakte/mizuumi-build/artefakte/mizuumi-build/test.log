@@ -35,11 +35,31 @@ ExecuteExternalTool /Applications/Xcode_16.4.app/Contents/Developer/usr/bin/acto
 
 ExecuteExternalTool /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
 
-Build description signature: 59b3c012df247e7b7b10069910abc15a
-Build description path: /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/XCBuildData/59b3c012df247e7b7b10069910abc15a.xcbuilddata
+Build description signature: f1c15625f8c1ff2e645a13e4fa97cc7e
+Build description path: /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/XCBuildData/f1c15625f8c1ff2e645a13e4fa97cc7e.xcbuilddata
 ClangStatCache /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk /Users/runner/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator18.5-22F76-96ae0914227b19deccb34b33ba7b5dea.sdkstatcache
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi.xcodeproj
     /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk -o /Users/runner/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator18.5-22F76-96ae0914227b19deccb34b33ba7b5dea.sdkstatcache
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftFileList (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftFileList
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftConstValuesFileList (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.LinkFileList (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.LinkFileList
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Frameworks (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Frameworks
 
 WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/empty-MizuumiTests.plist (in target 'MizuumiTests' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
@@ -97,37 +117,13 @@ WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doi
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     write-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/MizuumiTests-all-non-framework-target-headers.hmap
 
-WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftFileList (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftFileList
-
-WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftConstValuesFileList (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftConstValuesFileList
-
-WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.LinkFileList (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.LinkFileList
-
 MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest (in target 'MizuumiTests' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest
 
-MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns
-
-MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Frameworks (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Frameworks
-
 Copy /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Frameworks/libXCTestSwiftSupport.dylib /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Frameworks
-
-SwiftDriver Mizuumi normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    builtin-SwiftDriver -- /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Mizuumi -Onone -enforce-exclusivity\=checked @/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Index.noindex/DataStore -swift-version 5 -I /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator -F /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64 -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator18.5-22F76-96ae0914227b19deccb34b33ba7b5dea.sdkstatcache -output-file-map /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi-generated-files.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi-own-target-headers.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi-project-headers.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/DerivedSources/arm64 -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi-Swift.h -working-directory /Users/runner/work/mizuumi-fishing/mizuumi-fishing -experimental-emit-module-separately -disable-cmo
 
 Copy /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Frameworks/libXCTestBundleInject.dylib /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestBundleInject.dylib (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
@@ -164,6 +160,10 @@ Copy /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntverufln
 ProcessInfoPlistFile /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Info.plist /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/empty-Mizuumi.plist (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     builtin-infoPlistUtility /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/empty-Mizuumi.plist -producttype com.apple.product-type.application -genpkginfo /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_generated_info.plist -o /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Info.plist
+
+SwiftDriver Mizuumi normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    builtin-SwiftDriver -- /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Mizuumi -Onone -enforce-exclusivity\=checked @/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Index.noindex/DataStore -swift-version 5 -I /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator -F /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64 -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator18.5-22F76-96ae0914227b19deccb34b33ba7b5dea.sdkstatcache -output-file-map /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi-generated-files.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi-own-target-headers.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi-project-headers.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/DerivedSources/arm64 -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi-Swift.h -working-directory /Users/runner/work/mizuumi-fishing/mizuumi-fishing -experimental-emit-module-separately -disable-cmo
 
 SwiftDriver\ Compilation\ Requirements Mizuumi normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
@@ -203,8 +203,8 @@ Ld /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnog
 ExtractAppIntentsMetadata (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name Mizuumi --sdk-root /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk --xcode-version 16F6 --platform-family iOS --deployment-target 17.0 --bundle-identifier com.example.mizuumi --output /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app --target-triple arm64-apple-ios17.0-simulator --binary-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Mizuumi --dependency-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi_dependency_info.dat --stringsdata-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftFileList --metadata-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi.DependencyMetadataFileList --static-metadata-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi.DependencyStaticMetadataFileList --swift-const-vals-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
-2026-08-01 08:47:01.014 appintentsmetadataprocessor[16277:51004] Starting appintentsmetadataprocessor export
-2026-08-01 08:47:01.016 appintentsmetadataprocessor[16277:51004] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+2026-08-01 08:34:54.076 appintentsmetadataprocessor[44804:112115] Starting appintentsmetadataprocessor export
+2026-08-01 08:34:54.080 appintentsmetadataprocessor[44804:112115] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
 
 CopySwiftLibs /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
@@ -251,22 +251,22 @@ Ld /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnog
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -bundle -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk -O0 -L/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator -L/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator -iframework /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -iframework /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk/Developer/Library/Frameworks -filelist /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/Objects-normal/arm64/MizuumiTests.LinkFileList -Xlinker -rpath -Xlinker @loader_path/Frameworks -Xlinker -rpath -Xlinker @executable_path/Frameworks -dead_strip -bundle_loader /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Mizuumi -Xlinker -object_path_lto -Xlinker /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/Objects-normal/arm64/MizuumiTests_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/Objects-normal/arm64/MizuumiTests_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/Objects-normal/arm64/MizuumiTests.swiftmodule -framework XCTest -lXCTestSwiftSupport /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Mizuumi.debug.dylib -o /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest/MizuumiTests
 
-ExtractAppIntentsMetadata (in target 'MizuumiTests' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name MizuumiTests --sdk-root /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk --xcode-version 16F6 --platform-family iOS --deployment-target 17.0 --bundle-identifier com.example.mizuumi.tests --output /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest --target-triple arm64-apple-ios17.0-simulator --binary-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest/MizuumiTests --dependency-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/Objects-normal/arm64/MizuumiTests_dependency_info.dat --stringsdata-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/Objects-normal/arm64/MizuumiTests.SwiftFileList --metadata-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/MizuumiTests.DependencyMetadataFileList --static-metadata-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/MizuumiTests.DependencyStaticMetadataFileList --swift-const-vals-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/Objects-normal/arm64/MizuumiTests.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
-2026-08-01 08:47:04.559 appintentsmetadataprocessor[16284:51109] Starting appintentsmetadataprocessor export
-2026-08-01 08:47:04.561 appintentsmetadataprocessor[16284:51109] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
-
 CopySwiftLibs /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest (in target 'MizuumiTests' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     builtin-swiftStdLibTool --copy --verbose --scan-executable /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest/MizuumiTests --scan-folder /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest/Frameworks --scan-folder /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest/PlugIns --scan-folder /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest/SystemExtensions --scan-folder /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest/Extensions --platform iphonesimulator --toolchain /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest/Frameworks --strip-bitcode --scan-executable /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib --strip-bitcode-tool /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
 Ignoring --strip-bitcode because --sign was not passed
 
+ExtractAppIntentsMetadata (in target 'MizuumiTests' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name MizuumiTests --sdk-root /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk --xcode-version 16F6 --platform-family iOS --deployment-target 17.0 --bundle-identifier com.example.mizuumi.tests --output /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest --target-triple arm64-apple-ios17.0-simulator --binary-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest/MizuumiTests --dependency-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/Objects-normal/arm64/MizuumiTests_dependency_info.dat --stringsdata-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/Objects-normal/arm64/MizuumiTests.SwiftFileList --metadata-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/MizuumiTests.DependencyMetadataFileList --static-metadata-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/MizuumiTests.DependencyStaticMetadataFileList --swift-const-vals-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/Objects-normal/arm64/MizuumiTests.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2026-08-01 08:34:59.525 appintentsmetadataprocessor[44820:112276] Starting appintentsmetadataprocessor export
+2026-08-01 08:34:59.528 appintentsmetadataprocessor[44820:112276] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+
 AppIntentsSSUTraining (in target 'MizuumiTests' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsnltrainingprocessor --infoplist-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest/Info.plist --temp-dir-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/ssu --bundle-id com.example.mizuumi.tests --product-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest --extracted-metadata-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest/Metadata.appintents --metadata-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/MizuumiTests.build/MizuumiTests.DependencyMetadataFileList --archive-ssu-assets
-2026-08-01 08:47:04.576 appintentsnltrainingprocessor[16285:51110] Parsing options for appintentsnltrainingprocessor
-2026-08-01 08:47:04.576 appintentsnltrainingprocessor[16285:51110] No AppShortcuts found - Skipping.
+2026-08-01 08:34:59.551 appintentsnltrainingprocessor[44821:112277] Parsing options for appintentsnltrainingprocessor
+2026-08-01 08:34:59.552 appintentsnltrainingprocessor[44821:112277] No AppShortcuts found - Skipping.
 
 RegisterExecutionPolicyException /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/PlugIns/MizuumiTests.xctest (in target 'MizuumiTests' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
@@ -280,128 +280,129 @@ Validate /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntver
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     builtin-validationUtility /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app -infoplist-subpath Info.plist
 
-2026-08-01 08:48:28.776987+0000 Mizuumi[17183:55124] [plugin] AddInstanceForFactory: No factory registered for id <CFUUID 0x6000002953a0> F8BB1C28-BAE8-11D6-9C31-00039315CD46
+2026-08-01 08:37:15.063374+0000 Mizuumi[46095:117307] [plugin] AddInstanceForFactory: No factory registered for id <CFUUID 0x600000290960> F8BB1C28-BAE8-11D6-9C31-00039315CD46
 IOSurfaceClientSetSurfaceNotify failed e00002c7
-2026-08-01 08:48:29.337788+0000 Mizuumi[17183:55124] fopen failed for data file: errno = 2 (No such file or directory)
-2026-08-01 08:48:29.337918+0000 Mizuumi[17183:55124] Errors found! Invalidating cache...
-2026-08-01 08:48:29.622031+0000 Mizuumi[17183:55124] fopen failed for data file: errno = 2 (No such file or directory)
-2026-08-01 08:48:29.622196+0000 Mizuumi[17183:55124] Errors found! Invalidating cache...
-2026-08-01 08:48:29.711601+0000 Mizuumi[17183:55986] [General] Failed to send CA Event for app launch measurements for ca_event_type: 0 event_name: com.apple.app_launch_measurement.FirstFramePresentationMetric
-2026-08-01 08:48:29.833649+0000 Mizuumi[17183:55985] [General] Failed to send CA Event for app launch measurements for ca_event_type: 1 event_name: com.apple.app_launch_measurement.ExtendedLaunchMetrics
-Test Suite 'All tests' started at 2026-08-01 08:48:31.084.
-Test Suite 'MizuumiTests.xctest' started at 2026-08-01 08:48:31.084.
-Test Suite 'BaitSystemTests' started at 2026-08-01 08:48:31.084.
+2026-08-01 08:37:15.893958+0000 Mizuumi[46095:117307] fopen failed for data file: errno = 2 (No such file or directory)
+2026-08-01 08:37:15.894265+0000 Mizuumi[46095:117307] Errors found! Invalidating cache...
+2026-08-01 08:37:16.420493+0000 Mizuumi[46095:117307] fopen failed for data file: errno = 2 (No such file or directory)
+2026-08-01 08:37:16.420862+0000 Mizuumi[46095:117307] Errors found! Invalidating cache...
+2026-08-01 08:37:16.457059+0000 Mizuumi[46095:117307] [error] building pipeline primitive_color-feba5ca8feba4 took 0.563461 seconds
+2026-08-01 08:37:16.568019+0000 Mizuumi[46095:118159] [General] Failed to send CA Event for app launch measurements for ca_event_type: 0 event_name: com.apple.app_launch_measurement.FirstFramePresentationMetric
+2026-08-01 08:37:16.718050+0000 Mizuumi[46095:118159] [General] Failed to send CA Event for app launch measurements for ca_event_type: 1 event_name: com.apple.app_launch_measurement.ExtendedLaunchMetrics
+Test Suite 'All tests' started at 2026-08-01 08:37:21.367.
+Test Suite 'MizuumiTests.xctest' started at 2026-08-01 08:37:21.369.
+Test Suite 'BaitSystemTests' started at 2026-08-01 08:37:21.369.
 Test Case '-[MizuumiTests.BaitSystemTests testBiteDelayShrinksWithBetterHook]' started.
-Test Case '-[MizuumiTests.BaitSystemTests testBiteDelayShrinksWithBetterHook]' passed (0.002 seconds).
+Test Case '-[MizuumiTests.BaitSystemTests testBiteDelayShrinksWithBetterHook]' passed (0.005 seconds).
 Test Case '-[MizuumiTests.BaitSystemTests testLevelGateBlocksHighTierFish]' started.
 Test Case '-[MizuumiTests.BaitSystemTests testLevelGateBlocksHighTierFish]' passed (0.001 seconds).
 Test Case '-[MizuumiTests.BaitSystemTests testPreferredBaitBeatsRandomBait]' started.
-Test Case '-[MizuumiTests.BaitSystemTests testPreferredBaitBeatsRandomBait]' passed (0.000 seconds).
+Test Case '-[MizuumiTests.BaitSystemTests testPreferredBaitBeatsRandomBait]' passed (0.001 seconds).
 Test Case '-[MizuumiTests.BaitSystemTests testWrongHabitatGivesNoAttraction]' started.
-Test Case '-[MizuumiTests.BaitSystemTests testWrongHabitatGivesNoAttraction]' passed (0.030 seconds).
-Test Suite 'BaitSystemTests' passed at 2026-08-01 08:48:31.118.
-	 Executed 4 tests, with 0 failures (0 unexpected) in 0.033 (0.034) seconds
-Test Suite 'BoatControllerTests' started at 2026-08-01 08:48:31.118.
+Test Case '-[MizuumiTests.BaitSystemTests testWrongHabitatGivesNoAttraction]' passed (0.474 seconds).
+Test Suite 'BaitSystemTests' passed at 2026-08-01 08:37:21.851.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.481 (0.482) seconds
+Test Suite 'BoatControllerTests' started at 2026-08-01 08:37:21.852.
 Test Case '-[MizuumiTests.BoatControllerTests testAngleDifferenceWrapsAround]' started.
-Test Case '-[MizuumiTests.BoatControllerTests testAngleDifferenceWrapsAround]' passed (0.001 seconds).
+Test Case '-[MizuumiTests.BoatControllerTests testAngleDifferenceWrapsAround]' passed (0.002 seconds).
 Test Case '-[MizuumiTests.BoatControllerTests testBoatMovesWithInput]' started.
 Test Case '-[MizuumiTests.BoatControllerTests testBoatMovesWithInput]' passed (0.014 seconds).
 Test Case '-[MizuumiTests.BoatControllerTests testBoatNeverEntersLand]' started.
-Test Case '-[MizuumiTests.BoatControllerTests testBoatNeverEntersLand]' passed (0.020 seconds).
-Test Suite 'BoatControllerTests' passed at 2026-08-01 08:48:31.155.
-	 Executed 3 tests, with 0 failures (0 unexpected) in 0.036 (0.036) seconds
-Test Suite 'CatchMiniGameTests' started at 2026-08-01 08:48:31.155.
+Test Case '-[MizuumiTests.BoatControllerTests testBoatNeverEntersLand]' passed (0.023 seconds).
+Test Suite 'BoatControllerTests' passed at 2026-08-01 08:37:22.096.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.039 (0.244) seconds
+Test Suite 'CatchMiniGameTests' started at 2026-08-01 08:37:22.096.
 Test Case '-[MizuumiTests.CatchMiniGameTests testBarStaysInsideTrack]' started.
-Test Case '-[MizuumiTests.CatchMiniGameTests testBarStaysInsideTrack]' passed (0.002 seconds).
+Test Case '-[MizuumiTests.CatchMiniGameTests testBarStaysInsideTrack]' passed (0.003 seconds).
 Test Case '-[MizuumiTests.CatchMiniGameTests testHoldingReelEventuallyLandsFish]' started.
-Test Case '-[MizuumiTests.CatchMiniGameTests testHoldingReelEventuallyLandsFish]' passed (0.539 seconds).
+Test Case '-[MizuumiTests.CatchMiniGameTests testHoldingReelEventuallyLandsFish]' passed (0.001 seconds).
 Test Case '-[MizuumiTests.CatchMiniGameTests testPermanentReelingSnapsTheLine]' started.
 Test Case '-[MizuumiTests.CatchMiniGameTests testPermanentReelingSnapsTheLine]' passed (0.001 seconds).
 Test Case '-[MizuumiTests.CatchMiniGameTests testStrongerLineSurvivesLonger]' started.
-Test Case '-[MizuumiTests.CatchMiniGameTests testStrongerLineSurvivesLonger]' passed (0.000 seconds).
-Test Suite 'CatchMiniGameTests' passed at 2026-08-01 08:48:31.698.
-	 Executed 4 tests, with 0 failures (0 unexpected) in 0.543 (0.543) seconds
-Test Suite 'DayNightTests' started at 2026-08-01 08:48:31.698.
+Test Case '-[MizuumiTests.CatchMiniGameTests testStrongerLineSurvivesLonger]' passed (0.749 seconds).
+Test Suite 'CatchMiniGameTests' passed at 2026-08-01 08:37:22.850.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.753 (0.754) seconds
+Test Suite 'DayNightTests' started at 2026-08-01 08:37:22.851.
 Test Case '-[MizuumiTests.DayNightTests testCycleReachesEveryPhase]' started.
-Test Case '-[MizuumiTests.DayNightTests testCycleReachesEveryPhase]' passed (0.001 seconds).
+Test Case '-[MizuumiTests.DayNightTests testCycleReachesEveryPhase]' passed (0.002 seconds).
 Test Case '-[MizuumiTests.DayNightTests testDarknessStaysInRange]' started.
 Test Case '-[MizuumiTests.DayNightTests testDarknessStaysInRange]' passed (0.002 seconds).
-Test Suite 'DayNightTests' passed at 2026-08-01 08:48:31.711.
-	 Executed 2 tests, with 0 failures (0 unexpected) in 0.002 (0.013) seconds
-Test Suite 'EconomyTests' started at 2026-08-01 08:48:31.711.
+Test Suite 'DayNightTests' passed at 2026-08-01 08:37:22.856.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.004 (0.005) seconds
+Test Suite 'EconomyTests' started at 2026-08-01 08:37:22.856.
 Test Case '-[MizuumiTests.EconomyTests testExperienceRaisesLevel]' started.
-Test Case '-[MizuumiTests.EconomyTests testExperienceRaisesLevel]' passed (0.001 seconds).
+Test Case '-[MizuumiTests.EconomyTests testExperienceRaisesLevel]' passed (0.002 seconds).
 Test Case '-[MizuumiTests.EconomyTests testRarerFishIsWorthMore]' started.
 Test Case '-[MizuumiTests.EconomyTests testRarerFishIsWorthMore]' passed (0.001 seconds).
 Test Case '-[MizuumiTests.EconomyTests testReleaseGivesExperienceInsteadOfCoins]' started.
-Test Case '-[MizuumiTests.EconomyTests testReleaseGivesExperienceInsteadOfCoins]' passed (0.016 seconds).
-Test Suite 'EconomyTests' passed at 2026-08-01 08:48:31.729.
-	 Executed 3 tests, with 0 failures (0 unexpected) in 0.017 (0.018) seconds
-Test Suite 'FishModelTests' started at 2026-08-01 08:48:31.729.
+Test Case '-[MizuumiTests.EconomyTests testReleaseGivesExperienceInsteadOfCoins]' passed (0.001 seconds).
+Test Suite 'EconomyTests' passed at 2026-08-01 08:37:23.018.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.004 (0.161) seconds
+Test Suite 'FishModelTests' started at 2026-08-01 08:37:23.018.
 Test Case '-[MizuumiTests.FishModelTests testCatalogIDsAreUnique]' started.
 Test Case '-[MizuumiTests.FishModelTests testCatalogIDsAreUnique]' passed (0.001 seconds).
 Test Case '-[MizuumiTests.FishModelTests testPreferredBaitsExist]' started.
-Test Case '-[MizuumiTests.FishModelTests testPreferredBaitsExist]' passed (0.011 seconds).
+Test Case '-[MizuumiTests.FishModelTests testPreferredBaitsExist]' passed (0.021 seconds).
 Test Case '-[MizuumiTests.FishModelTests testTrophyFactorStaysInRange]' started.
-Test Case '-[MizuumiTests.FishModelTests testTrophyFactorStaysInRange]' passed (0.000 seconds).
+Test Case '-[MizuumiTests.FishModelTests testTrophyFactorStaysInRange]' passed (0.001 seconds).
 Test Case '-[MizuumiTests.FishModelTests testWeightGrowsWithLength]' started.
-Test Case '-[MizuumiTests.FishModelTests testWeightGrowsWithLength]' passed (0.001 seconds).
-Test Suite 'FishModelTests' passed at 2026-08-01 08:48:33.280.
-	 Executed 4 tests, with 0 failures (0 unexpected) in 0.013 (1.550) seconds
-Test Suite 'FishSpawnerTests' started at 2026-08-01 08:48:33.280.
+Test Case '-[MizuumiTests.FishModelTests testWeightGrowsWithLength]' passed (0.000 seconds).
+Test Suite 'FishModelTests' passed at 2026-08-01 08:37:26.127.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.023 (3.110) seconds
+Test Suite 'FishSpawnerTests' started at 2026-08-01 08:37:26.128.
 Test Case '-[MizuumiTests.FishSpawnerTests testBigBaitShiftsSizeUpward]' started.
-Test Case '-[MizuumiTests.FishSpawnerTests testBigBaitShiftsSizeUpward]' passed (0.001 seconds).
+Test Case '-[MizuumiTests.FishSpawnerTests testBigBaitShiftsSizeUpward]' passed (2.463 seconds).
 Test Case '-[MizuumiTests.FishSpawnerTests testRolledFishFitsHabitatAndSize]' started.
-Test Case '-[MizuumiTests.FishSpawnerTests testRolledFishFitsHabitatAndSize]' passed (0.004 seconds).
-Test Suite 'FishSpawnerTests' passed at 2026-08-01 08:48:33.284.
-	 Executed 2 tests, with 0 failures (0 unexpected) in 0.004 (0.005) seconds
-Test Suite 'LakeMapTests' started at 2026-08-01 08:48:33.440.
+Test Case '-[MizuumiTests.FishSpawnerTests testRolledFishFitsHabitatAndSize]' passed (0.006 seconds).
+Test Suite 'FishSpawnerTests' passed at 2026-08-01 08:37:28.597.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 2.469 (2.469) seconds
+Test Suite 'LakeMapTests' started at 2026-08-01 08:37:28.597.
 Test Case '-[MizuumiTests.LakeMapTests testGenerationIsDeterministic]' started.
-Test Case '-[MizuumiTests.LakeMapTests testGenerationIsDeterministic]' passed (0.024 seconds).
+Test Case '-[MizuumiTests.LakeMapTests testGenerationIsDeterministic]' passed (0.033 seconds).
 Test Case '-[MizuumiTests.LakeMapTests testMapContainsEveryHabitat]' started.
 Test Case '-[MizuumiTests.LakeMapTests testMapContainsEveryHabitat]' passed (0.013 seconds).
 Test Case '-[MizuumiTests.LakeMapTests testNearestWaterLeavesLand]' started.
-Test Case '-[MizuumiTests.LakeMapTests testNearestWaterLeavesLand]' passed (0.013 seconds).
+Test Case '-[MizuumiTests.LakeMapTests testNearestWaterLeavesLand]' passed (0.016 seconds).
 Test Case '-[MizuumiTests.LakeMapTests testOutsideTheGridCountsAsLand]' started.
-Test Case '-[MizuumiTests.LakeMapTests testOutsideTheGridCountsAsLand]' passed (0.012 seconds).
+Test Case '-[MizuumiTests.LakeMapTests testOutsideTheGridCountsAsLand]' passed (0.017 seconds).
 Test Case '-[MizuumiTests.LakeMapTests testStartPositionIsOnWater]' started.
-Test Case '-[MizuumiTests.LakeMapTests testStartPositionIsOnWater]' passed (0.031 seconds).
-Test Suite 'LakeMapTests' passed at 2026-08-01 08:48:33.534.
-	 Executed 5 tests, with 0 failures (0 unexpected) in 0.093 (0.094) seconds
-Test Suite 'MissionSystemTests' started at 2026-08-01 08:48:33.534.
+Test Case '-[MizuumiTests.LakeMapTests testStartPositionIsOnWater]' passed (0.014 seconds).
+Test Suite 'LakeMapTests' passed at 2026-08-01 08:37:28.693.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.094 (0.095) seconds
+Test Suite 'MissionSystemTests' started at 2026-08-01 08:37:29.394.
 Test Case '-[MizuumiTests.MissionSystemTests testMissionsAreStableForTheSameDay]' started.
 Test Case '-[MizuumiTests.MissionSystemTests testMissionsAreStableForTheSameDay]' passed (0.001 seconds).
 Test Case '-[MizuumiTests.MissionSystemTests testProgressAndClaim]' started.
 Test Case '-[MizuumiTests.MissionSystemTests testProgressAndClaim]' passed (0.001 seconds).
-Test Suite 'MissionSystemTests' passed at 2026-08-01 08:48:33.536.
-	 Executed 2 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
-Test Suite 'SaveGameTests' started at 2026-08-01 08:48:33.536.
+Test Suite 'MissionSystemTests' passed at 2026-08-01 08:37:29.395.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.001 (0.002) seconds
+Test Suite 'SaveGameTests' started at 2026-08-01 08:37:29.396.
 Test Case '-[MizuumiTests.SaveGameTests testDeleteRemovesSave]' started.
-Test Case '-[MizuumiTests.SaveGameTests testDeleteRemovesSave]' passed (0.017 seconds).
+Test Case '-[MizuumiTests.SaveGameTests testDeleteRemovesSave]' passed (0.010 seconds).
 Test Case '-[MizuumiTests.SaveGameTests testMissingSaveReturnsNil]' started.
 Test Case '-[MizuumiTests.SaveGameTests testMissingSaveReturnsNil]' passed (0.001 seconds).
 Test Case '-[MizuumiTests.SaveGameTests testRoundTrip]' started.
-Test Case '-[MizuumiTests.SaveGameTests testRoundTrip]' passed (0.018 seconds).
-Test Suite 'SaveGameTests' passed at 2026-08-01 08:48:35.285.
-	 Executed 3 tests, with 0 failures (0 unexpected) in 0.036 (1.749) seconds
-Test Suite 'UpgradeSystemTests' started at 2026-08-01 08:48:35.285.
+Test Case '-[MizuumiTests.SaveGameTests testRoundTrip]' passed (0.014 seconds).
+Test Suite 'SaveGameTests' passed at 2026-08-01 08:37:29.770.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.025 (0.375) seconds
+Test Suite 'UpgradeSystemTests' started at 2026-08-01 08:37:29.770.
 Test Case '-[MizuumiTests.UpgradeSystemTests testBaitPurchase]' started.
-Test Case '-[MizuumiTests.UpgradeSystemTests testBaitPurchase]' passed (0.001 seconds).
+Test Case '-[MizuumiTests.UpgradeSystemTests testBaitPurchase]' passed (0.000 seconds).
 Test Case '-[MizuumiTests.UpgradeSystemTests testPurchaseFailsWithoutCoins]' started.
-Test Case '-[MizuumiTests.UpgradeSystemTests testPurchaseFailsWithoutCoins]' passed (2.873 seconds).
+Test Case '-[MizuumiTests.UpgradeSystemTests testPurchaseFailsWithoutCoins]' passed (0.000 seconds).
 Test Case '-[MizuumiTests.UpgradeSystemTests testPurchaseSpendsCoinsAndImprovesStats]' started.
 Test Case '-[MizuumiTests.UpgradeSystemTests testPurchaseSpendsCoinsAndImprovesStats]' passed (0.001 seconds).
 Test Case '-[MizuumiTests.UpgradeSystemTests testTrackCannotExceedMaxLevel]' started.
-Test Case '-[MizuumiTests.UpgradeSystemTests testTrackCannotExceedMaxLevel]' passed (0.000 seconds).
-Test Suite 'UpgradeSystemTests' passed at 2026-08-01 08:48:38.160.
-	 Executed 4 tests, with 0 failures (0 unexpected) in 2.874 (2.875) seconds
-Test Suite 'MizuumiTests.xctest' passed at 2026-08-01 08:48:38.160.
-	 Executed 36 tests, with 0 failures (0 unexpected) in 3.652 (7.076) seconds
-Test Suite 'All tests' passed at 2026-08-01 08:48:38.160.
-	 Executed 36 tests, with 0 failures (0 unexpected) in 3.652 (7.076) seconds
+Test Case '-[MizuumiTests.UpgradeSystemTests testTrackCannotExceedMaxLevel]' passed (0.001 seconds).
+Test Suite 'UpgradeSystemTests' passed at 2026-08-01 08:37:29.792.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.002 (0.022) seconds
+Test Suite 'MizuumiTests.xctest' passed at 2026-08-01 08:37:29.793.
+	 Executed 36 tests, with 0 failures (0 unexpected) in 3.894 (8.424) seconds
+Test Suite 'All tests' passed at 2026-08-01 08:37:29.793.
+	 Executed 36 tests, with 0 failures (0 unexpected) in 3.894 (8.426) seconds
 
 Test session results, code coverage, and logs:
-	/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Logs/Test/Test-Mizuumi-2026.08.01_08-46-59-+0000.xcresult
+	/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Logs/Test/Test-Mizuumi-2026.08.01_08-34-51-+0000.xcresult
 
 ** TEST SUCCEEDED **
 

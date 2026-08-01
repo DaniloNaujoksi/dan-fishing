@@ -247,27 +247,69 @@ extension LakeMap {
             }
         }
 
-        var map = LakeMap(columns: columns,
-                          rows: rows,
-                          cellSize: cellSize,
-                          cells: cells,
-                          decor: [],
-                          startPosition: CGPoint(x: CGFloat(cx) * cellSize,
-                                                 y: CGFloat(rows) * 0.62 * cellSize))
+        // Der Startplatz liegt bewusst nicht mitten im Tiefwasser, sondern an
+        // einer Uferkante: Dort sieht man sofort Schilf, Seerosen und Fische
+        // und versteht, wonach man Ausschau hält.
+        let safeStart = LakeMap.findStartingSpot(cells: cells,
+                                                 columns: columns,
+                                                 rows: rows,
+                                                 cellSize: cellSize)
 
-        // Startpunkt notfalls auf freies Wasser schieben.
-        let safeStart = map.nearestWater(from: map.startPosition)
-        map = LakeMap(columns: columns,
-                      rows: rows,
-                      cellSize: cellSize,
-                      cells: cells,
-                      decor: LakeMap.buildDecor(cells: cells,
-                                                columns: columns,
-                                                rows: rows,
-                                                cellSize: cellSize,
-                                                rng: &rng),
-                      startPosition: safeStart)
-        return map
+        return LakeMap(columns: columns,
+                       rows: rows,
+                       cellSize: cellSize,
+                       cells: cells,
+                       decor: LakeMap.buildDecor(cells: cells,
+                                                 columns: columns,
+                                                 rows: rows,
+                                                 cellSize: cellSize,
+                                                 rng: &rng),
+                       startPosition: safeStart)
+    }
+
+    /// Sucht eine flache Stelle, an der möglichst viele verschiedene Zonen in
+    /// Reichweite liegen. Das ist der Platz mit dem meisten zu sehen.
+    private static func findStartingSpot(cells: [CellKind],
+                                         columns: Int,
+                                         rows: Int,
+                                         cellSize: CGFloat) -> CGPoint {
+        func kind(_ column: Int, _ row: Int) -> CellKind {
+            guard column >= 0, column < columns, row >= 0, row < rows else { return .land }
+            return cells[row * columns + column]
+        }
+
+        var best: (score: Int, point: CGPoint)?
+
+        for row in 3..<(rows - 3) {
+            for column in 3..<(columns - 3) {
+                let cell = kind(column, row)
+                // Gestartet wird im flachen Wasser, nicht im Schilf selbst —
+                // sonst steht das Boot direkt in den Halmen.
+                guard cell == .shallows else { continue }
+
+                var neighbours = Set<UInt8>()
+                var freeWater = 0
+                for dy in -3...3 {
+                    for dx in -3...3 {
+                        let neighbour = kind(column + dx, row + dy)
+                        neighbours.insert(neighbour.rawValue)
+                        if neighbour != .land { freeWater += 1 }
+                    }
+                }
+
+                // Genug Platz zum Rudern, dazu Punkte für jede Zonenart in Sicht.
+                guard freeWater > 34 else { continue }
+                let score = neighbours.count * 10 + freeWater
+
+                if best == nil || score > best!.score {
+                    best = (score, CGPoint(x: (CGFloat(column) + 0.5) * cellSize,
+                                           y: (CGFloat(row) + 0.5) * cellSize))
+                }
+            }
+        }
+
+        return best?.point ?? CGPoint(x: CGFloat(columns) * 0.5 * cellSize,
+                                      y: CGFloat(rows) * 0.5 * cellSize)
     }
 
     /// Streut Pflanzen, Steine und Bäume passend zu den Zonen.

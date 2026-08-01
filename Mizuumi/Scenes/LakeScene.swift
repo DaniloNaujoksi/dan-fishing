@@ -79,6 +79,9 @@ final class LakeScene: SKScene {
         camera = cameraNode
         addChild(cameraNode)
         cameraNode.position = boat.position
+        // Etwas herausgezoomt: Man soll die nächste Schilfkante und das
+        // Seerosenfeld sehen, ohne erst hinrudern zu müssen.
+        cameraNode.setScale(1.35)
 
         fishing.onEvent = { [weak self] event in
             self?.handleFishing(event: event)
@@ -94,16 +97,17 @@ final class LakeScene: SKScene {
         base.position = CGPoint(x: worldSize.width / 2, y: worldSize.height / 2)
         waterLayer.addChild(base)
 
-        // Zwei Wellenkacheln, die unterschiedlich schnell wandern — das gibt
-        // Tiefe, ohne dass ein einzelnes Muster auffällt.
+        // Wellen und Papierkorn gehören über die Zonenflächen, nicht darunter:
+        // Die Zonen sind teilweise deckend und würden beides verschlucken.
+        // Deshalb hängen sie im zoneLayer ganz oben.
         if let stripes = TextureFactory.waveStripes() {
             for (index, speed) in [(0, 34.0), (1, 19.0)] {
                 let waves = SKSpriteNode(texture: stripes)
                 waves.size = CGSize(width: worldSize.width * 1.2, height: worldSize.height * 1.2)
                 waves.position = CGPoint(x: worldSize.width / 2, y: worldSize.height / 2)
-                waves.alpha = index == 0 ? 0.35 : 0.22
-                waves.zPosition = CGFloat(index) + 1
-                waterLayer.addChild(waves)
+                waves.alpha = index == 0 ? 0.5 : 0.32
+                waves.zPosition = 10 + CGFloat(index)
+                zoneLayer.addChild(waves)
 
                 let drift = SKAction.sequence([
                     .moveBy(x: 60, y: 26, duration: speed),
@@ -113,15 +117,14 @@ final class LakeScene: SKScene {
             }
         }
 
-        // Papierkorn über allem: nimmt den Flächen das Digitale.
         if let grain = TextureFactory.paperGrain() {
             let paper = SKSpriteNode(texture: grain)
             paper.size = worldSize
             paper.position = CGPoint(x: worldSize.width / 2, y: worldSize.height / 2)
-            paper.alpha = 0.5
-            paper.zPosition = 50
+            paper.alpha = 0.55
+            paper.zPosition = 12
             paper.blendMode = .alpha
-            waterLayer.addChild(paper)
+            zoneLayer.addChild(paper)
         }
     }
 
@@ -229,29 +232,43 @@ final class LakeScene: SKScene {
     }
 
     private func spawnInitialFish() {
-        // Pro Zone ein paar Schwimmer. Sie sind die sichtbare Antwort auf die
-        // Frage „wo lohnt es sich?“.
+        // Pro Zone Schwimmer im ganzen See — sie sind die sichtbare Antwort auf
+        // die Frage „wo lohnt es sich?“.
         for habitat in Habitat.allCases {
-            let candidates = FishCatalog.species(in: habitat)
-            guard !candidates.isEmpty else { continue }
+            addFish(in: habitat, count: 14, near: nil, radius: 0)
+        }
 
-            for _ in 0..<7 {
-                guard let position = FishAI.randomPosition(in: habitat, map: map) else { break }
-                let species = candidates[Int.random(in: 0..<candidates.count)]
+        // Zusätzlich eine Handvoll direkt um den Startplatz. Ohne sie wäre der
+        // erste Blick auf den See leer, und der Spieler weiß nicht, worauf er
+        // achten soll.
+        for habitat in Habitat.allCases {
+            addFish(in: habitat, count: 4, near: boat.position, radius: 1100)
+        }
+    }
 
-                let swimmer = FishAI.Swimmer(position: position,
-                                             heading: CGFloat.random(in: 0..<(.pi * 2)),
-                                             speed: CGFloat.random(in: 18...46),
-                                             habitat: habitat,
-                                             speciesID: species.id,
-                                             scale: CGFloat.random(in: 0.6...1.3),
-                                             turnTimer: CGFloat.random(in: 0.5...2.5))
+    private func addFish(in habitat: Habitat, count: Int, near point: CGPoint?, radius: CGFloat) {
+        let candidates = FishCatalog.species(in: habitat)
+        guard !candidates.isEmpty else { return }
 
-                let node = FishNode(swimmer: swimmer, species: species)
-                node.zPosition = CGFloat.random(in: 0...5)
-                fishLayer.addChild(node)
-                fishNodes.append(node)
-            }
+        for _ in 0..<count {
+            guard let position = FishAI.randomPosition(in: habitat,
+                                                       map: map,
+                                                       near: point,
+                                                       radius: radius > 0 ? radius : 900) else { break }
+            let species = candidates[Int.random(in: 0..<candidates.count)]
+
+            let swimmer = FishAI.Swimmer(position: position,
+                                         heading: CGFloat.random(in: 0..<(.pi * 2)),
+                                         speed: CGFloat.random(in: 18...46),
+                                         habitat: habitat,
+                                         speciesID: species.id,
+                                         scale: CGFloat.random(in: 0.6...1.3),
+                                         turnTimer: CGFloat.random(in: 0.5...2.5))
+
+            let node = FishNode(swimmer: swimmer, species: species)
+            node.zPosition = CGFloat.random(in: 0...5)
+            fishLayer.addChild(node)
+            fishNodes.append(node)
         }
     }
 

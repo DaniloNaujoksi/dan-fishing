@@ -33,8 +33,8 @@ ExecuteExternalTool /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/X
 
 ExecuteExternalTool /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
 
-Build description signature: b781bae79d3de75fc3ba9eb15a1737d9
-Build description path: /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/XCBuildData/b781bae79d3de75fc3ba9eb15a1737d9.xcbuilddata
+Build description signature: 07028d7b5cb2f7630e64460f1130da63
+Build description path: /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/XCBuildData/07028d7b5cb2f7630e64460f1130da63.xcbuilddata
 ClangStatCache /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk /Users/runner/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator18.5-22F76-96ae0914227b19deccb34b33ba7b5dea.sdkstatcache
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi.xcodeproj
     /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk -o /Users/runner/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator18.5-22F76-96ae0914227b19deccb34b33ba7b5dea.sdkstatcache
@@ -127,6 +127,10 @@ MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntverufl
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app
 
+Ld /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/__preview.dylib normal (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -dynamiclib -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk -O0 -L/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator -F/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator -install_name @rpath/Mizuumi.debug.dylib -dead_strip -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi_dependency_info.dat -o /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/__preview.dylib
+
 MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_output/unthinned (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_output/unthinned
@@ -134,10 +138,6 @@ MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntverufl
 MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_output/thinned (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_output/thinned
-
-Ld /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/__preview.dylib normal (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -dynamiclib -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk -O0 -L/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator -F/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator -install_name @rpath/Mizuumi.debug.dylib -dead_strip -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi_dependency_info.dat -o /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/__preview.dylib
 
 GenerateAssetSymbols /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Assets.xcassets (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
@@ -165,146 +165,7 @@ EmitSwiftModule normal arm64 (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     
 
-SwiftCompile normal arm64 Compiling\ BaitSystem.swift,\ ShopView.swift,\ BaitCatalog.swift,\ FishNode.swift,\ TextureFactory.swift,\ LakeMap.swift,\ MissionsView.swift,\ BoatNode.swift,\ FishSpecies.swift,\ FishAI.swift,\ GameView.swift,\ Bait.swift,\ CatchMiniGame.swift,\ CatchMiniGameView.swift,\ GameSession.swift,\ AudioManager.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/BaitSystem.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/ShopView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Data/BaitCatalog.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/FishNode.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/TextureFactory.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/LakeMap.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/MissionsView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/BoatNode.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/FishSpecies.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/FishAI.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/GameView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/Bait.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/CatchMiniGame.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/CatchMiniGameView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/ViewModels/GameSession.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Managers/AudioManager.swift (in target 'Mizuumi' from project 'Mizuumi')
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/BaitSystem.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/ShopView.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Data/BaitCatalog.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/FishNode.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/TextureFactory.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/LakeMap.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/MissionsView.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/BoatNode.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/FishSpecies.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/FishAI.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/GameView.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/Bait.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/CatchMiniGame.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/CatchMiniGameView.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/ViewModels/GameSession.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Managers/AudioManager.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 Compiling\ SaveData.swift,\ ValueNoise.swift,\ MissionSystem.swift,\ PaperStyle.swift,\ BobberNode.swift,\ ColorPalette.swift,\ Mission.swift,\ FishingSystem.swift,\ JoystickView.swift,\ CoreTypes.swift,\ DayNightSystem.swift,\ CatchResultView.swift,\ MizuumiApp.swift,\ HapticManager.swift,\ GeneratedAssetSymbols.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Persistence/SaveData.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/ValueNoise.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/MissionSystem.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/PaperStyle.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/BobberNode.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/ColorPalette.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/Mission.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/FishingSystem.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/JoystickView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/CoreTypes.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/DayNightSystem.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/CatchResultView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/App/MizuumiApp.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Managers/HapticManager.swift /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'Mizuumi' from project 'Mizuumi')
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Persistence/SaveData.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/ValueNoise.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/MissionSystem.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/PaperStyle.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/BobberNode.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/ColorPalette.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/Mission.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/FishingSystem.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/JoystickView.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/CoreTypes.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/DayNightSystem.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/CatchResultView.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/App/MizuumiApp.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Managers/HapticManager.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-LinkAssetCatalog /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Assets.xcassets (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    builtin-linkAssetCatalog --thinned /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_output/thinned --thinned-dependencies /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_dependencies_thinned --thinned-info-plist-content /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_generated_info.plist_thinned --unthinned /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_output/unthinned --unthinned-dependencies /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_dependencies_unthinned --unthinned-info-plist-content /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_generated_info.plist_unthinned --output /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app --plist-output /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_generated_info.plist
-note: Emplaced /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Assets.car (in target 'Mizuumi' from project 'Mizuumi')
-
-SwiftDriverJobDiscovery normal arm64 Emitting module for Mizuumi (in target 'Mizuumi' from project 'Mizuumi')
-
-SwiftCompile normal arm64 Compiling\ SaveGameManager.swift,\ UpgradeSystem.swift,\ SettingsView.swift,\ UpgradeCatalog.swift,\ DecorFactory.swift,\ Random.swift,\ FishSpawner.swift,\ MainMenuView.swift,\ RootView.swift,\ LakeScene.swift,\ Equipment.swift,\ EconomySystem.swift,\ CodexView.swift,\ FishCatalog.swift,\ BoatController.swift,\ BaitBoxView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Persistence/SaveGameManager.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/UpgradeSystem.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/SettingsView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Data/UpgradeCatalog.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/DecorFactory.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/Random.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/FishSpawner.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/MainMenuView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/App/RootView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Scenes/LakeScene.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/Equipment.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/EconomySystem.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/CodexView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Data/FishCatalog.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/BoatController.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/BaitBoxView.swift (in target 'Mizuumi' from project 'Mizuumi')
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Persistence/SaveGameManager.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
+SwiftCompile normal arm64 Compiling\ UpgradeSystem.swift,\ SettingsView.swift,\ FishNode.swift,\ BoatController.swift,\ FishSpawner.swift,\ MainMenuView.swift,\ BoatNode.swift,\ FishSpecies.swift,\ ValueNoise.swift,\ CodexView.swift,\ FishCatalog.swift,\ Bait.swift,\ BaitBoxView.swift,\ RootView.swift,\ GeneratedAssetSymbols.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/UpgradeSystem.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/SettingsView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/FishNode.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/BoatController.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/FishSpawner.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/MainMenuView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/BoatNode.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/FishSpecies.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/ValueNoise.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/CodexView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Data/FishCatalog.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/Bait.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/BaitBoxView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/App/RootView.swift /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'Mizuumi' from project 'Mizuumi')
 SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/UpgradeSystem.swift (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     
@@ -313,15 +174,11 @@ SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Miz
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     
 
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Data/UpgradeCatalog.swift (in target 'Mizuumi' from project 'Mizuumi')
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/FishNode.swift (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     
 
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/DecorFactory.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/Random.swift (in target 'Mizuumi' from project 'Mizuumi')
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/BoatController.swift (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     
 
@@ -333,19 +190,15 @@ SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Miz
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     
 
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/App/RootView.swift (in target 'Mizuumi' from project 'Mizuumi')
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/BoatNode.swift (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     
 
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Scenes/LakeScene.swift (in target 'Mizuumi' from project 'Mizuumi')
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/FishSpecies.swift (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     
 
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/Equipment.swift (in target 'Mizuumi' from project 'Mizuumi')
-    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
-    
-
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/EconomySystem.swift (in target 'Mizuumi' from project 'Mizuumi')
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/ValueNoise.swift (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     
 
@@ -357,7 +210,7 @@ SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Miz
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     
 
-SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/BoatController.swift (in target 'Mizuumi' from project 'Mizuumi')
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/Bait.swift (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     
 
@@ -365,11 +218,90 @@ SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Miz
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     
 
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/App/RootView.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 Compiling\ AudioManager.swift,\ SaveGameManager.swift,\ DayNightSystem.swift,\ MissionSystem.swift,\ PaperStyle.swift,\ DecorFactory.swift,\ ColorPalette.swift,\ BaitSystem.swift,\ FishingSystem.swift,\ JoystickView.swift,\ Equipment.swift,\ TextureFactory.swift,\ CatchResultView.swift,\ BaitCatalog.swift,\ LakeScene.swift,\ FishAI.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Managers/AudioManager.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Persistence/SaveGameManager.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/DayNightSystem.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/MissionSystem.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/PaperStyle.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/DecorFactory.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/ColorPalette.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/BaitSystem.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/FishingSystem.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/JoystickView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/Equipment.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/TextureFactory.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/CatchResultView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Data/BaitCatalog.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Scenes/LakeScene.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/FishAI.swift (in target 'Mizuumi' from project 'Mizuumi')
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Managers/AudioManager.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Persistence/SaveGameManager.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/DayNightSystem.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/MissionSystem.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/PaperStyle.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/DecorFactory.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/ColorPalette.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/BaitSystem.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/FishingSystem.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/JoystickView.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/Equipment.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/TextureFactory.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/CatchResultView.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Data/BaitCatalog.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Scenes/LakeScene.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/FishAI.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+LinkAssetCatalog /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Assets.xcassets (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    builtin-linkAssetCatalog --thinned /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_output/thinned --thinned-dependencies /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_dependencies_thinned --thinned-info-plist-content /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_generated_info.plist_thinned --unthinned /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_output/unthinned --unthinned-dependencies /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_dependencies_unthinned --unthinned-info-plist-content /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_generated_info.plist_unthinned --output /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app --plist-output /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/assetcatalog_generated_info.plist
+note: Emplaced /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Assets.car (in target 'Mizuumi' from project 'Mizuumi')
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for Mizuumi (in target 'Mizuumi' from project 'Mizuumi')
+
 SwiftDriver\ Compilation\ Requirements Mizuumi normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     builtin-Swift-Compilation-Requirements -- /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Mizuumi -Onone -enforce-exclusivity\=checked @/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Index.noindex/DataStore -swift-version 5 -I /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator -F /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64 -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator18.5-22F76-96ae0914227b19deccb34b33ba7b5dea.sdkstatcache -output-file-map /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi-generated-files.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi-own-target-headers.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi-project-headers.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/DerivedSources/arm64 -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi-Swift.h -working-directory /Users/runner/work/mizuumi-fishing/mizuumi-fishing -experimental-emit-module-separately -disable-cmo
-
-SwiftDriverJobDiscovery normal arm64 Compiling SaveGameManager.swift, UpgradeSystem.swift, SettingsView.swift, UpgradeCatalog.swift, DecorFactory.swift, Random.swift, FishSpawner.swift, MainMenuView.swift, RootView.swift, LakeScene.swift, Equipment.swift, EconomySystem.swift, CodexView.swift, FishCatalog.swift, BoatController.swift, BaitBoxView.swift (in target 'Mizuumi' from project 'Mizuumi')
 
 ProcessInfoPlistFile /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Info.plist /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/empty-Mizuumi.plist (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
@@ -395,9 +327,77 @@ Copy /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntverufln
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.swiftsourceinfo /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo
 
-SwiftDriverJobDiscovery normal arm64 Compiling SaveData.swift, ValueNoise.swift, MissionSystem.swift, PaperStyle.swift, BobberNode.swift, ColorPalette.swift, Mission.swift, FishingSystem.swift, JoystickView.swift, CoreTypes.swift, DayNightSystem.swift, CatchResultView.swift, MizuumiApp.swift, HapticManager.swift, GeneratedAssetSymbols.swift (in target 'Mizuumi' from project 'Mizuumi')
+SwiftCompile normal arm64 Compiling\ MizuumiApp.swift,\ ShopView.swift,\ SaveData.swift,\ CatchMiniGame.swift,\ LakeMap.swift,\ MissionsView.swift,\ BobberNode.swift,\ Mission.swift,\ GameView.swift,\ UpgradeCatalog.swift,\ CoreTypes.swift,\ Random.swift,\ CatchMiniGameView.swift,\ GameSession.swift,\ HapticManager.swift,\ EconomySystem.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/App/MizuumiApp.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/ShopView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Persistence/SaveData.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/CatchMiniGame.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/LakeMap.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/MissionsView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/BobberNode.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/Mission.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/GameView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Data/UpgradeCatalog.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/CoreTypes.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/Random.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/CatchMiniGameView.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/ViewModels/GameSession.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Managers/HapticManager.swift /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/EconomySystem.swift (in target 'Mizuumi' from project 'Mizuumi')
 
-SwiftDriverJobDiscovery normal arm64 Compiling BaitSystem.swift, ShopView.swift, BaitCatalog.swift, FishNode.swift, TextureFactory.swift, LakeMap.swift, MissionsView.swift, BoatNode.swift, FishSpecies.swift, FishAI.swift, GameView.swift, Bait.swift, CatchMiniGame.swift, CatchMiniGameView.swift, GameSession.swift, AudioManager.swift (in target 'Mizuumi' from project 'Mizuumi')
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/App/MizuumiApp.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/ShopView.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Persistence/SaveData.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/CatchMiniGame.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/LakeMap.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/MissionsView.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/GameObjects/BobberNode.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/Mission.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/GameView.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Data/UpgradeCatalog.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Models/CoreTypes.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Support/Random.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/UI/CatchMiniGameView.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/ViewModels/GameSession.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Managers/HapticManager.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftCompile normal arm64 /Users/runner/work/mizuumi-fishing/mizuumi-fishing/Mizuumi/Systems/EconomySystem.swift (in target 'Mizuumi' from project 'Mizuumi')
+    cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling MizuumiApp.swift, ShopView.swift, SaveData.swift, CatchMiniGame.swift, LakeMap.swift, MissionsView.swift, BobberNode.swift, Mission.swift, GameView.swift, UpgradeCatalog.swift, CoreTypes.swift, Random.swift, CatchMiniGameView.swift, GameSession.swift, HapticManager.swift, EconomySystem.swift (in target 'Mizuumi' from project 'Mizuumi')
+
+SwiftDriverJobDiscovery normal arm64 Compiling AudioManager.swift, SaveGameManager.swift, DayNightSystem.swift, MissionSystem.swift, PaperStyle.swift, DecorFactory.swift, ColorPalette.swift, BaitSystem.swift, FishingSystem.swift, JoystickView.swift, Equipment.swift, TextureFactory.swift, CatchResultView.swift, BaitCatalog.swift, LakeScene.swift, FishAI.swift (in target 'Mizuumi' from project 'Mizuumi')
+
+SwiftDriverJobDiscovery normal arm64 Compiling UpgradeSystem.swift, SettingsView.swift, FishNode.swift, BoatController.swift, FishSpawner.swift, MainMenuView.swift, BoatNode.swift, FishSpecies.swift, ValueNoise.swift, CodexView.swift, FishCatalog.swift, Bait.swift, BaitBoxView.swift, RootView.swift, GeneratedAssetSymbols.swift (in target 'Mizuumi' from project 'Mizuumi')
 
 SwiftDriver\ Compilation Mizuumi normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
@@ -419,8 +419,8 @@ Ld /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnog
 ExtractAppIntentsMetadata (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name Mizuumi --sdk-root /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.5.sdk --xcode-version 16F6 --platform-family iOS --deployment-target 17.0 --bundle-identifier com.example.mizuumi --output /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app --target-triple arm64-apple-ios17.0-simulator --binary-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Mizuumi --dependency-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi_dependency_info.dat --stringsdata-file /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftFileList --metadata-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi.DependencyMetadataFileList --static-metadata-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi.DependencyStaticMetadataFileList --swift-const-vals-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Objects-normal/arm64/Mizuumi.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
-2026-08-01 08:46:57.680 appintentsmetadataprocessor[16249:50828] Starting appintentsmetadataprocessor export
-2026-08-01 08:46:57.682 appintentsmetadataprocessor[16249:50828] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+2026-08-01 08:34:47.738 appintentsmetadataprocessor[44769:111857] Starting appintentsmetadataprocessor export
+2026-08-01 08:34:47.747 appintentsmetadataprocessor[44769:111857] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
 
 CopySwiftLibs /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
@@ -430,8 +430,8 @@ Ignoring --strip-bitcode because --sign was not passed
 AppIntentsSSUTraining (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
     /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsnltrainingprocessor --infoplist-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Info.plist --temp-dir-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/ssu --bundle-id com.example.mizuumi --product-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app --extracted-metadata-path /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app/Metadata.appintents --metadata-file-list /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Intermediates.noindex/Mizuumi.build/Debug-iphonesimulator/Mizuumi.build/Mizuumi.DependencyMetadataFileList --archive-ssu-assets
-2026-08-01 08:46:57.710 appintentsnltrainingprocessor[16250:50830] Parsing options for appintentsnltrainingprocessor
-2026-08-01 08:46:57.711 appintentsnltrainingprocessor[16250:50830] No AppShortcuts found - Skipping.
+2026-08-01 08:34:47.814 appintentsnltrainingprocessor[44770:111871] Parsing options for appintentsnltrainingprocessor
+2026-08-01 08:34:47.815 appintentsnltrainingprocessor[44770:111871] No AppShortcuts found - Skipping.
 
 RegisterExecutionPolicyException /Users/runner/Library/Developer/Xcode/DerivedData/Mizuumi-doilfyfqntveruflnogzscdthtsg/Build/Products/Debug-iphonesimulator/Mizuumi.app (in target 'Mizuumi' from project 'Mizuumi')
     cd /Users/runner/work/mizuumi-fishing/mizuumi-fishing
