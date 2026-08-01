@@ -27,6 +27,15 @@ struct FishSpecies: Identifiable, Equatable {
     /// IDs bevorzugter Köder. Steht ein Köder hier, steigt die Bisschance stark.
     let preferredBaitIDs: [String]
 
+    /// Abschließende Liste der Köder, die diese Art überhaupt nimmt.
+    ///
+    /// Normalerweise regelt die Ernährungsweise, was in Frage kommt. Manche
+    /// Arten sind aber wählerischer, als ihre Gruppe vermuten lässt: Eine
+    /// Grundel gründelt am Boden nach Würmern und schnappt eben nicht nach
+    /// einem vorbeiziehenden Blinker, obwohl sie als Allesfresser gilt.
+    /// Nil heißt: keine zusätzliche Einschränkung.
+    var onlyBaitIDs: [String]?
+
     /// 0…1 — wie stark der Fisch im Minispiel zieht.
     let fightStrength: Double
     let motion: FightMotion

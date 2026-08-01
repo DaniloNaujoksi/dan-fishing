@@ -51,6 +51,8 @@ enum FishCatalog {
             habitats: [.shallows, .reeds, .sunkenLogs],
             activeTimes: [.dawn, .day, .dusk, .night],
             preferredBaitIDs: ["worm", "maggot"],
+            // Auch der Kaulbarsch sucht am Grund und lässt Kunstköder liegen.
+            onlyBaitIDs: ["worm", "maggot", "insect", "wormbundle"],
             fightStrength: 0.14,
             motion: .thrashing,
             valuePerKilo: 34,
@@ -257,6 +259,8 @@ enum FishCatalog {
             habitats: [.shallows, .sunkenLogs, .reeds],
             activeTimes: [.dawn, .day, .dusk, .night],
             preferredBaitIDs: ["worm", "maggot"],
+            // Sie gründelt am Boden und nimmt nichts, was vorbeizieht.
+            onlyBaitIDs: ["worm", "maggot", "wormbundle"],
             fightStrength: 0.16,
             motion: .thrashing,
             valuePerKilo: 28,

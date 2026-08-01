@@ -17,8 +17,18 @@ struct CodexView: View {
                     VStack(spacing: 14) {
                         summary
 
-                        ForEach(FishCatalog.all) { species in
-                            entryRow(for: species)
+                        // Nach Seltenheit gruppiert: Die gewöhnlichen Arten
+                        // stehen oben, die Ungeheuer unten. So sieht man auf
+                        // einen Blick, wie weit man in die Tiefe gekommen ist.
+                        ForEach(Rarity.allCases, id: \.self) { rarity in
+                            let species = FishCatalog.all.filter { $0.rarity == rarity }
+                            if !species.isEmpty {
+                                rarityHeader(rarity, species: species)
+
+                                ForEach(species) { entry in
+                                    entryRow(for: entry)
+                                }
+                            }
                         }
                     }
                     .padding(18)
@@ -50,6 +60,32 @@ struct CodexView: View {
                     .tint(Palette.vermilion.swiftUIColor)
             }
         }
+    }
+
+    /// Zwischenüberschrift je Seltenheitsstufe, mit Zähler.
+    private func rarityHeader(_ rarity: Rarity, species: [FishSpecies]) -> some View {
+        let found = species.filter { session.save.codex[$0.id] != nil }.count
+
+        return HStack(spacing: 8) {
+            Circle()
+                .fill(rarity.tint)
+                .frame(width: 8, height: 8)
+
+            Text(rarity.displayName)
+                .font(.system(size: 15, weight: .semibold, design: .serif))
+                .foregroundStyle(rarity.tint)
+
+            Rectangle()
+                .fill(rarity.tint.opacity(0.28))
+                .frame(height: 1)
+
+            Text("\(found) / \(species.count)")
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(Palette.inkSoft.swiftUIColor)
+        }
+        .padding(.top, 8)
+        .padding(.horizontal, 4)
     }
 
     private func entryRow(for species: FishSpecies) -> some View {

@@ -27,6 +27,10 @@ enum BaitSystem {
         // passen. Umgekehrt interessiert einen Hecht kein Maiskorn.
         guard bait.targets.contains(species.feeding) else { return 0 }
 
+        // Manche Arten nehmen nur eine kurze Liste von Ködern, unabhängig von
+        // ihrer Ernährungsgruppe.
+        if let allowed = species.onlyBaitIDs, !allowed.contains(bait.id) { return 0 }
+
         // Grundgewicht aus der Seltenheit, angehoben durch Glücksbringer und
         // die Seltenheitsneigung des Köders.
         let luckBoost = 1.0 + (context.stats.luck - 1.0) + bait.rarityBias * 0.8

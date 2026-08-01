@@ -56,6 +56,18 @@ final class BaitSystemTests: XCTestCase {
                            stats: stats)
     }
 
+    func testPickyFishRefuseEverythingOutsideTheirList() {
+        let goby = FishCatalog.species(id: "goby")!
+        let spoon = BaitCatalog.bait(id: "spoon")!
+        let worm = BaitCatalog.bait(id: "worm")!
+        let ctx = context(habitat: .shallows, time: .day)
+
+        // Die Grundel gilt als Allesfresser, nimmt aber trotzdem keinen
+        // Blinker — dafür sorgt ihre eigene Köderliste.
+        XCTAssertEqual(BaitSystem.attraction(species: goby, bait: spoon, context: ctx), 0)
+        XCTAssertGreaterThan(BaitSystem.attraction(species: goby, bait: worm, context: ctx), 0)
+    }
+
     func testPeacefulFishIgnorePredatorBaits() {
         let carp = FishCatalog.species(id: "carp")!
         let spinner = BaitCatalog.bait(id: "spinner")!
