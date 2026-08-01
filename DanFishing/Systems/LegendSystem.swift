@@ -105,10 +105,16 @@ enum LegendSystem {
         if let known = habitatCache[water.id] { return known }
 
         let map = LakeMap.generate(for: water)
+
+        // Nur Zonen, die groß genug zum Suchen sind. Der Dorfteich hat drei
+        // Zellen Totholz — dorthin einen Hinweis zu schicken, wäre eine
+        // Schnitzeljagd ohne Chance.
+        let minimum = max(10, map.cells.count / 120)
         var found = Set<Habitat>()
-        for cell in map.cells {
-            if let habitat = cell.habitat { found.insert(habitat) }
+        for habitat in Habitat.allCases where map.cellCount(of: habitat) >= minimum {
+            found.insert(habitat)
         }
+
         habitatCache[water.id] = found
         return found
     }

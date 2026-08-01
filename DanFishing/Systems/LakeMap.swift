@@ -155,6 +155,29 @@ struct LakeMap {
         return total / samples
     }
 
+    /// Alle Zellenmittelpunkte einer Zone.
+    ///
+    /// Läuft über die ganze Karte und ist deshalb nichts für jeden Frame —
+    /// gedacht als sichere Rückfallebene dort, wo zufälliges Probieren eine
+    /// kleine Zone verfehlen würde.
+    func positions(of habitat: Habitat) -> [CGPoint] {
+        var found: [CGPoint] = []
+        for row in 0..<rows {
+            for column in 0..<columns {
+                guard kind(column: column, row: row).habitat == habitat else { continue }
+                found.append(CGPoint(x: (CGFloat(column) + 0.5) * cellSize,
+                                     y: (CGFloat(row) + 0.5) * cellSize))
+            }
+        }
+        return found
+    }
+
+    /// Wie viele Zellen eine Zone hat. Grundlage dafür, ob sie groß genug ist,
+    /// um jemanden dorthin zu schicken.
+    func cellCount(of habitat: Habitat) -> Int {
+        cells.reduce(0) { $0 + ($1.habitat == habitat ? 1 : 0) }
+    }
+
     /// Mittelpunkt der Zelle, in der ein Punkt liegt.
     func snappedToCellCenter(_ point: CGPoint) -> CGPoint {
         let column = Int(floor(point.x / cellSize))

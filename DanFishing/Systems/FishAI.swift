@@ -342,6 +342,17 @@ struct FishAI {
                 return candidate
             }
         }
-        return nil
+
+        // Zufälliges Probieren verfehlt kleine Zonen — ein Seerosenfeld aus
+        // fünf Zellen findet man so praktisch nie. Deshalb wird zum Schluss
+        // die Karte abgesucht und aus dem Ergebnis gezogen.
+        let all = map.positions(of: habitat)
+        guard !all.isEmpty else { return nil }
+
+        if let point {
+            let inRange = all.filter { hypot($0.x - point.x, $0.y - point.y) <= radius }
+            if let choice = inRange.randomElement() { return choice }
+        }
+        return all.randomElement()
     }
 }

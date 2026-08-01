@@ -724,6 +724,18 @@ final class LakeMapTests: XCTestCase {
         XCTAssertGreaterThan(map.current(at: fast).dy, map.current(at: deep).dy)
     }
 
+    func testSmallZonesAreStillFound() {
+        // Rein zufälliges Probieren verfehlt kleine Zonen. Gesucht wird
+        // trotzdem etwas gefunden, sonst stünde dort nie ein Fisch.
+        for water in WaterCatalog.all {
+            let map = LakeMap.generate(for: water)
+            for habitat in Habitat.allCases where map.cellCount(of: habitat) > 0 {
+                XCTAssertNotNil(FishAI.randomPosition(in: habitat, map: map, attempts: 1),
+                                "\(water.name): \(habitat.rawValue) nicht auffindbar")
+            }
+        }
+    }
+
     func testNearestWaterLeavesLand() {
         let map = LakeMap.generate()
         let land = CGPoint(x: 20, y: 20)   // Ecke ist immer Ufer
@@ -903,6 +915,11 @@ final class LegendSystemTests: XCTestCase {
                 }
                 XCTAssertNotNil(FishAI.randomPosition(in: habitat, map: map, attempts: 400),
                                 "\(water.name) hat keine Zone \(habitat.rawValue)")
+
+                // Die Zone muss auch groß genug sein, dass man sie findet.
+                XCTAssertGreaterThanOrEqual(map.cellCount(of: habitat), 10,
+                                            "\(water.name): Zone \(habitat.rawValue) ist zu klein "
+                                            + "für einen Hinweis")
             }
         }
     }
