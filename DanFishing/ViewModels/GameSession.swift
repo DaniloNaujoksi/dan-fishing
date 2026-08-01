@@ -177,6 +177,9 @@ final class GameSession: ObservableObject {
         refreshMissions()
         applySettingsToManagers()
         startTutorialIfNeeded()
+        // Wer schon weit genug ist, bekommt beim Weiterspielen sofort einen
+        // Fisch, dem er nachjagen kann.
+        ensureLegend()
         screen = .playing
     }
 
@@ -509,12 +512,20 @@ final class GameSession: ObservableObject {
         let levels = EconomySystem.applyExperience(xp, to: &save)
         if levels > 0 {
             showToast("Stufe \(save.level) erreicht", emphasis: true)
+            // Mit der neuen Stufe kann die erste Legende auftauchen.
+            ensureLegend()
         }
 
         // Neue Art: eigene Einblendung mit Fanfare, bevor die Fangkarte
         // übernimmt.
         if isNew {
             celebrateDiscovery(of: fish.species)
+        }
+
+        // Eine Legende ist mit dem Fang aus dem Wasser — und der Nächste
+        // wartet schon.
+        if fish.isLegendary {
+            landLegend(named: fish.legendName)
         }
 
         completedMissions = MissionSystem.apply(result: result,
@@ -551,6 +562,60 @@ final class GameSession: ObservableObject {
         clearCompletedMissions()
         AudioManager.shared.play(.uiTap)
         persist()
+    }
+
+    // MARK: - Legendäre Fische
+
+    /// Der Fisch, von dem gerade erzählt wird. Nil, bevor die Stufe erreicht ist.
+    var activeLegend: LegendaryFish? { save.activeLegend }
+
+    /// Steht die Legende im aktuellen Gewässer?
+    var legendIsHere: Bool {
+        guard let legend = save.activeLegend else { return false }
+        return LegendSystem.isPresent(legend, waterID: save.currentWaterID)
+    }
+
+    /// Sorgt dafür, dass immer ein legendärer Fisch draußen steht.
+    ///
+    /// Wird beim Start und nach jedem Stufenaufstieg aufgerufen. Erst ab der
+    /// Mindeststufe passiert überhaupt etwas.
+    func ensureLegend() {
+        guard save.activeLegend == nil, save.level >= LegendSystem.minimumLevel else { return }
+
+        let caughtSpecies = save.caughtLegends.map(\.speciesID)
+        guard let legend = LegendSystem.roll(level: save.level,
+                                             ownedBaitIDs: save.ownedBaitIDs,
+                                             avoiding: caughtSpecies,
+                                             seed: UInt64.random(in: 1...UInt64.max)) else { return }
+
+        save.activeLegend = legend
+        persist()
+
+        showToast("Am Wasser wird von \(legend.name) erzählt", emphasis: true)
+        AudioManager.shared.play(.discovery)
+    }
+
+    /// Trägt eine gefangene Legende ein und setzt die nächste aus.
+    private func landLegend(named name: String?) {
+        guard var legend = save.activeLegend, legend.name == name else { return }
+
+        legend.caughtAt = Date()
+        save.caughtLegends.append(legend)
+        save.activeLegend = nil
+
+        // Der Ruhm zahlt sich auch aus: Eine Legende bringt das Dreifache.
+        let bonus = EconomySystem.coinValue(for: HookedFish(species: legend.species ?? FishCatalog.all[0],
+                                                            lengthCm: legend.lengthCm,
+                                                            weightKg: legend.weightKg,
+                                                            habitat: legend.habitat ?? .deep,
+                                                            baitID: legend.baitID)) * 2
+        save.coins += bonus
+
+        showToast("\(legend.name) gefangen — +\(bonus) Münzen", emphasis: true)
+        AudioManager.shared.play(.discovery)
+        HapticManager.shared.success()
+
+        ensureLegend()
     }
 
     // MARK: - Bootsposition

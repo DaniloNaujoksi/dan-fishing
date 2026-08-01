@@ -839,6 +839,142 @@ final class MovementControllerTests: XCTestCase {
     }
 }
 
+final class LegendSystemTests: XCTestCase {
+
+    private func roll(level: Int, seed: UInt64) -> LegendaryFish? {
+        LegendSystem.roll(level: level,
+                          ownedBaitIDs: ["worm", "bread", "corn"],
+                          avoiding: [],
+                          seed: seed)
+    }
+
+    func testNoLegendBeforeTheMinimumLevel() {
+        for level in 1..<LegendSystem.minimumLevel {
+            XCTAssertNil(roll(level: level, seed: 42))
+        }
+    }
+
+    func testLegendIsAlwaysReachable() {
+        // Jede Legende muss fangbar sein: Gewässer offen, Art dort vorhanden,
+        // Zone auf der Karte, Köder erreichbar und passend.
+        // Karten sind teuer zu erzeugen, deshalb einmal pro Gewässer.
+        var maps: [String: LakeMap] = [:]
+
+        for seed in UInt64(1)...25 {
+            for level in [6, 9, 12, 16] {
+                guard let legend = roll(level: level, seed: seed * 977) else {
+                    return XCTFail("Keine Legende auf Stufe \(level)")
+                }
+
+                guard let species = legend.species,
+                      let water = legend.water,
+                      let habitat = legend.habitat,
+                      let time = legend.timeOfDay,
+                      let bait = legend.bait else {
+                    return XCTFail("Legende mit unbekannten Daten: \(legend)")
+                }
+
+                XCTAssertLessThanOrEqual(water.requiredLevel, level)
+                XCTAssertTrue(water.speciesIDs.contains(species.id),
+                              "\(species.name) kommt im \(water.name) nicht vor")
+                XCTAssertLessThanOrEqual(species.minPlayerLevel, level)
+                XCTAssertLessThanOrEqual(bait.unlockLevel, level)
+
+                // Der genannte Köder muss unter genau diesen Bedingungen auch
+                // wirklich funktionieren.
+                let context = BaitSystem.Context(habitat: habitat,
+                                                 timeOfDay: time,
+                                                 depth: habitat.depthMeters,
+                                                 playerLevel: level,
+                                                 stats: EquipmentStats(),
+                                                 pool: [species])
+                XCTAssertGreaterThan(BaitSystem.attraction(species: species,
+                                                           bait: bait,
+                                                           context: context), 0,
+                                     "\(species.name) nimmt \(bait.name) nicht")
+
+                // Und die Zone muss es im Gewässer geben.
+                let map: LakeMap
+                if let cached = maps[water.id] {
+                    map = cached
+                } else {
+                    map = LakeMap.generate(for: water)
+                    maps[water.id] = map
+                }
+                XCTAssertNotNil(FishAI.randomPosition(in: habitat, map: map, attempts: 400),
+                                "\(water.name) hat keine Zone \(habitat.rawValue)")
+            }
+        }
+    }
+
+    func testLegendIsAlwaysAnOutstandingSpecimen() {
+        for seed in UInt64(1)...40 {
+            guard let legend = roll(level: 14, seed: seed * 131),
+                  let species = legend.species else { continue }
+            XCTAssertGreaterThan(species.trophyFactor(forLength: legend.lengthCm), 0.9)
+        }
+    }
+
+    func testEarlyLevelsStayAwayFromTheMonsters() {
+        for seed in UInt64(1)...60 {
+            guard let legend = roll(level: 6, seed: seed * 613),
+                  let species = legend.species else { continue }
+            XCTAssertLessThanOrEqual(species.rarity, .uncommon)
+        }
+    }
+
+    func testBiteRulesRequireEverythingToMatch() {
+        guard let legend = roll(level: 12, seed: 4711),
+              let habitat = legend.habitat,
+              let time = legend.timeOfDay else {
+            return XCTFail("Keine Legende")
+        }
+
+        XCTAssertTrue(LegendSystem.acceptsBite(legend, habitat: habitat,
+                                               timeOfDay: time, baitID: legend.baitID))
+
+        let otherBait = legend.baitID == "worm" ? "corn" : "worm"
+        XCTAssertFalse(LegendSystem.acceptsBite(legend, habitat: habitat,
+                                                timeOfDay: time, baitID: otherBait))
+
+        let otherTime: TimeOfDay = time == .night ? .day : .night
+        XCTAssertFalse(LegendSystem.acceptsBite(legend, habitat: habitat,
+                                                timeOfDay: otherTime, baitID: legend.baitID))
+
+        let otherHabitat: Habitat = habitat == .deep ? .reeds : .deep
+        XCTAssertFalse(LegendSystem.acceptsBite(legend, habitat: otherHabitat,
+                                                timeOfDay: time, baitID: legend.baitID))
+    }
+
+    func testNamesAreStableAndReadable() {
+        let pike = FishCatalog.species(id: "pike")!
+        var first = SeededGenerator(seed: 99)
+        var second = SeededGenerator(seed: 99)
+
+        let a = LegendNames.name(for: pike, habitat: .reeds, using: &first)
+        let b = LegendNames.name(for: pike, habitat: .reeds, using: &second)
+
+        XCTAssertEqual(a, b)
+        XCTAssertTrue(a.hasPrefix("Der ") || a.hasPrefix("Die ") || a.hasPrefix("Das "))
+        XCTAssertGreaterThan(a.count, 8)
+    }
+
+    func testLegendaryFishFightsHarder() {
+        let species = FishCatalog.species(id: "perch")!
+        let normal = HookedFish(species: species, lengthCm: 40,
+                                weightKg: species.weight(forLength: 40),
+                                habitat: .reeds, baitID: "worm")
+        let legend = HookedFish(species: species, lengthCm: 40,
+                                weightKg: species.weight(forLength: 40),
+                                habitat: .reeds, baitID: "worm",
+                                legendName: "Der Stachelige Patrick")
+
+        XCTAssertGreaterThan(legend.fightStrength, normal.fightStrength)
+        XCTAssertTrue(legend.isLegendary)
+        XCTAssertFalse(normal.isLegendary)
+    }
+}
+
 final class WaterCatalogTests: XCTestCase {
 
     func testEveryWaterGeneratesFishableMap() {

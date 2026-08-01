@@ -48,6 +48,8 @@ final class LakeScene: SKScene {
     private var lanternNode: SKSpriteNode?
 
     private var fishNodes: [FishNode] = []
+    /// Der legendäre Fisch dieses Gewässers, falls er hier steht.
+    private var legendNode: FishNode?
     private var lastUpdate: TimeInterval = 0
     private var petalTimer: CGFloat = 0
 
@@ -444,6 +446,38 @@ final class LakeScene: SKScene {
         for habitat in Habitat.allCases {
             addFish(in: habitat, count: 4, near: player.position, radius: 1100)
         }
+
+        spawnLegend()
+    }
+
+    /// Setzt den legendären Fisch aus, falls er in diesem Gewässer steht.
+    ///
+    /// Er hält sich ausschließlich in seiner Zone auf — der Hinweis ist damit
+    /// wirklich die einzige Information, die man braucht.
+    private func spawnLegend() {
+        guard let legend = session.activeLegend,
+              LegendSystem.isPresent(legend, waterID: water.id),
+              let species = legend.species,
+              let habitat = legend.habitat,
+              let position = FishAI.randomPosition(in: habitat, map: map) else { return }
+
+        var swimmer = FishAI.Swimmer(position: position,
+                                     heading: CGFloat.random(in: 0..<(.pi * 2)),
+                                     speed: 14 + CGFloat(species.fightStrength) * 26,
+                                     habitat: habitat,
+                                     speciesID: species.id,
+                                     scale: 1.4,
+                                     turnTimer: CGFloat.random(in: 0.5...2.5),
+                                     traits: FishAI.Traits(hunger: 0.55,
+                                                           curiosity: 0.5,
+                                                           caution: 0.95))
+        swimmer.isLegendary = true
+
+        let node = FishNode(swimmer: swimmer, species: species)
+        node.zPosition = 8
+        fishLayer.addChild(node)
+        fishNodes.append(node)
+        legendNode = node
     }
 
     private func addFish(in habitat: Habitat, count: Int, near point: CGPoint?, radius: CGFloat) {
@@ -661,6 +695,8 @@ final class LakeScene: SKScene {
     }
 
     private func updateFish(dt: CGFloat) {
+        syncLegend()
+
         // Nur ein liegender Köder ist interessant — ein fliegender nicht.
         let lure = fishing.isFishing ? fishing.bobberPosition : nil
         let bait = session.selectedBait
@@ -673,6 +709,21 @@ final class LakeScene: SKScene {
             if let context {
                 let weight = BaitSystem.attraction(species: node.species, bait: bait, context: context)
                 interest = CGFloat(min(1.0, weight / 1.2))
+            }
+
+            // Die Legende hält sich an ihre eigenen Regeln: Stimmen Zone,
+            // Uhrzeit und Köder nicht, sieht sie den Köder gar nicht an.
+            // Stimmt alles, ist sie interessiert — aber immer noch scheu.
+            if node === legendNode {
+                if let context, let legend = session.activeLegend,
+                   LegendSystem.acceptsBite(legend,
+                                            habitat: context.habitat,
+                                            timeOfDay: context.timeOfDay,
+                                            baitID: bait.id) {
+                    interest = 0.85
+                } else {
+                    interest = 0
+                }
             }
 
             let outcome = node.update(deltaTime: dt,
@@ -699,6 +750,15 @@ final class LakeScene: SKScene {
                 // Vorher wurde beim Biss neu ausgewürfelt — dadurch hatte das,
                 // was man im Wasser sah, nichts mit dem Fang zu tun.
                 guard let context else { break }
+
+                // Die Legende hängt mit ihren eigenen Maßen am Haken.
+                if node === legendNode,
+                   let legend = session.activeLegend,
+                   let hooked = LegendSystem.hookedFish(legend, habitat: context.habitat) {
+                    fishing.reportBite(fish: hooked)
+                    break
+                }
+
                 let length = FishSpawner.rollLength(for: node.species,
                                                     bait: bait,
                                                     stats: session.stats)
@@ -716,13 +776,35 @@ final class LakeScene: SKScene {
     }
 
     /// Fische in unmittelbarer Nähe des Einschlags erschrecken.
+    ///
+    /// Die Legende hat einen viel größeren Radius: Ihr direkt auf den Kopf zu
+    /// werfen, ist der sicherste Weg, sie für lange Zeit zu vertreiben. Man
+    /// muss daneben anbieten und warten.
     private func spookFish(around point: CGPoint) {
         for node in fishNodes {
             let delta = CGVector(dx: node.swimmer.position.x - point.x,
                                  dy: node.swimmer.position.y - point.y)
-            if hypot(delta.dx, delta.dy) < 90 {
+            let radius: CGFloat = node === legendNode ? 230 : 90
+            if hypot(delta.dx, delta.dy) < radius {
                 node.spook(from: point)
+                if node === legendNode {
+                    session.showToast("Zu dicht — er ist weg.")
+                }
             }
+        }
+    }
+
+    /// Hält den sichtbaren legendären Fisch mit dem Spielstand im Einklang:
+    /// Gefangene verschwinden, neue tauchen auf.
+    private func syncLegend() {
+        let shouldBeHere = session.legendIsHere
+
+        if let node = legendNode, !shouldBeHere {
+            node.removeFromParent()
+            fishNodes.removeAll { $0 === node }
+            legendNode = nil
+        } else if legendNode == nil, shouldBeHere {
+            spawnLegend()
         }
     }
 

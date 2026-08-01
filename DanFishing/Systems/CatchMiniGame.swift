@@ -51,7 +51,7 @@ struct CatchMiniGame {
         self.barHeight = min(0.42, max(0.12, stats.control + 0.10 - sizePenalty))
 
         let weightFactor = min(1.0, fish.weightKg / max(1.0, stats.maxFishWeight))
-        self.fightPower = min(1.0, fish.species.fightStrength * (0.75 + weightFactor * 0.5))
+        self.fightPower = min(1.0, fish.fightStrength * (0.75 + weightFactor * 0.5))
 
         self.fishTarget = 0.5
     }

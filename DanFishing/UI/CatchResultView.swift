@@ -27,19 +27,32 @@ struct CatchResultView: View {
 
     private var header: some View {
         VStack(spacing: 4) {
-            Text(result.isNewSpecies ? "Neue Art!" : "Gefangen")
+            Text(headline)
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                 .textCase(.uppercase)
-                .foregroundStyle(Palette.vermilion.swiftUIColor)
+                .foregroundStyle(result.fish.isLegendary
+                                 ? Palette.gold.swiftUIColor
+                                 : Palette.vermilion.swiftUIColor)
 
-            Text(result.fish.species.name)
+            // Bei einer Legende steht ihr Name groß — die Art darunter.
+            Text(result.fish.legendName ?? result.fish.species.name)
                 .font(.system(size: 28, weight: .semibold, design: .serif))
                 .foregroundStyle(Palette.uiInk)
+                .multilineTextAlignment(.center)
 
-            Text(result.fish.species.rarity.displayName)
+            Text(result.fish.isLegendary
+                 ? result.fish.species.name
+                 : result.fish.species.rarity.displayName)
                 .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundStyle(result.fish.species.rarity.tint)
+                .foregroundStyle(result.fish.isLegendary
+                                 ? Palette.inkSoft.swiftUIColor
+                                 : result.fish.species.rarity.tint)
         }
+    }
+
+    private var headline: String {
+        if result.fish.isLegendary { return "Legende gefangen!" }
+        return result.isNewSpecies ? "Neue Art!" : "Gefangen"
     }
 
     /// Der Fisch in seinen Farben, in der Größe passend zum Exemplar.

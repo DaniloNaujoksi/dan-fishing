@@ -99,6 +99,18 @@ struct HookedFish: Equatable {
     let habitat: Habitat
     let baitID: String
 
+    /// Name des legendären Exemplars, falls dies eines ist. Ein solcher Fisch
+    /// kämpft härter und zählt anders als ein gewöhnlicher.
+    var legendName: String?
+
+    var isLegendary: Bool { legendName != nil }
+
+    /// Zugkraft im Drill. Eine Legende ist immer das stärkste Exemplar ihrer
+    /// Art — sonst wäre der Name nicht verdient.
+    var fightStrength: Double {
+        min(1.0, species.fightStrength + (isLegendary ? 0.12 : 0))
+    }
+
     var trophyFactor: Double { species.trophyFactor(forLength: lengthCm) }
 
     /// Fisch, der deutlich über dem Durchschnitt liegt — wird im UI hervorgehoben.

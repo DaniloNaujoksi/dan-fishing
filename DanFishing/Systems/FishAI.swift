@@ -84,6 +84,10 @@ struct FishAI {
         /// Wie lange er schon keinen freien Weg findet. Ab einer Sekunde wird
         /// er aus der Klemme geholt.
         var stuckTimer: CGFloat = 0
+
+        /// Ein legendärer Fisch. Er ist alt geworden, weil er misstrauisch
+        /// ist: Er kommt später heran, prüft länger und dreht schneller ab.
+        var isLegendary: Bool = false
     }
 
     /// Wie weit ein Fisch den Köder überhaupt bemerkt.
@@ -129,9 +133,13 @@ struct FishAI {
         switch swimmer.behaviour {
         case .cruise:
             // Entdecken: je näher und je passender der Köder, desto eher.
-            if distance < detectionRadius && interest > 0.08 {
+            // Ein legendärer Fisch braucht deutlich mehr, bevor er überhaupt
+            // hinsieht — deshalb steht er noch da.
+            let threshold: CGFloat = swimmer.isLegendary ? 0.35 : 0.08
+            if distance < detectionRadius && interest > threshold {
                 let proximity = 1 - distance / detectionRadius
-                let chance = interest * proximity * swimmer.traits.curiosity * dt * 1.6
+                var chance = interest * proximity * swimmer.traits.curiosity * dt * 1.6
+                if swimmer.isLegendary { chance *= 0.3 }
                 if CGFloat.random(in: 0...1) < chance {
                     swimmer.behaviour = .approach
                     swimmer.behaviourTimer = 14
@@ -163,7 +171,9 @@ struct FishAI {
 
             if swimmer.behaviourTimer <= 0 {
                 // Entscheidung: Der Appetit muss das Misstrauen schlagen.
-                let appetite = swimmer.traits.hunger * interest * 1.6
+                // Bei einer Legende wiegt das Misstrauen deutlich schwerer;
+                // man braucht mehrere Anläufe, auch wenn alles stimmt.
+                let appetite = swimmer.traits.hunger * interest * (swimmer.isLegendary ? 0.9 : 1.6)
                 if appetite > swimmer.traits.caution {
                     swimmer.behaviour = .nibble
                     swimmer.behaviourTimer = 0.6
@@ -171,7 +181,9 @@ struct FishAI {
                 } else {
                     swimmer.behaviour = .retreat
                     swimmer.behaviourTimer = 5
-                    swimmer.cooldown = 8
+                    // Nach einer Absage lässt sich eine Legende lange nicht
+                    // mehr blicken. Wer sie verprellt, wartet.
+                    swimmer.cooldown = swimmer.isLegendary ? 45 : 8
                     outcome = .rejected
                 }
             }

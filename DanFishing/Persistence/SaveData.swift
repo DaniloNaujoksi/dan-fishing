@@ -62,6 +62,12 @@ struct SaveData: Codable, Equatable {
 
     var totalCatches: Int = 0
 
+    /// Der legendäre Fisch, der gerade draußen steht. Nil, solange die Stufe
+    /// dafür nicht erreicht ist.
+    var activeLegend: LegendaryFish?
+    /// Alle bereits gefangenen Legenden, neueste zuletzt.
+    var caughtLegends: [LegendaryFish] = []
+
     /// Wurde das Tutorial schon einmal durchlaufen?
     var tutorialDone: Bool = false
     /// Wurde der Vorspann schon gezeigt?

@@ -9,6 +9,7 @@ struct MainMenuView: View {
     @State private var showWaters = false
     @State private var showShop = false
     @State private var showMissions = false
+    @State private var showLegends = false
     @State private var showSettings = false
     @State private var confirmNewGame = false
 
@@ -60,6 +61,10 @@ struct MainMenuView: View {
                                     detail: "\(openMissionCount) offen") {
                                 showMissions = true
                             }
+                            menuRow(icon: "sparkles", title: "Legenden",
+                                    detail: legendDetail) {
+                                showLegends = true
+                            }
                             menuRow(icon: "slider.horizontal.3", title: "Einstellungen",
                                     detail: nil) {
                                 showSettings = true
@@ -77,6 +82,7 @@ struct MainMenuView: View {
         .sheet(isPresented: $showWaters) { WaterSelectionView() }
         .sheet(isPresented: $showShop) { ShopView() }
         .sheet(isPresented: $showMissions) { MissionsView() }
+        .sheet(isPresented: $showLegends) { LegendsView() }
         .sheet(isPresented: $showSettings) { SettingsView() }
         .alert("Neuer Spielstand?", isPresented: $confirmNewGame) {
             Button("Abbrechen", role: .cancel) { }
@@ -125,6 +131,16 @@ struct MainMenuView: View {
                     .foregroundStyle(Palette.inkSoft.swiftUIColor)
             }
         }
+    }
+
+    /// Was in der Menüzeile steht: der Name der aktuellen Legende, sonst der
+    /// Stand der Ruhmeshalle.
+    private var legendDetail: String {
+        if let legend = session.activeLegend {
+            return legend.name
+        }
+        let caught = session.save.caughtLegends.count
+        return caught > 0 ? "\(caught) gefangen" : "ab Stufe \(LegendSystem.minimumLevel)"
     }
 
     private var openMissionCount: Int {

@@ -17,6 +17,11 @@ final class FishNode: SKNode {
     private var rippleTimer: CGFloat = 0
     private var tailPhase: CGFloat = 0
 
+    /// Schein um einen legendären Fisch. Er ist das einzige, was ihn im
+    /// Wasser verrät — die Silhouette selbst sieht aus wie bei jedem anderen
+    /// Fisch seiner Art, nur größer.
+    private var aura: SKSpriteNode?
+
     init(swimmer: FishAI.Swimmer, species: FishSpecies) {
         self.swimmer = swimmer
         self.species = species
@@ -53,8 +58,55 @@ final class FishNode: SKNode {
         interestMark.zPosition = 2
         addChild(interestMark)
 
+        if swimmer.isLegendary {
+            buildAura()
+        }
+
         position = swimmer.position
         zRotation = swimmer.heading
+    }
+
+    /// Goldener Schein, der langsam atmet. Bewusst ruhig gehalten: Er soll
+    /// auffallen, wenn man hinschaut, und nicht über den halben See blinken.
+    private func buildAura() {
+        guard let texture = TextureFactory.softDisc(color: UIColor(red: 1.0,
+                                                                   green: 0.86,
+                                                                   blue: 0.45,
+                                                                   alpha: 0.75)) else { return }
+        let glow = SKSpriteNode(texture: texture)
+        glow.size = CGSize(width: sprite.size.width * 3.4,
+                           height: sprite.size.width * 3.4)
+        glow.blendMode = .add
+        glow.alpha = 0.5
+        glow.zPosition = -1
+        addChild(glow)
+        aura = glow
+
+        glow.run(.repeatForever(.sequence([
+            .group([.scale(to: 1.18, duration: 1.9), .fadeAlpha(to: 0.7, duration: 1.9)]),
+            .group([.scale(to: 1.0, duration: 1.9), .fadeAlpha(to: 0.42, duration: 1.9)])
+        ])))
+
+        // Ein paar Funken, die mit ihm ziehen.
+        for index in 0..<3 {
+            let spark = SKShapeNode(circleOfRadius: 2)
+            spark.fillColor = Palette.gold.skColor
+            spark.strokeColor = .clear
+            spark.alpha = 0
+            spark.zPosition = 1
+            addChild(spark)
+
+            let radius = sprite.size.width * 0.7
+            let angle = CGFloat(index) / 3 * .pi * 2
+            spark.position = CGPoint(x: cos(angle) * radius, y: sin(angle) * radius)
+            spark.run(.sequence([
+                .wait(forDuration: Double(index) * 0.6),
+                .repeatForever(.sequence([
+                    .fadeAlpha(to: 0.9, duration: 0.7),
+                    .fadeAlpha(to: 0.1, duration: 1.1)
+                ]))
+            ]))
+        }
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -82,12 +134,18 @@ final class FishNode: SKNode {
         // Schwanzschlag: schneller, je eiliger der Fisch unterwegs ist.
         let effort: CGFloat = (swimmer.behaviour == .spooked || swimmer.behaviour == .retreat) ? 2.2 : 1.0
         tailPhase += deltaTime * (3 + swimmer.speed * 0.06) * effort
-        sprite.xScale = 1 - abs(sin(tailPhase)) * 0.06
+        // Ein legendärer Fisch ist sichtbar größer als seine Artgenossen.
+        let bodyScale: CGFloat = swimmer.isLegendary ? 1.35 : 1.0
+        sprite.xScale = bodyScale * (1 - abs(sin(tailPhase)) * 0.06)
+        sprite.yScale = bodyScale
 
         // Flaches Wasser: besser zu sehen. Tiefes Wasser: nur ein Schemen.
         let depth = map.depth(at: swimmer.position)
         let visibility = max(0.18, 0.75 - CGFloat(depth) * 0.08)
-        sprite.alpha = visibility + swimmer.attraction * 0.25
+        // Die Legende bleibt auch im tiefen Wasser erkennbar — sonst findet
+        // man sie nie, obwohl der Hinweis stimmt.
+        let legendBoost: CGFloat = swimmer.isLegendary ? 0.3 : 0
+        sprite.alpha = min(1, visibility + swimmer.attraction * 0.25 + legendBoost)
 
         // Neugier sichtbar machen.
         let showMark = swimmer.behaviour == .inspect || swimmer.behaviour == .nibble
