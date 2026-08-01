@@ -29,8 +29,11 @@ final class FishNode: SKNode {
             // ist der Hinweis, der einen Hecht von einem Rotauge unterscheidet.
             // Die Höhe folgt dem Seitenverhältnis der Grafik, damit kein Fisch
             // gestaucht wirkt.
-            let sizeFactor = min(1.8, CGFloat(species.maxLength) / 60)
-            let width = 64 * swimmer.scale * sizeFactor
+            // Maßstab: Ein Boot ist rund 110 Punkte lang. Ein Rotauge misst
+            // damit gut 30, ein Wels über 80 — groß genug zum Erkennen, ohne
+            // dass der See von Fischen zugestellt wirkt.
+            let sizeFactor = min(1.5, CGFloat(species.maxLength) / 70)
+            let width = 34 * swimmer.scale * sizeFactor
             let ratio = texture.size().height / max(texture.size().width, 1)
             sprite.size = CGSize(width: width, height: width * ratio)
 

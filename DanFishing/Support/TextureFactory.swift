@@ -342,9 +342,10 @@ enum TextureFactory {
         // damit die Kante trotz Weichzeichnung ablesbar bleibt.
         let rendered = image(size: pixelSize) { context, canvas in
             context.interpolationQuality = .high
-            if let cgImage = small.cgImage {
-                context.draw(cgImage, in: CGRect(origin: .zero, size: canvas))
-            }
+            // Bewusst über UIImage gezeichnet statt über CGImage: Ein CGImage
+            // wird im UIKit-Kontext senkrecht gespiegelt, wodurch die ganze
+            // Karte auf dem Kopf stünde — Fische schwämmen dann über Land.
+            small.draw(in: CGRect(origin: .zero, size: canvas))
 
             context.setStrokeColor(ColorSpec(0xBBA987).skColor.withAlphaComponent(0.75).cgColor)
             context.setLineWidth(max(1.5, cell * 0.16))

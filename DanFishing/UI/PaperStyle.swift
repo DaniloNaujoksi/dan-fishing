@@ -104,6 +104,8 @@ struct StatChip: View {
             Text(value)
                 .font(.system(size: 14, weight: .semibold, design: .rounded))
                 .monospacedDigit()
+                .lineLimit(1)
+                .fixedSize()   // sonst bricht „120" zu „12 / 0" um
         }
         .foregroundStyle(tint)
         .padding(.horizontal, 10)
