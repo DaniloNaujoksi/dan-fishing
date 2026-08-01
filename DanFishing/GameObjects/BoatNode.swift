@@ -9,10 +9,13 @@ final class BoatNode: SKNode {
     private let leftOar = SKShapeNode()
     private let rightOar = SKShapeNode()
     private let angler = SKNode()
+    private let anglerBody = SKShapeNode()
+    private let hat = SKShapeNode()
     private let rod = SKShapeNode()
     private let shadow = SKSpriteNode()
 
     private var rowPhase: CGFloat = 0
+    private var idlePhase: CGFloat = 0
 
     override init() {
         super.init()
@@ -57,10 +60,18 @@ final class BoatNode: SKNode {
         path.closeSubpath()
 
         hull.path = path
-        hull.fillColor = ColorSpec(0x8A6A46).skColor
         hull.strokeColor = ColorSpec(0x4E3823).skColor
         hull.lineWidth = 2.5
         hull.zPosition = 2
+
+        // Holzmaserung statt einfarbiger Fläche.
+        if let wood = TextureFactory.woodGrain(base: ColorSpec(0x8A6A46).skColor,
+                                               dark: ColorSpec(0x3E2C1B).skColor) {
+            hull.fillTexture = wood
+            hull.fillColor = .white
+        } else {
+            hull.fillColor = ColorSpec(0x8A6A46).skColor
+        }
         addChild(hull)
 
         let innerPath = CGMutablePath()
@@ -93,15 +104,16 @@ final class BoatNode: SKNode {
 
     private func buildAngler() {
         // Körper
-        let body = SKShapeNode(rectOf: CGSize(width: 16, height: 22), cornerRadius: 7)
-        body.fillColor = ColorSpec(0x3C4A5A).skColor
-        body.strokeColor = ColorSpec(0x27303B).skColor
-        body.lineWidth = 1.5
-        body.position = CGPoint(x: 2, y: 0)
-        angler.addChild(body)
+        anglerBody.path = CGPath(roundedRect: CGRect(x: -8, y: -11, width: 16, height: 22),
+                                 cornerWidth: 7, cornerHeight: 7, transform: nil)
+        anglerBody.fillColor = ColorSpec(0x3C4A5A).skColor
+        anglerBody.strokeColor = ColorSpec(0x27303B).skColor
+        anglerBody.lineWidth = 1.5
+        anglerBody.position = CGPoint(x: 2, y: 0)
+        angler.addChild(anglerBody)
 
         // Strohhut von oben gesehen
-        let hat = SKShapeNode(circleOfRadius: 13)
+        hat.path = CGPath(ellipseIn: CGRect(x: -13, y: -13, width: 26, height: 26), transform: nil)
         hat.fillColor = ColorSpec(0xD9C48A).skColor
         hat.strokeColor = ColorSpec(0xA98F55).skColor
         hat.lineWidth = 1.5
@@ -109,12 +121,22 @@ final class BoatNode: SKNode {
         hat.zPosition = 1
         angler.addChild(hat)
 
+        // Geflecht des Strohhuts
+        for index in 0..<3 {
+            let radius = CGFloat(4 + index * 4)
+            let ring = SKShapeNode(circleOfRadius: radius)
+            ring.strokeColor = ColorSpec(0xB59A62).skColor(alpha: 0.55)
+            ring.lineWidth = 1
+            ring.fillColor = .clear
+            ring.zPosition = 2
+            hat.addChild(ring)
+        }
+
         let hatTop = SKShapeNode(circleOfRadius: 5)
         hatTop.fillColor = ColorSpec(0xC7AE74).skColor
         hatTop.strokeColor = .clear
-        hatTop.position = hat.position
-        hatTop.zPosition = 2
-        angler.addChild(hatTop)
+        hatTop.zPosition = 3
+        hat.addChild(hatTop)
 
         // Rute: zeigt schräg nach vorn und wird beim Wurf mitbewegt.
         let rodPath = CGMutablePath()
@@ -145,16 +167,33 @@ final class BoatNode: SKNode {
 
     /// Wird jeden Frame aufgerufen.
     func update(deltaTime: CGFloat, rowing: CGFloat, speed: CGFloat) {
-        // Ruderschlag
+        idlePhase += deltaTime
+
+        // Ruderschlag: Die Riemen tauchen ein, ziehen durch und kommen zurück.
         rowPhase += deltaTime * (1.6 + speed / 90)
         let swing = sin(rowPhase) * 0.5 * rowing
         leftOar.zRotation = 0.5 + swing
         rightOar.zRotation = -0.5 - swing
 
-        // Das Boot wiegt sich leicht, auch im Stand.
-        let bob = sin(rowPhase * 0.55) * 0.03
+        // Beim Durchziehen rutschen die Riemen etwas nach hinten.
+        let reach = cos(rowPhase) * 4 * rowing
+        leftOar.position = CGPoint(x: -4 - reach, y: 18)
+        rightOar.position = CGPoint(x: -4 - reach, y: -18)
+
+        // Das Boot wiegt sich, im Stand ruhig, in Fahrt stärker.
+        let bob = sin(rowPhase * 0.55) * (0.025 + rowing * 0.02)
         hull.zRotation = bob
         angler.zRotation = -bob * 0.5
+
+        // Dan atmet und lehnt sich beim Rudern in den Schlag.
+        let breath = 1 + sin(idlePhase * 1.6) * 0.015
+        anglerBody.yScale = breath
+        anglerBody.xScale = 2 - breath
+        angler.position = CGPoint(x: -2 - rowing * 2.5 + sin(rowPhase) * 1.6 * rowing, y: 0)
+
+        // Der Hut wippt der Bewegung leicht hinterher.
+        hat.position = CGPoint(x: 2 + sin(rowPhase - 0.6) * 0.9 * rowing,
+                               y: sin(idlePhase * 1.3) * 0.5)
 
         shadow.alpha = 0.35 + min(0.25, speed / 400)
     }

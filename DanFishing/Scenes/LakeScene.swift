@@ -49,6 +49,10 @@ final class LakeScene: SKScene {
     private var lineTension: CGFloat = 0
     private var wasLineTaut = false
 
+    private var ambience: AmbienceEmitter?
+    private var wakeTimer: CGFloat = 0
+    private var configuredBaitID: String?
+
     // MARK: - Aufbau
 
     init(size: CGSize, session: GameSession) {
@@ -95,6 +99,8 @@ final class LakeScene: SKScene {
         buildActors()
         buildOverlay()
         spawnInitialFish()
+
+        ambience = AmbienceEmitter(layer: weatherLayer, map: map)
 
         camera = cameraNode
         addChild(cameraNode)
@@ -341,6 +347,17 @@ final class LakeScene: SKScene {
         boatNode.zRotation = boat.heading
         boatNode.update(deltaTime: dt, rowing: boat.rowingIntensity, speed: boat.speed)
 
+        // Kielwasser: je schneller, desto dichter die Ringe.
+        if boat.speed > 25 {
+            wakeTimer -= dt * (0.6 + boat.speed / 90)
+            if wakeTimer <= 0 {
+                wakeTimer = 0.4
+                ambience?.spawnWake(at: boat.position,
+                                    heading: boat.heading,
+                                    strength: min(1, boat.speed / 120))
+            }
+        }
+
         session.rememberBoatPosition(boat.position)
     }
 
@@ -349,6 +366,12 @@ final class LakeScene: SKScene {
         fishing.update(deltaTime: delta, context: context, bait: session.selectedBait)
 
         updateAimPreview()
+
+        // Aussehen des Köders nachziehen, wenn in der Köderbox gewechselt wurde.
+        if configuredBaitID != session.selectedBait.id {
+            configuredBaitID = session.selectedBait.id
+            bobber.configure(for: session.selectedBait)
+        }
 
         // Schwimmer und Schnur nachführen.
         if let position = fishing.bobberPosition {
@@ -474,6 +497,9 @@ final class LakeScene: SKScene {
 
         updateLantern(darkness: darkness)
         updatePetals(dt: dt)
+
+        // Blasen, Libellen, Blätter und Lichtreflexe im sichtbaren Bereich.
+        ambience?.update(deltaTime: dt, center: cameraNode.position, darkness: darkness)
     }
 
     /// Laterne: nur nachts und nur, wenn gekauft. Sie schneidet einen hellen

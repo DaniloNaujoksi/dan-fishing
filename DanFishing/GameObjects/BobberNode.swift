@@ -8,6 +8,7 @@ final class BobberNode: SKNode {
     private let tip = SKShapeNode(circleOfRadius: 5)
     private let rings = SKNode()
     private let shadow = SKShapeNode(ellipseOf: CGSize(width: 18, height: 11))
+    private let lure = SKNode()
     private var bobPhase: CGFloat = 0
     private var flightOffset: CGFloat = 0
 
@@ -19,6 +20,12 @@ final class BobberNode: SKNode {
         shadow.zPosition = 0
         shadow.isHidden = true
         addChild(shadow)
+
+        // Der Köder hängt unter dem Schwimmer und bekommt sein Aussehen aus
+        // `configure(for:)`.
+        lure.position = CGPoint(x: 0, y: -16)
+        lure.zPosition = 1
+        addChild(lure)
 
         float.fillColor = ColorSpec(0xF4EFE3).skColor
         float.strokeColor = ColorSpec(0x3A3630).skColor
@@ -87,6 +94,104 @@ final class BobberNode: SKNode {
         ]))
         emitRing(scaleTo: 2.6, duration: 1.0)
         emitRing(scaleTo: 3.4, duration: 1.5)
+    }
+
+    /// Setzt das Aussehen passend zum gewählten Köder.
+    ///
+    /// Jeder Köder sieht anders aus und bewegt sich anders — der Spinner
+    /// dreht sich, der Gummifisch wedelt, der Wurm windet sich. Damit erkennt
+    /// man auf dem Wasser, womit man gerade fischt.
+    func configure(for bait: Bait) {
+        lure.removeAllChildren()
+        lure.removeAllActions()
+
+        tip.fillColor = bait.color.skColor
+
+        let shape: SKShapeNode
+        switch bait.id {
+        case "spinner":
+            // Drehendes Blatt an einer Achse.
+            shape = SKShapeNode(ellipseOf: CGSize(width: 7, height: 14))
+            shape.fillColor = bait.color.skColor
+            shape.strokeColor = ColorSpec(0x6E6242).skColor
+            shape.run(.repeatForever(.sequence([
+                .scaleX(to: 0.2, duration: 0.22),
+                .scaleX(to: 1.0, duration: 0.22)
+            ])))
+
+        case "spoon":
+            // Trudelndes Metall: kippt hin und her und blitzt auf.
+            shape = SKShapeNode(ellipseOf: CGSize(width: 9, height: 16))
+            shape.fillColor = bait.color.skColor
+            shape.strokeColor = ColorSpec(0x8A939A).skColor
+            shape.run(.repeatForever(.sequence([
+                .group([.rotate(byAngle: .pi, duration: 0.5), .fadeAlpha(to: 0.55, duration: 0.25)]),
+                .fadeAlpha(to: 1, duration: 0.25)
+            ])))
+
+        case "wobbler":
+            // Länglicher Körper mit unruhigem Lauf.
+            shape = SKShapeNode(ellipseOf: CGSize(width: 20, height: 9))
+            shape.fillColor = bait.color.skColor
+            shape.strokeColor = ColorSpec(0x5E3A2C).skColor
+            shape.run(.repeatForever(.sequence([
+                .rotate(toAngle: 0.35, duration: 0.28),
+                .rotate(toAngle: -0.35, duration: 0.28)
+            ])))
+
+        case "softbait":
+            // Schaufelschwanz, der wedelt.
+            shape = SKShapeNode(ellipseOf: CGSize(width: 18, height: 8))
+            shape.fillColor = bait.color.skColor
+            shape.strokeColor = .clear
+            let tail = SKShapeNode(ellipseOf: CGSize(width: 7, height: 9))
+            tail.fillColor = bait.color.skColor(alpha: 0.75)
+            tail.strokeColor = .clear
+            tail.position = CGPoint(x: -11, y: 0)
+            tail.run(.repeatForever(.sequence([
+                .rotate(toAngle: 0.6, duration: 0.2),
+                .rotate(toAngle: -0.6, duration: 0.2)
+            ])))
+            shape.addChild(tail)
+
+        case "fly":
+            // Winzig, mit zwei Flügeln.
+            shape = SKShapeNode(circleOfRadius: 3.5)
+            shape.fillColor = bait.color.skColor
+            shape.strokeColor = .clear
+            for side in [CGFloat(1), CGFloat(-1)] {
+                let wing = SKShapeNode(ellipseOf: CGSize(width: 9, height: 4))
+                wing.fillColor = SKColor(white: 1, alpha: 0.5)
+                wing.strokeColor = .clear
+                wing.position = CGPoint(x: -1, y: 3 * side)
+                wing.zRotation = 0.3 * side
+                shape.addChild(wing)
+            }
+
+        case "moonbait":
+            // Blasse Perle mit Leuchten.
+            shape = SKShapeNode(circleOfRadius: 6)
+            shape.fillColor = bait.color.skColor
+            shape.strokeColor = SKColor(white: 1, alpha: 0.7)
+            shape.glowWidth = 6
+            shape.run(.repeatForever(.sequence([
+                .fadeAlpha(to: 0.55, duration: 1.1),
+                .fadeAlpha(to: 1.0, duration: 1.1)
+            ])))
+
+        default:
+            // Naturköder: kleiner weicher Körper, der sich windet.
+            shape = SKShapeNode(ellipseOf: CGSize(width: 13, height: 6))
+            shape.fillColor = bait.color.skColor
+            shape.strokeColor = .clear
+            shape.run(.repeatForever(.sequence([
+                .rotate(toAngle: 0.5, duration: 0.6),
+                .rotate(toAngle: -0.5, duration: 0.6)
+            ])))
+        }
+
+        shape.alpha = 0.85
+        lure.addChild(shape)
     }
 
     /// Ruck an der straffen Schnur, wenn das Boot am Ende der Leine zieht.

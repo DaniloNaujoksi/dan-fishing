@@ -130,6 +130,61 @@ enum TextureFactory {
         }
     }
 
+    /// Holzmaserung für den Bootsrumpf: waagerechte Planken mit Astlöchern.
+    /// Ohne sie wirkt der Kahn wie eine ausgefüllte Form, mit ihr wie gebaut.
+    static func woodGrain(base: UIColor, dark: UIColor) -> SKTexture? {
+        cached("wood-\(base.description)") {
+            let size = CGSize(width: 256, height: 128)
+            let rendered = image(size: size) { context, canvas in
+                context.setFillColor(base.cgColor)
+                context.fill(CGRect(origin: .zero, size: canvas))
+
+                // Planken
+                let plankHeight = canvas.height / 5
+                context.setStrokeColor(dark.withAlphaComponent(0.55).cgColor)
+                context.setLineWidth(1.6)
+                for index in 1..<5 {
+                    let y = CGFloat(index) * plankHeight
+                    context.move(to: CGPoint(x: 0, y: y))
+                    context.addLine(to: CGPoint(x: canvas.width, y: y))
+                }
+                context.strokePath()
+
+                // Maserung als lange, leicht wellige Striche
+                context.setLineWidth(1.0)
+                for _ in 0..<44 {
+                    let y = CGFloat.random(in: 0...canvas.height)
+                    let alpha = CGFloat.random(in: 0.05...0.16)
+                    context.setStrokeColor(dark.withAlphaComponent(alpha).cgColor)
+                    context.move(to: CGPoint(x: 0, y: y))
+
+                    var x: CGFloat = 0
+                    while x < canvas.width {
+                        x += CGFloat.random(in: 20...50)
+                        context.addLine(to: CGPoint(x: x, y: y + CGFloat.random(in: -2.5...2.5)))
+                    }
+                    context.strokePath()
+                }
+
+                // Ein paar Astlöcher
+                for _ in 0..<5 {
+                    let center = CGPoint(x: CGFloat.random(in: 12...(canvas.width - 12)),
+                                         y: CGFloat.random(in: 8...(canvas.height - 8)))
+                    for ring in 0..<3 {
+                        let radius = CGFloat(3 + ring * 3)
+                        context.setStrokeColor(dark.withAlphaComponent(0.28 - CGFloat(ring) * 0.07).cgColor)
+                        context.setLineWidth(1.4)
+                        context.strokeEllipse(in: CGRect(x: center.x - radius,
+                                                         y: center.y - radius * 0.7,
+                                                         width: radius * 2,
+                                                         height: radius * 1.4))
+                    }
+                }
+            }
+            return SKTexture(image: rendered)
+        }
+    }
+
     /// Fischkörper als Silhouette mit Bauch und Flosse. Wird für jede Art in
     /// ihren Farben erzeugt und danach zwischengespeichert.
     static func fishBody(body: UIColor, belly: UIColor, fin: UIColor, key: String) -> SKTexture? {
