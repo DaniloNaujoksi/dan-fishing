@@ -130,45 +130,16 @@ final class LakeScene: SKScene {
 
     /// Zonen als weiche Farbflächen. Aus ihnen liest der Spieler ab, wo sich
     /// das Angeln lohnt: helle Ufer, dunkles Tiefwasser, grüne Seerosenfelder.
+    /// Die gesamte Zonenkarte steckt in einer einzigen Textur — weiche Ränder
+    /// statt sichtbarem Raster, und ein Knoten statt über dreitausend.
     private func buildZones() {
-        let cell = map.cellSize
+        guard let texture = TextureFactory.zoneMap(map: map) else { return }
 
-        for row in 0..<map.rows {
-            for column in 0..<map.columns {
-                let kind = map.kind(column: column, row: row)
-                let rect = CGRect(x: CGFloat(column) * cell,
-                                  y: CGFloat(row) * cell,
-                                  width: cell,
-                                  height: cell)
-
-                let color: SKColor
-                switch kind {
-                case .land: color = Palette.sand.skColor
-                case .shallows: color = Palette.waterShallow.skColor(alpha: 0.55)
-                case .reeds: color = Palette.reed.skColor(alpha: 0.35)
-                case .lilies: color = Palette.lily.skColor(alpha: 0.30)
-                case .deep: color = Palette.waterDeep.skColor(alpha: 0.55)
-                case .inflow: color = ColorSpec(0x9FD0D6).skColor(alpha: 0.45)
-                case .logs: color = ColorSpec(0x3F5A4E).skColor(alpha: 0.45)
-                }
-
-                let tile = SKSpriteNode(color: color, size: rect.size)
-                tile.position = CGPoint(x: rect.midX, y: rect.midY)
-                zoneLayer.addChild(tile)
-
-                // Uferkante bekommt einen weichen Sandsaum.
-                if kind == .land {
-                    tile.zPosition = 2
-                }
-            }
-        }
-
-        // Weichzeichnen: eine halbtransparente Wasserfläche über allem lässt
-        // die Kacheln ineinanderlaufen.
-        let smooth = SKSpriteNode(color: Palette.water.skColor(alpha: 0.28), size: map.worldSize)
-        smooth.position = CGPoint(x: map.worldSize.width / 2, y: map.worldSize.height / 2)
-        smooth.zPosition = 3
-        zoneLayer.addChild(smooth)
+        let zones = SKSpriteNode(texture: texture)
+        zones.size = map.worldSize
+        zones.position = CGPoint(x: map.worldSize.width / 2, y: map.worldSize.height / 2)
+        zones.zPosition = 1
+        zoneLayer.addChild(zones)
     }
 
     private func buildDecor() {

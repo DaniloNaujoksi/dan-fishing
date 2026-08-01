@@ -198,6 +198,70 @@ enum TextureFactory {
         }
     }
 
+    /// Zeichnet die komplette Zonenkarte in ein einziges Bild.
+    ///
+    /// Vorher lag pro Rasterzelle ein eigener Knoten in der Szene — über 3000
+    /// Stück, und jede Zelle blieb als hartes Rechteck sichtbar. Als weiche,
+    /// einander überlappende Tupfen in einer Textur wirkt der See gemalt, und
+    /// die Szene kommt mit einem Knoten aus.
+    ///
+    /// - Parameter scale: Auflösung der Textur im Verhältnis zur Weltgröße.
+    static func zoneMap(map: LakeMap, scale: CGFloat = 0.33) -> SKTexture? {
+        let pixelSize = CGSize(width: map.worldSize.width * scale,
+                               height: map.worldSize.height * scale)
+        let cell = map.cellSize * scale
+
+        let rendered = image(size: pixelSize) { context, canvas in
+            // Grundfläche: alles ist erst einmal Wasser.
+            context.setFillColor(Palette.water.skColor.cgColor)
+            context.fill(CGRect(origin: .zero, size: canvas))
+
+            func color(for kind: CellKind) -> UIColor? {
+                switch kind {
+                case .land: return Palette.sand.skColor
+                case .shallows: return Palette.waterShallow.skColor.withAlphaComponent(0.75)
+                case .reeds: return Palette.reed.skColor.withAlphaComponent(0.45)
+                case .lilies: return Palette.lily.skColor.withAlphaComponent(0.40)
+                case .deep: return Palette.waterDeep.skColor.withAlphaComponent(0.7)
+                case .inflow: return ColorSpec(0x9FD0D6).skColor.withAlphaComponent(0.6)
+                case .logs: return ColorSpec(0x3F5A4E).skColor.withAlphaComponent(0.55)
+                }
+            }
+
+            // Zwei Durchgänge: erst das Wasser mit seinen Zonen, dann das Land
+            // darüber. Sonst würden Schilfflächen die Uferlinie überdecken.
+            for pass in 0..<2 {
+                for row in 0..<map.rows {
+                    for column in 0..<map.columns {
+                        let kind = map.kind(column: column, row: row)
+                        let isLand = kind == .land
+                        if (pass == 0) == isLand { continue }
+                        guard let tint = color(for: kind) else { continue }
+
+                        // Bildkoordinaten laufen von oben nach unten, die Welt
+                        // von unten nach oben.
+                        let x = CGFloat(column) * cell
+                        let y = pixelSize.height - CGFloat(row + 1) * cell
+
+                        // Tupfen größer als die Zelle: die Ränder verschmelzen.
+                        let bloat = cell * 0.42
+                        let rect = CGRect(x: x - bloat / 2,
+                                          y: y - bloat / 2,
+                                          width: cell + bloat,
+                                          height: cell + bloat)
+
+                        context.setFillColor(tint.cgColor)
+                        context.fillEllipse(in: rect)
+                    }
+                }
+            }
+        }
+
+        // Nicht zwischenspeichern: Das Bild hängt an der Karte und wird genau
+        // einmal pro Szene gebraucht.
+        return SKTexture(image: rendered)
+    }
+
     /// Leert den Zwischenspeicher — nur für Tests und Vorschauen nötig.
     static func clearCache() {
         cache.removeAll()
