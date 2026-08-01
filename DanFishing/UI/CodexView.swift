@@ -45,6 +45,7 @@ struct CodexView: View {
             .sheet(item: $selected) { species in
                 CodexDetailView(species: species,
                                 entry: session.save.codex[species.id])
+                    .environmentObject(session)
             }
         }
     }
@@ -137,9 +138,65 @@ struct CodexDetailView: View {
     let species: FishSpecies
     let entry: CodexEntry?
 
+    @EnvironmentObject private var session: GameSession
     @Environment(\.dismiss) private var dismiss
 
+    /// Legende, die gerade groß angesehen wird.
+    @State private var shownLegend: LegendaryFish?
+
     private var detailLevel: Int { entry?.detailLevel ?? -1 }
+
+    /// Die legendären Exemplare dieser Art, die schon im Boot lagen.
+    private var legends: [LegendaryFish] {
+        session.save.caughtLegends.filter { $0.speciesID == species.id }
+    }
+
+    /// Eigene Tafel unter den Beobachtungen. Ein gefangener Einzelfisch ist
+    /// kein Fangbucheintrag wie jeder andere — er bekommt seinen Namen und
+    /// bleibt anklickbar.
+    private var legendPanel: some View {
+        PaperPanel(accent: Palette.gold.swiftUIColor) {
+            VStack(alignment: .leading, spacing: 12) {
+                SectionHeading(text: "Legenden dieser Art",
+                               subtitle: "\(legends.count) gefangen · antippen zum Ansehen")
+
+                ForEach(legends) { legend in
+                    Button {
+                        AudioManager.shared.play(.discovery)
+                        HapticManager.shared.success()
+                        withAnimation(.easeIn(duration: 0.2)) { shownLegend = legend }
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 15))
+                                .foregroundStyle(Palette.gold.swiftUIColor)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(legend.name)
+                                    .font(.system(size: 16, weight: .medium, design: .serif))
+                                    .foregroundStyle(Palette.uiInk)
+                                    .multilineTextAlignment(.leading)
+
+                                Text(String(format: "%.1f cm · %.2f kg", legend.lengthCm, legend.weightKg)
+                                     + " · \(legend.water?.name ?? "–")")
+                                    .font(.system(size: 12, design: .rounded))
+                                    .foregroundStyle(Palette.inkSoft.swiftUIColor)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(Palette.inkSoft.swiftUIColor.opacity(0.6))
+                        }
+                        .padding(.vertical, 3)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -227,10 +284,30 @@ struct CodexDetailView: View {
                                     }
                                 }
                             }
+
+                            if !legends.isEmpty {
+                                legendPanel
+                            }
                         }
                     }
                     .padding(18)
                     .padding(.bottom, 30)
+                }
+
+                // Ansehen wie beim ersten Fang: derselbe Auftritt mit
+                // Strahlenkranz — nur in Gold und mit dem Namen der Legende.
+                if let shown = shownLegend {
+                    NewSpeciesBanner(species: species,
+                                     headline: "Legende",
+                                     title: shown.name,
+                                     subtitle: String(format: "%.1f cm · %.2f kg",
+                                                      shown.lengthCm, shown.weightKg),
+                                     footnote: shown.water?.name,
+                                     footnoteSymbol: "mappin.and.ellipse",
+                                     accent: Palette.gold.swiftUIColor) {
+                        withAnimation(.easeOut(duration: 0.2)) { shownLegend = nil }
+                    }
+                    .transition(.opacity)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
