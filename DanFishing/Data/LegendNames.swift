@@ -61,6 +61,10 @@ enum LegendNames {
         "roach": [Noun("Das", "Rotauge"), Noun("Der", "Plötzenfürst"),
                   Noun("Die", "Silbermünze")],
 
+        "burbot": [Noun("Der", "Nachtkriecher"), Noun("Die", "Steinschlange"),
+                   Noun("Der", "Bartelmann"), Noun("Das", "Kaltwasserviech"),
+                   Noun("Der", "Wurzelhocker")],
+
         "eel": [Noun("Die", "Schlange"), Noun("Der", "Nachtwurm"),
                 Noun("Der", "Schlingel"), Noun("Das", "Schlammband")],
 

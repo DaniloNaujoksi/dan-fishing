@@ -65,7 +65,8 @@ enum WaterCatalog {
             ambientCurrent: 20,
             speciesIDs: ["bleak", "goby", "ruffe", "bream", "grayling", "barbel",
                          "rainbow_trout", "char", "golden_trout", "salmon",
-                         "perch", "zander", "eel", "catfish", "sturgeon", "beluga"],
+                         "perch", "zander", "eel", "burbot", "catfish",
+                         "sturgeon", "beluga"],
             shallowColor: ColorSpec(0xA9C6C0),
             deepColor: ColorSpec(0x35606A),
             shoreColor: ColorSpec(0xCFC3A0)

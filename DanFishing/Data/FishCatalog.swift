@@ -226,6 +226,27 @@ enum FishCatalog {
             bodyColor: ColorSpec(0x3B3A32), bellyColor: ColorSpec(0xC9BE96), finColor: ColorSpec(0x2A2A24)
         ),
         FishSpecies(
+            id: "burbot",
+            name: "Quappe",
+            summary: "Der einzige Dorsch im Süßwasser: breiter Kopf, Bartel am Kinn, "
+                + "schlangenartiger Hinterleib. Liegt tagsüber unter Steinen und Wurzeln "
+                + "und geht erst in kalten, dunklen Nächten auf Jagd.",
+            rarity: .veryRare,
+            feeding: .predator,
+            minLength: 30, maxLength: 90,
+            minWeight: 0.3, maxWeight: 6.0,
+            habitats: [.sunkenLogs, .deep],
+            // Nachts zieht sie zum Fressen auf die Kiesbänke.
+            nightHabitats: [.shallows, .inflow],
+            activeTimes: [.night],
+            preferredBaitIDs: ["wormbundle", "worm", "minnow", "softbait"],
+            fightStrength: 0.66,
+            motion: .plunging,
+            valuePerKilo: 105,
+            minPlayerLevel: 7,
+            bodyColor: ColorSpec(0x6E6141), bellyColor: ColorSpec(0xD8CBA6), finColor: ColorSpec(0x4A4231)
+        ),
+        FishSpecies(
             id: "golden_trout",
             name: "Goldforelle",
             summary: "Seltene helle Forellenform. Blitzt im Morgenlicht an der Mündung des Bachs auf.",
