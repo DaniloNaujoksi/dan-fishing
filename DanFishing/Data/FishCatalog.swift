@@ -173,7 +173,7 @@ enum FishCatalog {
             habitats: [.deep, .sunkenLogs],
             activeTimes: [.night],
             preferredBaitIDs: ["wormbundle", "wobbler", "minnow", "worm", "softbait"],
-            fightStrength: 0.95,
+            fightStrength: 0.90,
             motion: .diving,
             valuePerKilo: 48,
             minPlayerLevel: 6,
@@ -241,7 +241,7 @@ enum FishCatalog {
             habitats: [.deep],
             activeTimes: [.night],
             preferredBaitIDs: ["moonbait"],
-            fightStrength: 1.0,
+            fightStrength: 0.96,
             motion: .circling,
             valuePerKilo: 210,
             minPlayerLevel: 8,
@@ -279,7 +279,9 @@ enum FishCatalog {
             habitats: [.inflow, .deep],
             activeTimes: [.dawn, .dusk],
             preferredBaitIDs: ["spoon", "fly", "wobbler", "spinner", "minnow"],
-            fightStrength: 0.85,
+            // Explosive Fluchten und Sprünge — nach dem Hausen der härteste
+            // Gegner im See.
+            fightStrength: 0.95,
             motion: .darting,
             valuePerKilo: 96,
             minPlayerLevel: 5,
@@ -389,7 +391,7 @@ enum FishCatalog {
             preferredBaitIDs: ["worm", "wormbundle", "corn", "maggot"],
             // Barben ziehen für ihre Größe härter als alles andere im See:
             // stumpfe, tiefe Fluchten, die nicht abreißen wollen.
-            fightStrength: 0.90,
+            fightStrength: 0.88,
             motion: .diving,
             valuePerKilo: 66,
             minPlayerLevel: 4,
@@ -407,7 +409,7 @@ enum FishCatalog {
             habitats: [.deep, .inflow],
             activeTimes: [.dawn, .night],
             preferredBaitIDs: ["wormbundle", "worm", "minnow"],
-            fightStrength: 0.96,
+            fightStrength: 0.92,
             motion: .steady,
             valuePerKilo: 165,
             minPlayerLevel: 8,
