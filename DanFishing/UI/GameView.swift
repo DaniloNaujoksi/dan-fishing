@@ -140,10 +140,32 @@ struct GameView: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 14) {
+                if session.fishingPhase == .waiting || session.fishingPhase == .nibble {
+                    reelInButton
+                }
                 baitButton
                 castHint
                 actionButton
             }
+        }
+    }
+
+    /// Erscheint nur, solange der Köder im Wasser liegt. Vorher war das ein
+    /// verstecktes langes Halten auf der Wurftaste — das fand niemand.
+    private var reelInButton: some View {
+        Button {
+            scene?.reelIn()
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "arrow.uturn.left")
+                    .font(.system(size: 12, weight: .semibold))
+                Text("Einholen")
+                    .font(.system(size: 14, weight: .medium, design: .serif))
+            }
+            .foregroundStyle(Palette.uiInk)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Capsule().fill(Palette.paper.swiftUIColor.opacity(0.88)))
         }
     }
 
@@ -171,8 +193,8 @@ struct GameView: View {
         Group {
             switch session.fishingPhase {
             case .idle:
-                hintText("Halten zum Auswerfen")
-            case .charging:
+                hintText("Ziehen und loslassen")
+            case .aiming:
                 castPowerBar
             case .flying:
                 hintText("…")
@@ -201,6 +223,8 @@ struct GameView: View {
             )
     }
 
+    /// Feinanzeige der Wurfweite. Die eigentliche Rückmeldung steht auf dem
+    /// Wasser — hier steht nur, wie weit die Rute gerade geladen ist.
     private var castPowerBar: some View {
         VStack(alignment: .trailing, spacing: 4) {
             Text("Wurfweite")
@@ -237,33 +261,29 @@ struct GameView: View {
             .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
             .gesture(
                 DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        // Nur die erste Meldung einer Berührung zählt — sonst
-                        // würde der Anschlag mehrfach ausgelöst.
-                        guard !isPressingAction else { return }
-                        isPressingAction = true
-                        guard session.fishingPhase != .hooked else { return }
-                        scene?.beginCast()
+                    .onChanged { value in
+                        // Erster Kontakt: entweder anschlagen oder zielen.
+                        if !isPressingAction {
+                            isPressingAction = true
+                            guard session.fishingPhase != .hooked else { return }
+                            scene?.beginAim()
+                        }
+
+                        // SwiftUI zählt y nach unten, die Spielwelt nach oben.
+                        scene?.updateAim(drag: CGVector(dx: value.translation.width,
+                                                        dy: -value.translation.height))
                     }
                     .onEnded { _ in
                         isPressingAction = false
-                        scene?.endCast()
+                        scene?.releaseAim()
                     }
-            )
-            .simultaneousGesture(
-                LongPressGesture(minimumDuration: 0.8).onEnded { _ in
-                    // Langes Halten holt die Angel ein, wenn nichts passiert.
-                    if session.fishingPhase == .waiting || session.fishingPhase == .nibble {
-                        scene?.reelIn()
-                    }
-                }
             )
     }
 
     private var actionColor: Color {
         switch session.fishingPhase {
         case .biteWindow: return Palette.vermilion.swiftUIColor
-        case .charging: return ColorSpec(0x9A6A3A).swiftUIColor
+        case .aiming: return ColorSpec(0x9A6A3A).swiftUIColor
         default: return ColorSpec(0x4E6E7A).swiftUIColor
         }
     }
@@ -271,7 +291,7 @@ struct GameView: View {
     private var actionSymbol: String {
         switch session.fishingPhase {
         case .idle: return "arrow.up.forward"
-        case .charging: return "arrow.up.forward.circle"
+        case .aiming: return "scope"
         case .flying: return "hourglass"
         case .waiting, .nibble: return "hand.tap"
         case .biteWindow: return "bolt.fill"
@@ -281,7 +301,7 @@ struct GameView: View {
 
     private var actionTitle: String {
         switch session.fishingPhase {
-        case .idle, .charging, .flying: return "Werfen"
+        case .idle, .aiming, .flying: return "Werfen"
         case .waiting, .nibble, .biteWindow: return "Anschlag"
         case .hooked: return "Drill"
         }

@@ -26,20 +26,28 @@ final class LakeScene: SKScene {
     private let zoneLayer = SKNode()
     private let underwaterLayer = SKNode()
     private let fishLayer = SKNode()
+    private let shadowLayer = SKNode()
+    private let plantLayer = SKNode()
     private let actorLayer = SKNode()
-    private let surfaceLayer = SKNode()
+    private let tackleLayer = SKNode()
+    private let shoreLayer = SKNode()
     private let weatherLayer = SKNode()
     private let cameraNode = SKCameraNode()
 
     private let boatNode = BoatNode()
     private let bobber = BobberNode()
     private let line = FishingLineNode()
+    private let aimPreview = AimPreviewNode()
     private let tintOverlay = SKSpriteNode()
     private var lanternNode: SKSpriteNode?
 
     private var fishNodes: [FishNode] = []
     private var lastUpdate: TimeInterval = 0
     private var petalTimer: CGFloat = 0
+
+    /// 0…1 — wie stramm die Schnur zwischen Boot und Köder gerade steht.
+    private var lineTension: CGFloat = 0
+    private var wasLineTaut = false
 
     // MARK: - Aufbau
 
@@ -62,12 +70,24 @@ final class LakeScene: SKScene {
         guard worldNode.parent == nil else { return }
 
         addChild(worldNode)
-        [waterLayer, zoneLayer, underwaterLayer, fishLayer, actorLayer, surfaceLayer, weatherLayer]
-            .enumerated()
-            .forEach { index, layer in
-                layer.zPosition = CGFloat(index) * 100
-                worldNode.addChild(layer)
-            }
+
+        // Feste Zeichenreihenfolge statt „wer zuerst kommt, liegt hinten“.
+        let layers: [(SKNode, SceneLayer)] = [
+            (waterLayer, .water),
+            (zoneLayer, .zones),
+            (underwaterLayer, .underwaterPlants),
+            (fishLayer, .fish),
+            (shadowLayer, .shadows),
+            (plantLayer, .floatingPlants),
+            (actorLayer, .boat),
+            (tackleLayer, .line),
+            (shoreLayer, .shore),
+            (weatherLayer, .weather)
+        ]
+        for (node, layer) in layers {
+            node.zPosition = layer.z
+            worldNode.addChild(node)
+        }
 
         buildWater()
         buildZones()
@@ -147,14 +167,16 @@ final class LakeScene: SKScene {
             guard let node = DecorFactory.node(for: item) else { continue }
             switch item.kind {
             case .log:
-                node.zPosition = 1
+                // Totholz liegt unter Wasser, Fische stehen darüber.
                 underwaterLayer.addChild(node)
             case .lilyPad, .reed:
-                node.zPosition = 2
-                surfaceLayer.addChild(node)
+                // Schwimmpflanzen bleiben unter dem Boot — sonst verschwindet
+                // der Kahn beim Durchfahren im Blattwerk.
+                plantLayer.addChild(node)
             default:
-                node.zPosition = 3
-                surfaceLayer.addChild(node)
+                // Bäume, Steine und Schrein stehen am Ufer und dürfen über das
+                // Boot ragen; dorthin kommt es ohnehin nicht.
+                shoreLayer.addChild(node)
             }
         }
     }
@@ -162,15 +184,20 @@ final class LakeScene: SKScene {
     private func buildActors() {
         boatNode.position = boat.position
         boatNode.zRotation = boat.heading
-        boatNode.zPosition = 10
         actorLayer.addChild(boatNode)
 
-        bobber.zPosition = 9
-        bobber.isHidden = true
-        actorLayer.addChild(bobber)
+        // Schnur und Köder liegen zusammen über dem Boot. Innerhalb der Ebene
+        // gilt: Schnur unten, Köder darüber.
+        line.zPosition = 0
+        tackleLayer.addChild(line)
 
-        line.zPosition = 11
-        actorLayer.addChild(line)
+        bobber.zPosition = 10
+        bobber.isHidden = true
+        tackleLayer.addChild(bobber)
+
+        // Die Zielhilfe liegt auf dem Wasser, also unter Boot und Schnur.
+        aimPreview.zPosition = SceneLayer.shadows.z + 10
+        worldNode.addChild(aimPreview)
     }
 
     private func buildOverlay() {
@@ -280,6 +307,30 @@ final class LakeScene: SKScene {
         }
 
         boat.update(deltaTime: dt, input: input, stats: session.stats, map: map)
+
+        // Liegt der Köder im Wasser, hängt das Boot an der Schnur.
+        if let anchor = fishing.bobberPosition, fishing.phase != .flying {
+            let maxLength = CGFloat(session.stats.castRange) * 1.2 + 140
+            lineTension = boat.applyLineTether(anchor: anchor,
+                                               maxLength: maxLength,
+                                               deltaTime: dt)
+
+            // Am Anschlag rückmelden — einmal pro Straffung, nicht dauernd.
+            if lineTension > 0.85 {
+                if !wasLineTaut {
+                    wasLineTaut = true
+                    HapticManager.shared.tensionWarning()
+                    AudioManager.shared.play(.reel)
+                    bobber.showTug()
+                }
+            } else if lineTension < 0.5 {
+                wasLineTaut = false
+            }
+        } else {
+            lineTension = 0
+            wasLineTaut = false
+        }
+
         boatNode.position = boat.position
         boatNode.zRotation = boat.heading
         boatNode.update(deltaTime: dt, rowing: boat.rowingIntensity, speed: boat.speed)
@@ -291,20 +342,30 @@ final class LakeScene: SKScene {
         let context = fishingContext()
         fishing.update(deltaTime: delta, context: context, bait: session.selectedBait)
 
+        updateAimPreview()
+
         // Schwimmer und Schnur nachführen.
         if let position = fishing.bobberPosition {
             bobber.isHidden = false
             bobber.position = position
             bobber.update(deltaTime: CGFloat(delta))
+            // Während des Flugs wirkt der Köder größer und wirft einen
+            // Schatten daneben — das liest sich als Höhe über dem Wasser.
+            bobber.setFlightHeight(fishing.lureHeight)
 
-            let tension = CGFloat(session.miniGame?.tension ?? 0)
+            // Im Drill zeigt die Schnur die Spannung des Fisches, sonst die
+            // Straffung durch die Bootsfahrt.
+            let tension = max(CGFloat(session.miniGame?.tension ?? 0), lineTension)
             line.update(from: boatNode.rodTipPosition, to: position, tension: tension)
         } else {
             bobber.isHidden = true
             line.clear()
         }
 
-        boatNode.setCastPose(fishing.phase == .charging ? CGFloat(fishing.castPower) : nil)
+        // Die Rute lädt sich sichtbar auf, solange gezielt wird.
+        boatNode.setCastPose(fishing.phase == .aiming ? CGFloat(fishing.castPower) : nil,
+                             aimDirection: fishing.aimDirection,
+                             boatHeading: boat.heading)
 
         // Drill weiterrechnen; endet er, wird die Angel eingeholt.
         if session.isFightRunning {
@@ -395,10 +456,9 @@ final class LakeScene: SKScene {
         let petal = SKSpriteNode(texture: texture)
         petal.size = CGSize(width: 14, height: 14)
         petal.alpha = 0.9
-        petal.zPosition = 520
-        petal.position = CGPoint(x: cameraNode.position.x + CGFloat.random(in: -400...400),
-                                 y: cameraNode.position.y + 500)
-        worldNode.addChild(petal)
+        petal.position = CGPoint(x: cameraNode.position.x + CGFloat.random(in: -500...500),
+                                 y: cameraNode.position.y + 600)
+        weatherLayer.addChild(petal)
 
         let duration = Double.random(in: 7...12)
         let drift = CGFloat.random(in: -160...160)
@@ -459,37 +519,92 @@ final class LakeScene: SKScene {
 
     // MARK: - Schnittstelle für die Oberfläche
 
-    func beginCast() {
+    /// Finger aufgesetzt. Liegt der Köder schon im Wasser, ist das der
+    /// Anschlag; sonst beginnt das Zielen.
+    func beginAim() {
         guard session.miniGame == nil else { return }
-        if fishing.phase == .idle {
-            fishing.beginCharge()
-            AudioManager.shared.play(.reel)
-        } else if fishing.phase == .waiting || fishing.phase == .nibble || fishing.phase == .biteWindow {
-            // Während der Köder liegt, ist die Taste der Anschlag.
+
+        switch fishing.phase {
+        case .idle:
+            fishing.beginAim(direction: CGVector(dx: cos(boat.heading), dy: sin(boat.heading)))
+            aimPreview.show()
+        case .waiting, .nibble, .biteWindow:
             fishing.strike(stats: session.stats)
+        default:
+            break
         }
     }
 
-    func endCast() {
-        guard fishing.phase == .charging else { return }
+    /// Fingerbewegung. `drag` ist der Vektor vom Aufsetzpunkt zum Finger, in
+    /// Punkten und bereits in Weltausrichtung (y zeigt nach oben).
+    func updateAim(drag: CGVector) {
+        guard fishing.phase == .aiming else { return }
 
-        // Geworfen wird in Blickrichtung des Bootes, mit dem Joystick lässt
-        // sich die Richtung vorher feinjustieren.
-        var direction = CGVector(dx: cos(boat.heading), dy: sin(boat.heading))
-        let joystick = session.joystick
-        if hypot(joystick.dx, joystick.dy) > 0.2 {
-            direction = joystick
+        let length = hypot(drag.dx, drag.dy)
+
+        // Kurze Fingerbewegung = kurzer Wurf. Nach dieser Strecke ist die
+        // volle Weite erreicht; darüber hinaus ändert sich nichts mehr.
+        let fullPullDistance: CGFloat = 170
+        let power = Double(min(1, length / fullPullDistance))
+
+        // Gezogen wird in die Richtung, in die geworfen werden soll.
+        fishing.updateAim(direction: length > 6 ? drag : fishing.aimDirection, power: power)
+    }
+
+    func releaseAim() {
+        guard fishing.phase == .aiming else { return }
+
+        if fishing.releaseCast(from: boatNode.rodTipPosition,
+                               stats: session.stats,
+                               map: map) != nil {
+            AudioManager.shared.play(.cast)
+            HapticManager.shared.selection()
         }
+        aimPreview.hide()
+    }
 
-        fishing.releaseCast(from: boatNode.rodTipPosition,
-                            direction: direction,
-                            stats: session.stats,
-                            map: map)
-        AudioManager.shared.play(.cast)
+    func cancelAim() {
+        aimPreview.hide()
     }
 
     func reelIn() {
         guard session.miniGame == nil else { return }
         fishing.reelIn()
+        aimPreview.hide()
+    }
+
+    /// Führt die Zielhilfe nach: Bahn, Landepunkt und Reichweite.
+    private func updateAimPreview() {
+        guard fishing.phase == .aiming else {
+            aimPreview.hide()
+            return
+        }
+
+        let origin = boatNode.rodTipPosition
+        let target = fishing.previewTarget(from: origin, stats: session.stats)
+        let landing = firstWaterPoint(from: origin, to: target)
+
+        aimPreview.show()
+        aimPreview.update(from: origin,
+                          to: landing.point,
+                          maxRange: CGFloat(session.stats.castRange),
+                          blocked: landing.blocked)
+    }
+
+    /// Sucht entlang der Wurfbahn den letzten Punkt über Wasser. Zeigt die
+    /// Bahn auf Land, weiß der Spieler das vor dem Loslassen.
+    private func firstWaterPoint(from origin: CGPoint, to target: CGPoint) -> (point: CGPoint, blocked: Bool) {
+        guard map.isLand(at: target) else { return (target, false) }
+
+        let steps = 18
+        var lastWater = origin
+        for step in 1...steps {
+            let t = CGFloat(step) / CGFloat(steps)
+            let probe = CGPoint(x: origin.x + (target.x - origin.x) * t,
+                                y: origin.y + (target.y - origin.y) * t)
+            if map.isLand(at: probe) { break }
+            lastWater = probe
+        }
+        return (lastWater, true)
     }
 }

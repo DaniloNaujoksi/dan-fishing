@@ -10,7 +10,7 @@ final class FishingSystem {
 
     enum Phase: Equatable {
         case idle          // Angel eingeholt
-        case charging      // Taste gedrückt, Wurfweite wächst
+        case aiming        // Finger liegt auf, Richtung und Weite werden gezogen
         case flying        // Köder ist unterwegs
         case waiting       // Köder liegt, es passiert noch nichts
         case nibble        // Fisch interessiert sich, Schwimmer zuckt
@@ -30,10 +30,16 @@ final class FishingSystem {
     }
 
     private(set) var phase: Phase = .idle
-    /// 0…1 während des Aufladens.
+    /// 0…1 — wie weit der Finger gezogen wurde.
     private(set) var castPower: Double = 0
+    /// Richtung, in die geworfen wird (Einheitsvektor).
+    private(set) var aimDirection = CGVector(dx: 0, dy: 1)
     private(set) var bobberPosition: CGPoint?
     private(set) var pendingFish: HookedFish?
+
+    /// Höhe des Köders über dem Wasser während des Flugs, in Punkten.
+    /// Die Szene macht daraus Größe und Schattenversatz.
+    private(set) var lureHeight: CGFloat = 0
 
     /// Zeit, die im Biss-Fenster noch bleibt (für die Anzeige).
     private(set) var biteWindowRemaining: Double = 0
@@ -41,10 +47,10 @@ final class FishingSystem {
     var onEvent: ((Event) -> Void)?
 
     private var timer: Double = 0
-    private var chargeDirection: Double = 1
     private var flightProgress: Double = 0
     private var flightStart: CGPoint = .zero
     private var flightEnd: CGPoint = .zero
+    private var flightDistance: CGFloat = 0
     private var nibbleCount = 0
 
     /// Wie lange das Fenster zum Anschlagen offen ist.
@@ -52,29 +58,55 @@ final class FishingSystem {
 
     // MARK: - Eingaben
 
-    func beginCharge() {
+    /// Der Finger liegt auf der Wurftaste. Ab hier wird gezielt.
+    func beginAim(direction: CGVector) {
         guard phase == .idle else { return }
-        phase = .charging
-        castPower = 0.15
-        chargeDirection = 1
+        phase = .aiming
+        castPower = 0
+        aimDirection = FishingSystem.unit(direction)
+    }
+
+    /// Zielhilfe nachführen. `power` ist 0…1 und kommt direkt aus der Länge der
+    /// Fingerbewegung — kurz gezogen heißt kurz geworfen.
+    func updateAim(direction: CGVector, power: Double) {
+        guard phase == .aiming else { return }
+        castPower = min(1, max(0, power))
+        if hypot(direction.dx, direction.dy) > 0.01 {
+            aimDirection = FishingSystem.unit(direction)
+        }
+    }
+
+    /// Wohin der Köder bei der aktuellen Zielhilfe fliegen würde.
+    func previewTarget(from origin: CGPoint, stats: EquipmentStats) -> CGPoint {
+        let distance = castDistance(stats: stats)
+        return CGPoint(x: origin.x + aimDirection.dx * distance,
+                       y: origin.y + aimDirection.dy * distance)
+    }
+
+    /// Wurfweite in Punkten. Der kürzeste Wurf plumpst direkt neben das Boot,
+    /// der weiteste erreicht die Reichweite der Rute.
+    func castDistance(stats: EquipmentStats) -> CGFloat {
+        let minimum = FishingSystem.minimumCastDistance
+        let maximum = max(minimum + 40, CGFloat(stats.castRange))
+        return minimum + CGFloat(castPower) * (maximum - minimum)
     }
 
     /// Wirft aus. Gibt den Zielpunkt zurück, falls der Wurf gültig war.
     @discardableResult
     func releaseCast(from origin: CGPoint,
-                     direction: CGVector,
                      stats: EquipmentStats,
                      map: LakeMap) -> CGPoint? {
-        guard phase == .charging else { return nil }
+        guard phase == .aiming else { return nil }
 
-        let length = hypot(direction.dx, direction.dy)
-        let unit: CGVector = length > 0.001
-            ? CGVector(dx: direction.dx / length, dy: direction.dy / length)
-            : CGVector(dx: 0, dy: 1)
+        // Zu kurz gezogen heißt: doch nicht werfen. Sonst landet der Köder bei
+        // jedem versehentlichen Antippen im Wasser.
+        guard castPower > 0.06 else {
+            phase = .idle
+            castPower = 0
+            return nil
+        }
 
-        let distance = CGFloat(120 + castPower * (stats.castRange - 120))
-        let target = CGPoint(x: origin.x + unit.dx * distance,
-                             y: origin.y + unit.dy * distance)
+        let target = previewTarget(from: origin, stats: stats)
 
         guard !map.isLand(at: target) else {
             phase = .idle
@@ -85,10 +117,21 @@ final class FishingSystem {
 
         flightStart = origin
         flightEnd = target
+        flightDistance = hypot(target.x - origin.x, target.y - origin.y)
         flightProgress = 0
+        lureHeight = 0
         phase = .flying
         bobberPosition = origin
         return target
+    }
+
+    /// Kürzeste Wurfweite — direkt neben das Boot.
+    static let minimumCastDistance: CGFloat = 90
+
+    private static func unit(_ vector: CGVector) -> CGVector {
+        let length = hypot(vector.dx, vector.dy)
+        guard length > 0.001 else { return CGVector(dx: 0, dy: 1) }
+        return CGVector(dx: vector.dx / length, dy: vector.dy / length)
     }
 
     /// Anschlag. Gibt zurück, ob der Fisch hängen geblieben ist.
@@ -140,6 +183,7 @@ final class FishingSystem {
     private func reset() {
         phase = .idle
         castPower = 0
+        lureHeight = 0
         bobberPosition = nil
         pendingFish = nil
         timer = 0
@@ -159,31 +203,29 @@ final class FishingSystem {
         case .idle, .hooked:
             break
 
-        case .charging:
-            // Die Anzeige pendelt hin und her, der Spieler lässt im richtigen
-            // Moment los. Das ist präziser als reines Aufladen und macht auch
-            // kurze Würfe möglich.
-            castPower += chargeDirection * dt * 0.85
-            if castPower >= 1 {
-                castPower = 1
-                chargeDirection = -1
-            } else if castPower <= 0.1 {
-                castPower = 0.1
-                chargeDirection = 1
-            }
+        case .aiming:
+            // Nichts zu rechnen: Richtung und Weite kommen vom Finger.
+            break
 
         case .flying:
-            flightProgress += dt * 2.2
+            // Die Flugzeit hängt an der Weite — ein kurzer Wurf ist sofort
+            // unten, ein weiter fliegt sichtbar länger.
+            let duration = Double(0.35 + flightDistance / 900)
+            flightProgress += dt / max(0.2, duration)
+
             if flightProgress >= 1 {
                 flightProgress = 1
+                lureHeight = 0
                 bobberPosition = flightEnd
                 phase = .waiting
                 timer = nextBiteDelay(context: context, bait: bait)
                 onEvent?(.castLanded(flightEnd))
             } else {
+                // Waagerecht gleichmäßig, senkrecht eine Wurfparabel.
                 let t = CGFloat(flightProgress)
                 bobberPosition = CGPoint(x: flightStart.x + (flightEnd.x - flightStart.x) * t,
                                          y: flightStart.y + (flightEnd.y - flightStart.y) * t)
+                lureHeight = sin(CGFloat.pi * t) * min(120, flightDistance * 0.22)
             }
 
         case .waiting:

@@ -63,37 +63,95 @@ struct BoatController {
 
         let desiredLength = min(1, hypot(desired.dx, desired.dy))
 
-        if desiredLength > 0.05 {
-            // Das Boot dreht sich zur gewünschten Richtung, statt sofort
-            // seitwärts zu rutschen — daher fährt es sich träge und ruhig.
-            let targetHeading = atan2(desired.dy, desired.dx)
-            heading = BoatController.turn(from: heading,
-                                          to: targetHeading,
-                                          maxStep: CGFloat(stats.boatTurnRate) * dt)
+        // Ein Ruderboot beschleunigt langsam und läuft lange aus. Deshalb wird
+        // nicht direkt die Geschwindigkeit gesetzt, sondern eine Wunschfahrt
+        // vorgegeben, der sich das Boot annähert — einmal beim Antreten, einmal
+        // beim Ausrollen, mit unterschiedlichem Tempo.
+        let maxSpeed = CGFloat(stats.boatSpeed) * BoatController.cruiseFactor
+        var targetVelocity = CGVector.zero
 
+        if desiredLength > 0.05 {
+            let targetHeading = atan2(desired.dy, desired.dx)
+
+            // Langsame Fahrt dreht enger als volle Fahrt — das fühlt sich nach
+            // Wasser an und verhindert das nervöse Zappeln bei kleinen
+            // Fingerbewegungen.
+            let speedShare = min(1, hypot(velocity.dx, velocity.dy) / max(maxSpeed, 1))
+            let turnRate = CGFloat(stats.boatTurnRate) * (1.0 - speedShare * 0.45)
+            heading = BoatController.turn(from: heading, to: targetHeading, maxStep: turnRate * dt)
+
+            // Schräg zum Ziel gibt es weniger Schub: Erst drehen, dann fahren.
             let alignment = max(0, cos(BoatController.angleDifference(heading, targetHeading)))
-            let thrust = CGFloat(stats.boatSpeed) * desiredLength * (0.35 + alignment * 0.65)
-            velocity.dx += cos(heading) * thrust * dt * 2.4
-            velocity.dy += sin(heading) * thrust * dt * 2.4
-            rowingIntensity = min(1, rowingIntensity + dt * 3)
+            let power = desiredLength * (0.25 + alignment * 0.75)
+            targetVelocity = CGVector(dx: cos(heading) * maxSpeed * power,
+                                      dy: sin(heading) * maxSpeed * power)
+
+            rowingIntensity = min(1, rowingIntensity + dt * 2.2)
         } else {
-            rowingIntensity = max(0, rowingIntensity - dt * 2)
+            rowingIntensity = max(0, rowingIntensity - dt * 1.6)
         }
 
-        // Wasserwiderstand.
-        let drag = CGFloat(1.0 - min(0.92, 1.9 * Double(dt)))
-        velocity.dx *= drag
-        velocity.dy *= drag
+        // Anfahren spürbar träge, Ausrollen noch träger — das Boot gleitet aus,
+        // statt stehen zu bleiben.
+        let rate = desiredLength > 0.05 ? BoatController.accelerationRate : BoatController.dragRate
+        let blend = 1 - exp(-rate * dt)
+        velocity.dx += (targetVelocity.dx - velocity.dx) * blend
+        velocity.dy += (targetVelocity.dy - velocity.dy) * blend
 
-        // Tempolimit.
-        let speed = hypot(velocity.dx, velocity.dy)
-        let maxSpeed = CGFloat(stats.boatSpeed)
-        if speed > maxSpeed {
-            velocity.dx = velocity.dx / speed * maxSpeed
-            velocity.dy = velocity.dy / speed * maxSpeed
+        // Ganz kleine Restbewegung wegschneiden, sonst kriecht das Boot ewig.
+        if hypot(velocity.dx, velocity.dy) < 2 && desiredLength <= 0.05 {
+            velocity = .zero
         }
 
         move(dt: dt, map: map)
+    }
+
+    /// Anteil der Höchstgeschwindigkeit, den das Boot im Alltag fährt. Die alte
+    /// Fahrt war für einen Ruderkahn deutlich zu hektisch.
+    private static let cruiseFactor: CGFloat = 0.62
+    /// Wie schnell das Boot Fahrt aufnimmt (je größer, desto direkter).
+    private static let accelerationRate: CGFloat = 1.9
+    /// Wie schnell es ohne Ruderschlag ausläuft.
+    private static let dragRate: CGFloat = 0.85
+
+    /// Hält das Boot im Umkreis der ausgeworfenen Schnur.
+    ///
+    /// Ohne diese Grenze fährt man einfach davon, während der Schwimmer im
+    /// Wasser liegt — die Schnur wäre dann ein Gummiband über den halben See.
+    /// Am Ende der Schnur wird das Boot sanft gebremst und zurückgeholt, statt
+    /// hart zu stoppen.
+    /// - Returns: Spannung 0…1 auf der letzten Strecke vor dem Anschlag.
+    @discardableResult
+    mutating func applyLineTether(anchor: CGPoint, maxLength: CGFloat, deltaTime: CGFloat) -> CGFloat {
+        let delta = CGVector(dx: position.x - anchor.x, dy: position.y - anchor.y)
+        let distance = hypot(delta.dx, delta.dy)
+        guard distance > 1 else { return 0 }
+
+        // Die letzten 25 Prozent gelten als „Schnur wird stramm“.
+        let slackLimit = maxLength * 0.75
+        guard distance > slackLimit else { return 0 }
+
+        let tension = min(1, (distance - slackLimit) / max(maxLength - slackLimit, 1))
+        let unit = CGVector(dx: delta.dx / distance, dy: delta.dy / distance)
+
+        // Anteil der Fahrt, der vom Anker wegzeigt, wird zunehmend geschluckt.
+        let outward = velocity.dx * unit.dx + velocity.dy * unit.dy
+        if outward > 0 {
+            let damping = tension * tension
+            velocity.dx -= unit.dx * outward * damping
+            velocity.dy -= unit.dy * outward * damping
+        }
+
+        // Über die volle Länge hinaus zieht die Schnur das Boot zurück.
+        if distance > maxLength {
+            let pull = min(1, (distance - maxLength) / 60)
+            let correction = (distance - maxLength) * min(1, deltaTime * 6) + pull * 12 * deltaTime
+            position.x -= unit.dx * correction
+            position.y -= unit.dy * correction
+            autoTarget = nil
+        }
+
+        return tension
     }
 
     /// Bewegt das Boot und lässt es an Hindernissen entlanggleiten, statt
