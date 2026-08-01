@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 
 /// Fangbucheintrag einer Art. Wird erst angelegt, wenn die Art einmal gefangen
@@ -68,10 +69,21 @@ struct SaveData: Codable, Equatable {
     var settings = GameSettings()
     var lastPlayed: Date = Date()
 
-    /// Position des Bootes, damit ein fortgesetztes Spiel dort weitergeht.
-    var boatX: Double = 0
-    var boatY: Double = 0
-    var hasBoatPosition: Bool = false
+    /// Gewässer, an dem zuletzt geangelt wurde.
+    var currentWaterID: String = "pond"
+
+    /// Position des Bootes je Gewässer, damit man dort weitermacht, wo man
+    /// aufgehört hat. Gespeichert als [x, y].
+    var boatPositions: [String: [Double]] = [:]
+
+    func boatPosition(for waterID: String) -> CGPoint? {
+        guard let values = boatPositions[waterID], values.count == 2 else { return nil }
+        return CGPoint(x: values[0], y: values[1])
+    }
+
+    mutating func setBoatPosition(_ point: CGPoint, for waterID: String) {
+        boatPositions[waterID] = [Double(point.x), Double(point.y)]
+    }
 
     /// Erfahrungspunkte bis zum nächsten Level.
     static func experienceForLevel(_ level: Int) -> Int {

@@ -15,6 +15,9 @@ enum BaitSystem {
         let depth: Double
         let playerLevel: Int
         let stats: EquipmentStats
+        /// Der Fischbestand dieses Gewässers. Im Teich steht hier eine kurze
+        /// Liste, im See der ganze Katalog.
+        var pool: [FishSpecies] = FishCatalog.all
     }
 
     /// Gewicht einer Art beim Auswürfeln. 0 = beißt hier gerade gar nicht.
@@ -80,7 +83,7 @@ enum BaitSystem {
 
     /// Alle Arten mit ihrem aktuellen Gewicht.
     static func candidates(bait: Bait, context: Context) -> [(species: FishSpecies, weight: Double)] {
-        FishCatalog.all.compactMap { species in
+        context.pool.compactMap { species in
             let weight = attraction(species: species, bait: bait, context: context)
             return weight > 0 ? (species, weight) : nil
         }

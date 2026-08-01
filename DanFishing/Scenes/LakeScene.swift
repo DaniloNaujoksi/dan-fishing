@@ -11,6 +11,8 @@ final class LakeScene: SKScene {
     // MARK: - Abhängigkeiten
 
     unowned let session: GameSession
+    /// Das Gewässer dieser Szene. Es bestimmt Karte, Fischbestand und Farben.
+    let water: Water
     private(set) var map: LakeMap
 
     // MARK: - Systeme
@@ -59,13 +61,14 @@ final class LakeScene: SKScene {
 
     init(size: CGSize, session: GameSession) {
         self.session = session
-        self.map = LakeMap.generate()
+        self.water = session.currentWater
+        self.map = LakeMap.generate(for: session.currentWater)
         let start = session.storedBoatPosition ?? map.startPosition
         self.boat = BoatController(position: map.nearestWater(from: start))
         super.init(size: size)
 
         scaleMode = .resizeFill
-        backgroundColor = Palette.waterDeep.skColor
+        backgroundColor = water.deepColor.skColor
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -124,7 +127,7 @@ final class LakeScene: SKScene {
     private func buildWater() {
         let worldSize = map.worldSize
 
-        let base = SKSpriteNode(color: Palette.water.skColor, size: worldSize)
+        let base = SKSpriteNode(color: water.shallowColor.skColor, size: worldSize)
         base.position = CGPoint(x: worldSize.width / 2, y: worldSize.height / 2)
         waterLayer.addChild(base)
 
@@ -165,7 +168,7 @@ final class LakeScene: SKScene {
     /// Die gesamte Zonenkarte steckt in einer einzigen Textur — weiche Ränder
     /// statt sichtbarem Raster, und ein Knoten statt über dreitausend.
     private func buildZones() {
-        guard let texture = TextureFactory.zoneMap(map: map) else { return }
+        guard let texture = TextureFactory.zoneMap(map: map, water: water) else { return }
 
         let zones = SKSpriteNode(texture: texture)
         zones.size = map.worldSize
@@ -340,7 +343,9 @@ final class LakeScene: SKScene {
     }
 
     private func addFish(in habitat: Habitat, count: Int, near point: CGPoint?, radius: CGFloat) {
-        let candidates = FishCatalog.species(in: habitat)
+        // Nur Arten, die es in diesem Gewässer gibt — im Teich schwimmt kein
+        // Stör herum, auch nicht als Kulisse.
+        let candidates = water.species.filter { $0.habitats.contains(habitat) }
         guard !candidates.isEmpty else { return }
 
         for _ in 0..<count {
@@ -690,7 +695,8 @@ final class LakeScene: SKScene {
                                   timeOfDay: dayNight.phase,
                                   depth: map.depth(at: point),
                                   playerLevel: session.save.level,
-                                  stats: session.stats)
+                                  stats: session.stats,
+                                  pool: water.species)
     }
 
     // MARK: - Angel-Ereignisse

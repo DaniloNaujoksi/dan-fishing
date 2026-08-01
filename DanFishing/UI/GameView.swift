@@ -77,6 +77,11 @@ struct GameView: View {
                     scene = LakeScene(size: geometry.size, session: session)
                 }
             }
+            // Gewässerwechsel: Die Szene wird verworfen und neu aufgebaut,
+            // sonst bliebe die alte Karte stehen.
+            .onChange(of: session.save.currentWaterID) { _, _ in
+                scene = LakeScene(size: geometry.size, session: session)
+            }
             .animation(.easeInOut(duration: 0.25), value: session.miniGame == nil)
             .animation(.easeOut(duration: 0.25), value: session.pendingCatch)
             .animation(.easeInOut(duration: 0.3), value: session.tutorialStep)

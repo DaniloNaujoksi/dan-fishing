@@ -6,6 +6,7 @@ struct MainMenuView: View {
     @EnvironmentObject private var session: GameSession
 
     @State private var showCodex = false
+    @State private var showWaters = false
     @State private var showShop = false
     @State private var showMissions = false
     @State private var showSettings = false
@@ -43,6 +44,10 @@ struct MainMenuView: View {
                         VStack(spacing: 12) {
                             SectionHeading(text: "Am Ufer", subtitle: "Vorbereiten, bevor es hinausgeht")
 
+                            menuRow(icon: "map", title: "Gewässer",
+                                    detail: "\(session.currentWater.name) · \(session.unlockedWaters.count) von \(WaterCatalog.all.count) offen") {
+                                showWaters = true
+                            }
                             menuRow(icon: "book.closed", title: "Fangbuch",
                                     detail: "\(session.save.codex.count) von \(FishCatalog.all.count) Arten") {
                                 showCodex = true
@@ -69,6 +74,7 @@ struct MainMenuView: View {
             }
         }
         .sheet(isPresented: $showCodex) { CodexView() }
+        .sheet(isPresented: $showWaters) { WaterSelectionView() }
         .sheet(isPresented: $showShop) { ShopView() }
         .sheet(isPresented: $showMissions) { MissionsView() }
         .sheet(isPresented: $showSettings) { SettingsView() }

@@ -361,7 +361,7 @@ enum TextureFactory {
     /// die Szene kommt mit einem Knoten aus.
     ///
     /// - Parameter scale: Auflösung der Textur im Verhältnis zur Weltgröße.
-    static func zoneMap(map: LakeMap, scale: CGFloat = 0.33) -> SKTexture? {
+    static func zoneMap(map: LakeMap, water: Water, scale: CGFloat = 0.33) -> SKTexture? {
         let pixelSize = CGSize(width: map.worldSize.width * scale,
                                height: map.worldSize.height * scale)
         let cell = map.cellSize * scale
@@ -370,10 +370,10 @@ enum TextureFactory {
         // Bewuchszonen als zarte Tönung darüber.
         func waterTone(for kind: CellKind) -> UIColor {
             switch kind {
-            case .land: return Palette.sand.skColor
-            case .shallows, .reeds, .lilies: return Palette.waterShallow.skColor
+            case .land: return water.shoreColor.skColor
+            case .shallows, .reeds, .lilies: return water.shallowColor.skColor
             case .inflow: return ColorSpec(0x9FD0D6).skColor
-            case .deep, .logs: return Palette.waterDeep.skColor
+            case .deep, .logs: return water.deepColor.skColor
             }
         }
 

@@ -546,14 +546,33 @@ final class GameSession: ObservableObject {
     // MARK: - Bootsposition
 
     func rememberBoatPosition(_ point: CGPoint) {
-        save.boatX = Double(point.x)
-        save.boatY = Double(point.y)
-        save.hasBoatPosition = true
+        save.setBoatPosition(point, for: currentWater.id)
     }
 
     var storedBoatPosition: CGPoint? {
-        guard save.hasBoatPosition else { return nil }
-        return CGPoint(x: save.boatX, y: save.boatY)
+        save.boatPosition(for: currentWater.id)
+    }
+
+    // MARK: - Gewässer
+
+    /// Das Gewässer, an dem gerade geangelt wird.
+    var currentWater: Water {
+        WaterCatalog.water(id: save.currentWaterID) ?? WaterCatalog.starter
+    }
+
+    /// Gewässer, die der Spielstand freigeschaltet hat.
+    var unlockedWaters: [Water] {
+        WaterCatalog.unlocked(for: save.level)
+    }
+
+    /// Wechselt das Gewässer. Die Szene wird danach neu aufgebaut.
+    func selectWater(_ water: Water) {
+        guard water.requiredLevel <= save.level else { return }
+        guard water.id != save.currentWaterID else { return }
+
+        save.currentWaterID = water.id
+        persist()
+        HapticManager.shared.selection()
     }
 
     // MARK: - Hinweise

@@ -155,6 +155,25 @@ struct LakeMap {
 
 extension LakeMap {
 
+    /// Baut die Karte eines Gewässers.
+    ///
+    /// Form, Maße und Startwert kommen aus dem Katalog — dadurch entstehen
+    /// aus demselben Verfahren ein enger Teich, ein weiter See und ein
+    /// gewundener Fluss.
+    static func generate(for water: Water) -> LakeMap {
+        switch water.shape {
+        case .lake:
+            return generate(seed: water.seed,
+                            columns: water.columns,
+                            rows: water.rows,
+                            cellSize: water.cellSize)
+        case .pond:
+            return generatePond(water: water)
+        case .river:
+            return generateRiver(water: water)
+        }
+    }
+
     /// Baut den Bergsee auf. Alles ist vom Seed abhängig, damit ein Spielstand
     /// immer denselben See zeigt.
     static func generate(seed: UInt64 = 20_240_517,
@@ -265,6 +284,165 @@ extension LakeMap {
                                                  cellSize: cellSize,
                                                  rng: &rng),
                        startPosition: safeStart)
+    }
+
+    /// Der Dorfteich.
+    ///
+    /// Klein, rund und flach: fast alles ist Uferzone, dazu ein dichter
+    /// Krautgürtel und eine einzige tiefere Stelle in der Mitte. Kurze Wege,
+    /// keine Überraschungen — der Ort zum Lernen.
+    private static func generatePond(water: Water) -> LakeMap {
+        var rng = SeededGenerator(seed: water.seed)
+        let shoreNoise = ValueNoise(seed: water.seed &+ 5)
+        let plantNoise = ValueNoise(seed: water.seed &+ 41)
+
+        let columns = water.columns
+        let rows = water.rows
+        var cells = [CellKind](repeating: .land, count: columns * rows)
+
+        let cx = Double(columns) / 2
+        let cy = Double(rows) / 2
+        let radiusX = Double(columns) * 0.40
+        let radiusY = Double(rows) * 0.41
+
+        for row in 0..<rows {
+            for column in 0..<columns {
+                let x = Double(column)
+                let y = Double(row)
+
+                let nx = (x - cx) / radiusX
+                let ny = (y - cy) / radiusY
+                let ellipse = nx * nx + ny * ny
+                // Der Rand franst nur leicht aus — ein Teich ist gefasst,
+                // kein Natursee.
+                let edge = 1.0 + (shoreNoise.fractal(x * 0.2, y * 0.2, octaves: 2) - 0.5) * 0.3
+
+                guard ellipse < edge else { continue }
+
+                let toShore = edge - ellipse
+                var kind: CellKind = .shallows
+
+                // Nur ganz in der Mitte wird es tiefer.
+                if toShore > 0.72 { kind = .deep }
+
+                // Krautgürtel am Ufer, Seerosen in den Buchten.
+                let plants = plantNoise.fractal(x * 0.16 + 2.5, y * 0.16 + 4.5, octaves: 2)
+                if toShore < 0.45 {
+                    if plants > 0.60 {
+                        kind = .reeds
+                    } else if plants < 0.34 {
+                        kind = .lilies
+                    }
+                }
+
+                // Ein einzelner versunkener Ast als Versteck.
+                if toShore > 0.5 && toShore < 0.68 && plants > 0.78 {
+                    kind = .logs
+                }
+
+                cells[row * columns + column] = kind
+            }
+        }
+
+        return assemble(cells: cells, water: water, rng: &rng)
+    }
+
+    /// Der Fluss.
+    ///
+    /// Ein Lauf von oben nach unten, der sich in Windungen durchs Bild zieht.
+    /// Die Außenseite jeder Kurve wird ausgespült und ist tief, innen lagert
+    /// sich Kies ab und es bleibt flach — genau dort steht die Äsche. Oben
+    /// kommt das kalte Wasser herein.
+    private static func generateRiver(water: Water) -> LakeMap {
+        var rng = SeededGenerator(seed: water.seed)
+        let bankNoise = ValueNoise(seed: water.seed &+ 17)
+        let plantNoise = ValueNoise(seed: water.seed &+ 63)
+
+        let columns = water.columns
+        let rows = water.rows
+        var cells = [CellKind](repeating: .land, count: columns * rows)
+
+        let centerBase = Double(columns) / 2
+
+        for row in 0..<rows {
+            let y = Double(row)
+
+            // Zwei überlagerte Wellen ergeben einen Lauf, der sich nicht
+            // wiederholt.
+            let bend = sin(y * 0.075) * 5.4 + sin(y * 0.031 + 1.3) * 3.1
+            let center = centerBase + bend
+            // Wie stark die Kurve gerade ist, und in welche Richtung.
+            let curvature = cos(y * 0.075) * 0.075 * 5.4 + cos(y * 0.031 + 1.3) * 0.031 * 3.1
+
+            let halfWidth = 6.0 + bankNoise.fractal(y * 0.09, 0.5, octaves: 2) * 2.6
+
+            for column in 0..<columns {
+                let x = Double(column)
+                let offset = x - center
+                guard abs(offset) < halfWidth else { continue }
+
+                // Anteil von der Mitte zum Ufer: 0 = Mitte, 1 = Kante.
+                let toBank = abs(offset) / halfWidth
+
+                // Außenseite der Kurve: dort, wohin die Strömung drückt.
+                let outerSide = curvature > 0 ? 1.0 : -1.0
+                let onOuter = (offset * outerSide) > 0
+
+                var kind: CellKind
+                if toBank > 0.82 {
+                    kind = .shallows
+                } else if onOuter && toBank > 0.25 {
+                    kind = .deep          // ausgespülter Prallhang
+                } else if !onOuter && toBank > 0.4 {
+                    kind = .shallows      // Kiesbank im Gleithang
+                } else {
+                    kind = toBank < 0.35 ? .deep : .shallows
+                }
+
+                // Das obere Drittel ist kalt und schnell.
+                if y < Double(rows) * 0.34 && kind != .land {
+                    kind = .inflow
+                }
+
+                // Pflanzen und Totholz an den ruhigen Innenseiten.
+                let plants = plantNoise.fractal(x * 0.18, y * 0.12, octaves: 2)
+                if !onOuter && toBank > 0.55 && y > Double(rows) * 0.34 {
+                    if plants > 0.66 {
+                        kind = .reeds
+                    } else if plants < 0.3 {
+                        kind = .lilies
+                    }
+                }
+                if onOuter && toBank > 0.55 && plants > 0.74 {
+                    kind = .logs
+                }
+
+                cells[row * columns + column] = kind
+            }
+        }
+
+        return assemble(cells: cells, water: water, rng: &rng)
+    }
+
+    /// Baut aus fertigen Zellen die Karte samt Kulisse und Startplatz.
+    private static func assemble(cells: [CellKind],
+                                 water: Water,
+                                 rng: inout SeededGenerator) -> LakeMap {
+        let start = findStartingSpot(cells: cells,
+                                     columns: water.columns,
+                                     rows: water.rows,
+                                     cellSize: water.cellSize)
+
+        return LakeMap(columns: water.columns,
+                       rows: water.rows,
+                       cellSize: water.cellSize,
+                       cells: cells,
+                       decor: buildDecor(cells: cells,
+                                         columns: water.columns,
+                                         rows: water.rows,
+                                         cellSize: water.cellSize,
+                                         rng: &rng),
+                       startPosition: start)
     }
 
     /// Sucht eine flache Stelle, an der möglichst viele verschiedene Zonen in
