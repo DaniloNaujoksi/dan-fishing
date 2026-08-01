@@ -90,9 +90,11 @@ einer Dreiecksverteilung. Große Köder verschieben den Schwerpunkt nach oben,
 deshalb bringt der Köderfisch im Schnitt größere Hechte als die Made.
 
 **CatchMiniGame** ist der Drill, komplett ohne UI: Der Fisch wandert in einer
-Bahn, der Fangbereich steigt beim Halten und sinkt beim Loslassen. Deckung
-bringt Fortschritt und kostet Spannung. Zwei Verlustwege — gerissene Schnur bei
-zu viel Spannung, ausgeschlitzter Haken bei zu langer Schlaffheit.
+Bahn, der Fangbereich steigt beim Halten und sinkt beim Loslassen. Halten
+belastet die Schnur, Loslassen entlastet sie; vorwärts geht es nur, solange der
+Fisch im Fangbereich liegt. Daraus wird ein Tauziehen mit zwei Verlustwegen —
+gerissene Schnur bei zu viel Spannung, ausgeschlitzter Haken bei zu langer
+Schlaffheit.
 
 **DayNightSystem** läuft einen Tag in acht Minuten durch und liefert Phase,
 Dunkelheit und Farbstimmung. Nachtfische gibt es dadurch regelmäßig, ohne dass

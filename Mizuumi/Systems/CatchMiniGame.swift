@@ -134,27 +134,30 @@ struct CatchMiniGame {
     }
 
     private mutating func updateTensionAndProgress(dt: Double, reeling: Bool) {
-        if isFishInBar {
-            progress += dt * 0.20 * stats.reelSpeed
-            slackTime = 0
-
-            // Spannung steigt, solange der Fisch im Bereich ist und zieht.
-            let pull = 0.24 + fightPower * 0.42
+        // Spannung hängt am Zug, nicht an der Deckung: Wer die Taste hält,
+        // zieht gegen den Fisch und belastet die Schnur. Loslassen gibt nach.
+        // Daraus entsteht das Tauziehen — dauerhaft halten reißt die Schnur,
+        // dauerhaft nachgeben lässt den Fisch aussteigen.
+        if reeling {
+            let pull = 0.18 + fightPower * 0.42
             tension += dt * pull / max(0.6, stats.lineStrength)
         } else {
-            progress -= dt * 0.075
-            slackTime += dt
             tension -= dt * (0.34 * stats.brakeControl)
         }
 
-        // Zusätzlich zieht der Fisch an, wenn er in die entgegengesetzte
-        // Richtung schwimmt — das ist der Moment zum Nachgeben.
-        if isFishInBar && abs(fishTarget - barPosition) > 0.45 {
-            tension += dt * 0.18 * fightPower
+        // Vorankommen gibt es nur, solange der Fisch im Fangbereich liegt.
+        if isFishInBar {
+            progress += dt * 0.20 * stats.reelSpeed
+            slackTime = 0
+        } else {
+            progress -= dt * 0.075
+            slackTime += dt
         }
 
-        if reeling && !isFishInBar {
-            tension += dt * 0.05
+        // Schwimmt der Fisch aus dem Bereich heraus, während gezogen wird,
+        // ruckt es zusätzlich in der Schnur.
+        if reeling && abs(fishTarget - barPosition) > 0.45 {
+            tension += dt * 0.18 * fightPower
         }
 
         progress = min(1.0, max(0, progress))
