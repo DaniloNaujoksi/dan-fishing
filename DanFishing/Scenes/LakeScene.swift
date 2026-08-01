@@ -146,6 +146,7 @@ final class LakeScene: SKScene {
         buildWater()
         buildZones()
         buildShoreFoam()
+        buildCurrentStreaks()
         buildDecor()
         buildActors()
         buildOverlay()
@@ -300,6 +301,65 @@ final class LakeScene: SKScene {
 
                 placed += 1
                 if placed > 900 { return }   // Sicherheitsnetz für sehr zerklüftete Ufer
+            }
+        }
+    }
+
+    /// Sichtbare Strömung: feine helle Striche, die talwärts wandern.
+    ///
+    /// Ohne sie merkt man erst am abtreibenden Köder, dass das Wasser zieht.
+    /// Die Striche stehen nur dort, wo wirklich Strömung ist — an der
+    /// Bachmündung des Sees also genau in dem einen Streifen.
+    private func buildCurrentStreaks() {
+        let cell = map.cellSize
+        var placed = 0
+
+        for row in 0..<map.rows {
+            for column in 0..<map.columns {
+                let center = CGPoint(x: (CGFloat(column) + 0.5) * cell,
+                                     y: (CGFloat(row) + 0.5) * cell)
+
+                let flow = map.current(at: center)
+                let speed = hypot(flow.dx, flow.dy)
+                guard speed > 8 else { continue }
+
+                // Je stärker der Zug, desto dichter die Striche.
+                let density = min(0.85, speed / 70)
+                guard CGFloat.random(in: 0...1) < density else { continue }
+
+                let length = cell * (0.3 + CGFloat.random(in: 0...0.35))
+                let streak = SKShapeNode(rectOf: CGSize(width: 1.6, height: length),
+                                         cornerRadius: 0.8)
+                streak.fillColor = SKColor(white: 1, alpha: 0.5)
+                streak.strokeColor = .clear
+                streak.alpha = 0
+                streak.position = CGPoint(x: center.x + CGFloat.random(in: -0.4...0.4) * cell,
+                                          y: center.y + CGFloat.random(in: -0.5...0.5) * cell)
+                foamLayer.addChild(streak)
+
+                // Einmal durch die Zelle treiben, dabei auf- und wieder
+                // abblenden — und danach von vorn, mit eigenem Versatz.
+                let travel = cell * 1.6
+                let duration = Double(travel / speed)
+                let run = SKAction.sequence([
+                    .run { streak.position.y -= travel / 2 },
+                    .group([
+                        .moveBy(x: 0, y: travel, duration: duration),
+                        .sequence([
+                            .fadeAlpha(to: 0.45, duration: duration * 0.3),
+                            .wait(forDuration: duration * 0.35),
+                            .fadeAlpha(to: 0, duration: duration * 0.35)
+                        ])
+                    ]),
+                    .run { streak.position.y -= travel / 2 }
+                ])
+                streak.run(.sequence([
+                    .wait(forDuration: Double.random(in: 0...duration)),
+                    .repeatForever(run)
+                ]))
+
+                placed += 1
+                if placed > 700 { return }
             }
         }
     }
@@ -528,8 +588,31 @@ final class LakeScene: SKScene {
 
         updateAimPreview()
 
+        // Strömung: Der Köder treibt ab, sobald er im ziehenden Wasser liegt.
+        // Am See merkt man das nur an der Bachmündung, im Fluss überall.
+        if let lure = fishing.bobberPosition {
+            let flow = map.current(at: lure)
+            if flow.dy != 0 || flow.dx != 0 {
+                fishing.drift(CGVector(dx: flow.dx * CGFloat(delta),
+                                       dy: flow.dy * CGFloat(delta)),
+                              map: map)
+            }
+        }
+
         // Aussehen des Köders nachziehen, wenn in der Köderbox gewechselt wurde.
         if configuredBaitID != session.selectedBait.id {
+            let hadCast = fishing.phase != .idle
+
+            // Den Köder wechselt man am Haken, nicht auf zwanzig Meter
+            // Entfernung. Wer mitten im Wurf umstellt, kurbelt deshalb erst
+            // ein — im Drill bleibt der Wechsel ohne Wirkung, dort hängt der
+            // Fisch schon am alten Köder.
+            if hadCast && session.miniGame == nil {
+                fishing.reelIn()
+                AudioManager.shared.play(.reel)
+                session.showToast("Eingeholt — \(session.selectedBait.name) montiert")
+            }
+
             configuredBaitID = session.selectedBait.id
             bobber.configure(for: session.selectedBait)
         }

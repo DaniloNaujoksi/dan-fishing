@@ -270,6 +270,16 @@ final class GameSession: ObservableObject {
 
     func selectBait(_ bait: Bait) {
         guard save.ownedBaitIDs.contains(bait.id) else { return }
+        guard bait.id != save.selectedBaitID else { return }
+
+        // Am Fisch wird nichts umgebaut. Die Szene holt die Angel nach dem
+        // Wechsel selbst ein, deshalb reicht hier der Hinweis.
+        guard !isFightRunning else {
+            showToast("Erst den Fisch landen")
+            HapticManager.shared.failure()
+            return
+        }
+
         save.selectedBaitID = bait.id
         HapticManager.shared.selection()
         AudioManager.shared.play(.uiTap)

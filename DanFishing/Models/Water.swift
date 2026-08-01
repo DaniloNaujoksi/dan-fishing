@@ -46,6 +46,12 @@ struct Water: Identifiable, Equatable {
     /// Ab welcher Spielerstufe das Gewässer offen ist.
     let requiredLevel: Int
 
+    /// Strömung im Zufluss, in Punkten pro Sekunde. Auch ein stehender See hat
+    /// dort Zug — der Bach schiebt das Wasser hinein.
+    var inflowCurrent: Double = 0
+    /// Strömung im übrigen Wasser. Nur fließende Gewässer haben sie.
+    var ambientCurrent: Double = 0
+
     /// Welche Arten hier überhaupt vorkommen.
     let speciesIDs: [String]
 

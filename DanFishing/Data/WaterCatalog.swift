@@ -40,6 +40,8 @@ enum WaterCatalog {
             rows: 74,
             cellSize: 72,
             requiredLevel: 4,
+            // Nur an der Bachmuendung zieht das Wasser, der Rest steht still.
+            inflowCurrent: 26,
             speciesIDs: FishCatalog.all.map { $0.id },
             shallowColor: ColorSpec(0x8FB6BE),
             deepColor: ColorSpec(0x2E5468),
@@ -59,6 +61,8 @@ enum WaterCatalog {
             rows: 96,
             cellSize: 72,
             requiredLevel: 8,
+            inflowCurrent: 48,
+            ambientCurrent: 20,
             speciesIDs: ["bleak", "goby", "ruffe", "bream", "grayling", "barbel",
                          "rainbow_trout", "char", "golden_trout", "salmon",
                          "perch", "zander", "eel", "catfish", "sturgeon", "beluga"],
@@ -81,6 +85,9 @@ enum WaterCatalog {
             rows: 88,
             cellSize: 72,
             requiredLevel: 6,
+            // Im Bach traegt das Wasser den Koeder sichtbar durch die Rinne.
+            inflowCurrent: 64,
+            ambientCurrent: 28,
             speciesIDs: ["bleak", "goby", "grayling", "barbel", "rainbow_trout",
                          "char", "golden_trout", "salmon"],
             shallowColor: ColorSpec(0xB7D2C9),

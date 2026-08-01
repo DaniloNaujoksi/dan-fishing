@@ -58,6 +58,12 @@ struct LakeMap {
     private(set) var decor: [DecorItem]
     let startPosition: CGPoint
 
+    /// Strömung in den Zuflusszellen, in Punkten pro Sekunde.
+    var inflowCurrent: CGFloat = 0
+    /// Grundströmung im übrigen Wasser. Am See null — dort zieht nur der Bach
+    /// an der Mündung —, im Fluss und im Bach spürbar.
+    var ambientCurrent: CGFloat = 0
+
     var worldSize: CGSize {
         CGSize(width: CGFloat(columns) * cellSize, height: CGFloat(rows) * cellSize)
     }
@@ -103,6 +109,31 @@ struct LakeMap {
             if isLand(at: probe) { return true }
         }
         return false
+    }
+
+    /// Strömung an einem Punkt, in Punkten pro Sekunde.
+    ///
+    /// Das Wasser läuft immer talwärts, also in +y — dort mündet der Zufluss
+    /// in den See und dorthin fließt auch der Fluss. Am Ufer bremst die
+    /// Strömung ab, in der Rinne zieht sie am stärksten.
+    func current(at point: CGPoint) -> CGVector {
+        let cell = kind(at: point)
+        guard let habitat = cell.habitat else { return .zero }
+
+        let base = cell == .inflow ? inflowCurrent : ambientCurrent
+        guard base > 0 else { return .zero }
+
+        // Flaches, krautiges Wasser hält die Strömung auf.
+        let resistance: CGFloat
+        switch habitat {
+        case .inflow: resistance = 1.0
+        case .deep: resistance = 0.8
+        case .shallows: resistance = 0.6
+        case .sunkenLogs: resistance = 0.45
+        case .reeds, .lilies: resistance = 0.25
+        }
+
+        return CGVector(dx: 0, dy: base * resistance)
     }
 
     /// Wassertiefe in Metern, weich zwischen den Zonen gemittelt.
@@ -161,19 +192,25 @@ extension LakeMap {
     /// aus demselben Verfahren ein enger Teich, ein weiter See und ein
     /// gewundener Fluss.
     static func generate(for water: Water) -> LakeMap {
+        let map: LakeMap
         switch water.shape {
         case .lake:
-            return generate(seed: water.seed,
-                            columns: water.columns,
-                            rows: water.rows,
-                            cellSize: water.cellSize)
+            map = generate(seed: water.seed,
+                           columns: water.columns,
+                           rows: water.rows,
+                           cellSize: water.cellSize)
         case .pond:
-            return generatePond(water: water)
+            map = generatePond(water: water)
         case .river:
-            return generateRiver(water: water)
+            map = generateRiver(water: water)
         case .stream:
-            return generateStream(water: water)
+            map = generateStream(water: water)
         }
+
+        var flowing = map
+        flowing.inflowCurrent = CGFloat(water.inflowCurrent)
+        flowing.ambientCurrent = CGFloat(water.ambientCurrent)
+        return flowing
     }
 
     /// Baut den Bergsee auf. Alles ist vom Seed abhängig, damit ein Spielstand

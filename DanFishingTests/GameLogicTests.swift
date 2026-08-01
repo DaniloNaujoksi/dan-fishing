@@ -663,6 +663,47 @@ final class LakeMapTests: XCTestCase {
         }
     }
 
+    func testCurrentOnlyRunsWhereThereIsWater() {
+        let lake = WaterCatalog.water(id: "lake")!
+        let map = LakeMap.generate(for: lake)
+
+        var sawInflowCurrent = false
+        for row in 0..<map.rows {
+            for column in 0..<map.columns {
+                let point = CGPoint(x: (Double(column) + 0.5) * Double(map.cellSize),
+                                    y: (Double(row) + 0.5) * Double(map.cellSize))
+                let flow = map.current(at: point)
+                let cell = map.kind(column: column, row: row)
+
+                switch cell {
+                case .land:
+                    XCTAssertEqual(hypot(flow.dx, flow.dy), 0, accuracy: 0.001)
+                case .inflow:
+                    XCTAssertGreaterThan(flow.dy, 0)
+                    sawInflowCurrent = true
+                default:
+                    // Der See selbst steht still.
+                    XCTAssertEqual(hypot(flow.dx, flow.dy), 0, accuracy: 0.001)
+                }
+            }
+        }
+        XCTAssertTrue(sawInflowCurrent, "Der See hat keinen ziehenden Zufluss")
+    }
+
+    func testRiverPullsEverywhere() {
+        let river = WaterCatalog.water(id: "river")!
+        let map = LakeMap.generate(for: river)
+
+        // Im Fluss zieht auch das ruhige Wasser, nur schwächer als die Rinne.
+        guard let deep = FishAI.randomPosition(in: .deep, map: map),
+              let fast = FishAI.randomPosition(in: .inflow, map: map) else {
+            return XCTFail("Flusszonen fehlen")
+        }
+
+        XCTAssertGreaterThan(map.current(at: deep).dy, 0)
+        XCTAssertGreaterThan(map.current(at: fast).dy, map.current(at: deep).dy)
+    }
+
     func testNearestWaterLeavesLand() {
         let map = LakeMap.generate()
         let land = CGPoint(x: 20, y: 20)   // Ecke ist immer Ufer

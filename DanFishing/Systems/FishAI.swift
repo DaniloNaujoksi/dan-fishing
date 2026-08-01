@@ -222,6 +222,15 @@ struct FishAI {
                 swimmer.heading += CGFloat.random(in: -0.8...0.8)
                 swimmer.turnTimer = CGFloat.random(in: 1.2...3.4)
             }
+
+            // Im ziehenden Wasser steht ein Fisch mit dem Kopf gegen die
+            // Strömung — anders bekäme er kein Wasser durch die Kiemen. Genau
+            // daran erkennt man von oben, wo es zieht.
+            let flow = map.current(at: swimmer.position)
+            if flow.dx != 0 || flow.dy != 0 {
+                let upstream = atan2(-flow.dy, -flow.dx)
+                swimmer.heading = turn(from: swimmer.heading, to: upstream, maxStep: dt * 0.9)
+            }
         }
 
         let speed: CGFloat

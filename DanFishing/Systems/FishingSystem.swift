@@ -194,6 +194,20 @@ final class FishingSystem {
         phase == .waiting || phase == .nibble
     }
 
+    /// Die Strömung nimmt den liegenden Köder mit.
+    ///
+    /// Nur während der Köder wirklich im Wasser liegt — im Flug hat die
+    /// Strömung ihn noch nicht, und im Drill bestimmt der Fisch, wo es
+    /// langgeht. Am Ufer bleibt er liegen, statt an Land gespült zu werden.
+    func drift(_ delta: CGVector, map: LakeMap) {
+        guard phase == .waiting || phase == .nibble || phase == .biteWindow,
+              let position = bobberPosition else { return }
+
+        let target = CGPoint(x: position.x + delta.dx, y: position.y + delta.dy)
+        guard !map.isLand(at: target) else { return }
+        bobberPosition = target
+    }
+
     /// Angel einholen — auch mitten im Warten möglich.
     func reelIn() {
         guard phase != .idle else { return }
