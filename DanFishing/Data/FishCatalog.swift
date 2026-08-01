@@ -286,7 +286,7 @@ enum FishCatalog {
             id: "bream",
             name: "Brasse",
             summary: "Hochrückiger Friedfisch, der in großen Schwärmen den Grund abgrast. Wehrt sich wenig, kommt aber selten allein.",
-            rarity: .uncommon,
+            rarity: .common,
             feeding: .peaceful,
             minLength: 30, maxLength: 70,
             minWeight: 0.5, maxWeight: 5.5,
@@ -295,8 +295,8 @@ enum FishCatalog {
             preferredBaitIDs: ["corn", "worm", "maggot"],
             fightStrength: 0.40,
             motion: .steady,
-            valuePerKilo: 48,
-            minPlayerLevel: 2,
+            valuePerKilo: 40,
+            minPlayerLevel: 1,
             bodyColor: ColorSpec(0x8C8663), bellyColor: ColorSpec(0xD8D2B0), finColor: ColorSpec(0x5E5A46)
         ),
 
