@@ -1,4 +1,7 @@
-# Mizuumi — Angeln am Bergsee
+# Dan-Fishing — Angeln am Bergsee
+
+Modul- und Projektname sind `DanFishing` ohne Bindestrich: Swift lässt in
+Modulnamen keinen zu. Auf dem Gerät steht unter dem Symbol „Dan-Fishing“.
 
 Ein ruhiges Angelspiel für das iPhone. Der Spieler rudert in einem kleinen
 Kahn über einen japanisch angehauchten Bergsee, sucht sich einen Platz, wählt
@@ -18,10 +21,10 @@ Audiodatei.
 ## Starten
 
 ```bash
-open Mizuumi.xcodeproj
+open DanFishing.xcodeproj
 ```
 
-Schema `Mizuumi` wählen, ein iPhone-Ziel einstellen, `Cmd+R`.
+Schema `DanFishing` wählen, ein iPhone-Ziel einstellen, `Cmd+R`.
 Tests laufen mit `Cmd+U`.
 
 Ohne Mac zur Hand baut der Workflow `.github/workflows/ios.yml` auf einem
@@ -49,7 +52,7 @@ Bildschirmfoto aus dem Simulator und legt zusätzlich ein unsigniertes `.ipa` ab
 ## Projektstruktur
 
 ```
-Mizuumi/
+DanFishing/
   App/            Einstiegspunkt und Umschalter Menü ↔ Spiel
   Models/         Reine Datentypen: Fisch, Köder, Ausrüstung, Mission
   Data/           Kataloge: alle Fischarten, Köder und Upgrades
@@ -61,7 +64,7 @@ Mizuumi/
   ViewModels/     GameSession als Bindeglied
   Persistence/    Spielstand und Speicherung
   Support/        Zufall, Rauschen, Farben, Texturen
-MizuumiTests/     Tests der Kernlogik
+DanFishingTests/     Tests der Kernlogik
 ```
 
 ## Die wichtigsten Systeme
@@ -163,7 +166,7 @@ bleiben unverändert.
 
 **Simulator**
 
-1. Schema `Mizuumi`, Ziel z. B. iPhone 16
+1. Schema `DanFishing`, Ziel z. B. iPhone 16
 2. `Cmd+R`
 3. „Neuer Spielstand“, dann rudern, werfen, anschlagen, drillen
 4. App in den Hintergrund schicken und neu starten — der Fortschritt muss
@@ -176,7 +179,7 @@ Haptik und Ton sind im Simulator eingeschränkt; die Vibration fehlt dort ganz.
 1. iPhone anschließen, in Xcode auswählen
 2. Unter „Signing & Capabilities“ ein Team eintragen (ein kostenloser
    Apple-Account genügt) und die Bundle-ID auf etwas Eigenes ändern,
-   z. B. `com.deinname.mizuumi`
+   z. B. `com.deinname.danfishing`
 3. `Cmd+R`
 4. Beim ersten Start auf dem Gerät: Einstellungen → Allgemein → VPN & Geräte­
    verwaltung → Entwickler-App vertrauen

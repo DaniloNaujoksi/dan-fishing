@@ -86,7 +86,7 @@ struct MainMenuView: View {
                 .font(.system(size: 54, weight: .light, design: .serif))
                 .foregroundStyle(Palette.vermilion.swiftUIColor)
 
-            Text("Mizuumi")
+            Text("Dan-Fishing")
                 .font(.system(size: 40, weight: .semibold, design: .serif))
                 .foregroundStyle(Palette.uiInk)
 

@@ -10,7 +10,7 @@ final class SaveGameManager {
     static let shared = SaveGameManager(defaults: .standard)
 
     private let defaults: UserDefaults
-    private let key = "mizuumi.save.v1"
+    private let key = "danfishing.save.v1"
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 

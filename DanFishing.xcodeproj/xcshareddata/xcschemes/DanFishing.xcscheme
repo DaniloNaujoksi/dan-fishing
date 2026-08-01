@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A1000000000000000000E001"
-               BuildableName = "Mizuumi.app"
-               BlueprintName = "Mizuumi"
-               ReferencedContainer = "container:Mizuumi.xcodeproj">
+               BuildableName = "DanFishing.app"
+               BlueprintName = "DanFishing"
+               ReferencedContainer = "container:DanFishing.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A1000000000000000000E002"
-               BuildableName = "MizuumiTests.xctest"
-               BlueprintName = "MizuumiTests"
-               ReferencedContainer = "container:Mizuumi.xcodeproj">
+               BuildableName = "DanFishingTests.xctest"
+               BlueprintName = "DanFishingTests"
+               ReferencedContainer = "container:DanFishing.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A1000000000000000000E001"
-            BuildableName = "Mizuumi.app"
-            BlueprintName = "Mizuumi"
-            ReferencedContainer = "container:Mizuumi.xcodeproj">
+            BuildableName = "DanFishing.app"
+            BlueprintName = "DanFishing"
+            ReferencedContainer = "container:DanFishing.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A1000000000000000000E001"
-            BuildableName = "Mizuumi.app"
-            BlueprintName = "Mizuumi"
-            ReferencedContainer = "container:Mizuumi.xcodeproj">
+            BuildableName = "DanFishing.app"
+            BlueprintName = "DanFishing"
+            ReferencedContainer = "container:DanFishing.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

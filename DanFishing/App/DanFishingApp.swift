@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Einstiegspunkt. Hält die einzige `GameSession` und startet den Ton.
 @main
-struct MizuumiApp: App {
+struct DanFishingApp: App {
 
     @StateObject private var session = GameSession()
     @Environment(\.scenePhase) private var scenePhase

@@ -26,8 +26,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild build \
-            -project Mizuumi.xcodeproj \
-            -scheme Mizuumi \
+            -project DanFishing.xcodeproj \
+            -scheme DanFishing \
             -configuration Debug \
             -destination 'platform=iOS Simulator,name=iPhone 16' \
             CODE_SIGNING_ALLOWED=NO \
@@ -37,8 +37,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild test \
-            -project Mizuumi.xcodeproj \
-            -scheme Mizuumi \
+            -project DanFishing.xcodeproj \
+            -scheme DanFishing \
             -destination 'platform=iOS Simulator,name=iPhone 16' \
             CODE_SIGNING_ALLOWED=NO \
             | tee test.log
@@ -46,10 +46,10 @@ jobs:
       - name: App im Simulator starten und Bildschirmfoto sichern
         run: |
           set -e
-          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "Mizuumi.app" -path "*Debug-iphonesimulator*" | head -1)
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "DanFishing.app" -path "*Debug-iphonesimulator*" | head -1)
           echo "App: $APP_PATH"
 
-          DEVICE=$(xcrun simctl create mizuumi-test "iPhone 16" || xcrun simctl list devices | grep -m1 "iPhone 16" | grep -oE "[0-9A-F-]{36}")
+          DEVICE=$(xcrun simctl create danfishing-test "iPhone 16" || xcrun simctl list devices | grep -m1 "iPhone 16" | grep -oE "[0-9A-F-]{36}")
           xcrun simctl boot "$DEVICE" || true
           sleep 12
 
@@ -57,14 +57,14 @@ jobs:
 
           # Erst das Hauptmenü.
           xcrun simctl install "$DEVICE" "$APP_PATH"
-          xcrun simctl launch "$DEVICE" com.example.mizuumi
+          xcrun simctl launch "$DEVICE" com.example.danfishing
           sleep 10
           xcrun simctl io "$DEVICE" screenshot artefakte/hauptmenue.png
 
           # Danach direkt auf den See: Der Startschalter überspringt das Menü,
           # damit die Szene selbst im Bild landet.
-          xcrun simctl terminate "$DEVICE" com.example.mizuumi || true
-          xcrun simctl launch "$DEVICE" com.example.mizuumi -autostart
+          xcrun simctl terminate "$DEVICE" com.example.danfishing || true
+          xcrun simctl launch "$DEVICE" com.example.danfishing -autostart
           sleep 14
           xcrun simctl io "$DEVICE" screenshot artefakte/see.png
 
@@ -74,7 +74,7 @@ jobs:
           xcrun simctl io "$DEVICE" screenshot artefakte/see-spaeter.png
 
           # Läuft der Prozess überhaupt noch?
-          xcrun simctl spawn "$DEVICE" launchctl list | grep -i mizuumi || echo "App laeuft nicht mehr"
+          xcrun simctl spawn "$DEVICE" launchctl list | grep -i danfishing || echo "App laeuft nicht mehr"
 
           # Absturzberichte einsammeln, falls die App nicht durchhält.
           cp -R ~/Library/Logs/DiagnosticReports artefakte/crashes 2>/dev/null || true
@@ -83,7 +83,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mizuumi-build
+          name: danfishing-build
           path: |
             artefakte/**
             build.log
@@ -103,8 +103,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild build \
-            -project Mizuumi.xcodeproj \
-            -scheme Mizuumi \
+            -project DanFishing.xcodeproj \
+            -scheme DanFishing \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -derivedDataPath build \
@@ -114,16 +114,16 @@ jobs:
       - name: IPA packen
         run: |
           mkdir -p Payload
-          cp -R build/Build/Products/Release-iphoneos/Mizuumi.app Payload/
-          zip -qry Mizuumi-unsigned.ipa Payload
-          ls -lh Mizuumi-unsigned.ipa
+          cp -R build/Build/Products/Release-iphoneos/DanFishing.app Payload/
+          zip -qry DanFishing-unsigned.ipa Payload
+          ls -lh DanFishing-unsigned.ipa
 
       - name: IPA hochladen
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mizuumi-ipa
+          name: danfishing-ipa
           path: |
-            Mizuumi-unsigned.ipa
+            DanFishing-unsigned.ipa
             device-build.log
           if-no-files-found: warn

@@ -1,6 +1,6 @@
 import CoreGraphics
 import XCTest
-@testable import Mizuumi
+@testable import DanFishing
 
 /// Tests der Kernlogik. Alles hier läuft ohne SpriteKit und ohne Oberfläche —
 /// genau dafür sind die Systeme von der Darstellung getrennt.
@@ -365,7 +365,7 @@ final class MissionSystemTests: XCTestCase {
 final class SaveGameTests: XCTestCase {
 
     private var defaults: UserDefaults!
-    private let suiteName = "mizuumi.tests"
+    private let suiteName = "danfishing.tests"
 
     override func setUp() {
         super.setUp()
