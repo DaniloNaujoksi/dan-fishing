@@ -208,7 +208,7 @@ enum FishCatalog {
             minWeight: 0.3, maxWeight: 5.5,
             habitats: [.reeds, .sunkenLogs, .deep],
             activeTimes: [.night],
-            preferredBaitIDs: ["worm", "big_minnow", "minnow", "maggot"],
+            preferredBaitIDs: ["worm", "wormbundle", "big_minnow", "minnow", "maggot"],
             fightStrength: 0.68,
             motion: .thrashing,
             valuePerKilo: 70,

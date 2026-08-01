@@ -44,7 +44,7 @@ enum BaitCatalog {
              sizeBias: 0.35, rarityBias: 0.30, baseAppeal: 0.65, color: ColorSpec(0x8C9A5B)),
 
         Bait(id: "wormbundle", name: "Wurmbündel",
-             summary: "Eine ganze Handvoll Tauwürmer am großen Haken. Genau das, wonach ein Wels sucht — auch schwere Friedfische lassen ihn nicht liegen.",
+             summary: "Eine ganze Handvoll Tauwürmer am großen Haken. Der Wels sucht genau danach; Aal und Stör nehmen ihn ebenso gern, und schwere Friedfische lassen ihn auch nicht liegen.",
              kind: .natural, targets: [.omnivore, .predator, .peaceful], specialty: "catfish",
              price: 320, unlockLevel: 5,
              strongHabitats: [.deep, .sunkenLogs], strongTimes: [.dusk, .night],
