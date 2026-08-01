@@ -1,0 +1,116 @@
+name: Build & Test
+
+# Baut das Projekt auf einem macOS-Runner mit vorinstalliertem Xcode.
+# Der Compiler ist damit erreichbar, ohne dass irgendwo ein Mac steht.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: iOS Simulator
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode-Version zeigen
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available | head -40
+
+      - name: Bauen (Simulator, ohne Signierung)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Mizuumi.xcodeproj \
+            -scheme Mizuumi \
+            -configuration Debug \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee build.log
+
+      - name: Tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project Mizuumi.xcodeproj \
+            -scheme Mizuumi \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee test.log
+
+      - name: App im Simulator starten und Bildschirmfoto sichern
+        run: |
+          set -e
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "Mizuumi.app" -path "*Debug-iphonesimulator*" | head -1)
+          echo "App: $APP_PATH"
+
+          DEVICE=$(xcrun simctl create mizuumi-test "iPhone 16" || xcrun simctl list devices | grep -m1 "iPhone 16" | grep -oE "[0-9A-F-]{36}")
+          xcrun simctl boot "$DEVICE" || true
+          sleep 12
+
+          xcrun simctl install "$DEVICE" "$APP_PATH"
+          xcrun simctl launch "$DEVICE" com.example.mizuumi
+          sleep 10
+
+          mkdir -p artefakte
+          xcrun simctl io "$DEVICE" screenshot artefakte/hauptmenue.png
+
+          # Ein Stück ins Spiel: „Weiterspielen“ liegt im oberen Drittel.
+          xcrun simctl io "$DEVICE" screenshot artefakte/spiel.png || true
+
+          # Absturzberichte einsammeln, falls die App nicht durchhält.
+          cp -R ~/Library/Logs/DiagnosticReports artefakte/crashes 2>/dev/null || true
+
+      - name: Artefakte hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mizuumi-build
+          path: |
+            artefakte/**
+            build.log
+            test.log
+          if-no-files-found: warn
+
+  ipa:
+    name: Unsigniertes IPA fürs iPhone
+    runs-on: macos-15
+    timeout-minutes: 30
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Für Gerät bauen (ohne Signierung)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Mizuumi.xcodeproj \
+            -scheme Mizuumi \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            | tee device-build.log
+
+      - name: IPA packen
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/Mizuumi.app Payload/
+          zip -qry Mizuumi-unsigned.ipa Payload
+          ls -lh Mizuumi-unsigned.ipa
+
+      - name: IPA hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mizuumi-ipa
+          path: |
+            Mizuumi-unsigned.ipa
+            device-build.log
+          if-no-files-found: warn

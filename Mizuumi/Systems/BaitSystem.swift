@@ -1,0 +1,81 @@
+import Foundation
+
+/// Bewertet, wie interessant ein Köder für eine Fischart gerade ist.
+///
+/// Die Werte sind absichtlich mehrschichtig: Zone, Tageszeit, Vorliebe der Art,
+/// Seltenheit und Ausrüstung greifen ineinander. Der Spieler sieht davon keine
+/// Zahlen — er merkt nur, dass am Schilf mit Made ständig etwas beißt und der
+/// Köderfisch im Tiefwasser die großen Räuber bringt.
+enum BaitSystem {
+
+    /// Bedingungen am Angelplatz.
+    struct Context {
+        let habitat: Habitat
+        let timeOfDay: TimeOfDay
+        let depth: Double
+        let playerLevel: Int
+        let stats: EquipmentStats
+    }
+
+    /// Gewicht einer Art beim Auswürfeln. 0 = beißt hier gerade gar nicht.
+    static func attraction(species: FishSpecies, bait: Bait, context: Context) -> Double {
+        guard species.habitats.contains(context.habitat) else { return 0 }
+        guard species.minPlayerLevel <= context.playerLevel else { return 0 }
+
+        // Grundgewicht aus der Seltenheit, angehoben durch Glücksbringer und
+        // die Seltenheitsneigung des Köders.
+        let luckBoost = 1.0 + (context.stats.luck - 1.0) + bait.rarityBias * 0.8
+        var score = species.rarity.spawnWeight * (species.rarity == .common ? 1.0 : luckBoost)
+
+        // Tageszeit: außerhalb der aktiven Phase beißt kaum etwas.
+        score *= species.activeTimes.contains(context.timeOfDay) ? 1.0 : 0.18
+
+        // Vorliebe für den Köder.
+        if species.preferredBaitIDs.contains(bait.id) {
+            score *= 2.2
+        } else if bait.kind == .artificial && species.fightStrength < 0.3 {
+            // Kleine Friedfische ignorieren Kunstköder weitgehend.
+            score *= 0.15
+        } else {
+            score *= 0.55
+        }
+
+        // Köder passt zur Zone bzw. zur Tageszeit.
+        if bait.strongHabitats.contains(context.habitat) { score *= 1.35 }
+        if bait.strongTimes.contains(context.timeOfDay) { score *= 1.20 }
+
+        // Grundattraktivität des Köders.
+        score *= 0.4 + bait.baseAppeal * 0.6
+
+        // Fische, die schwerer sind, als die Rute tragen kann, zeigen sich
+        // seltener — sonst reißt ständig die Schnur und das frustriert.
+        if species.minWeight > context.stats.maxFishWeight {
+            score *= 0.08
+        }
+
+        return max(0, score)
+    }
+
+    /// Alle Arten mit ihrem aktuellen Gewicht.
+    static func candidates(bait: Bait, context: Context) -> [(species: FishSpecies, weight: Double)] {
+        FishCatalog.all.compactMap { species in
+            let weight = attraction(species: species, bait: bait, context: context)
+            return weight > 0 ? (species, weight) : nil
+        }
+    }
+
+    /// Wie lange es im Mittel bis zum Biss dauert (Sekunden). Guter Platz und
+    /// guter Köder verkürzen die Wartezeit spürbar, aber nie auf null.
+    static func averageBiteDelay(bait: Bait, context: Context) -> Double {
+        let total = candidates(bait: bait, context: context)
+            .reduce(0.0) { $0 + $1.weight }
+
+        // Ohne passende Fische wartet man lange — das ist das Signal, den
+        // Platz oder den Köder zu wechseln.
+        guard total > 0 else { return 26 }
+
+        let quality = min(total, 4.0) / 4.0
+        let base = 15.0 - quality * 9.0
+        return max(2.5, base / max(0.4, context.stats.biteChance))
+    }
+}

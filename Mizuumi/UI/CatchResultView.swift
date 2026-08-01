@@ -1,0 +1,205 @@
+import SwiftUI
+
+/// Die Karte nach einem gelandeten Fisch. Hier entscheidet der Spieler, was
+/// mit dem Fang passiert — verkaufen, behalten oder zurücksetzen.
+struct CatchResultView: View {
+    @EnvironmentObject private var session: GameSession
+    let result: CatchResult
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.35)
+                .ignoresSafeArea()
+
+            PaperPanel(padding: 22) {
+                VStack(spacing: 16) {
+                    header
+                    fishPortrait
+                    measurements
+                    badges
+                    actions
+                }
+                .frame(maxWidth: 320)
+            }
+            .padding(28)
+        }
+    }
+
+    private var header: some View {
+        VStack(spacing: 4) {
+            Text(result.isNewSpecies ? "Neue Art!" : "Gefangen")
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .textCase(.uppercase)
+                .foregroundStyle(Palette.vermilion.swiftUIColor)
+
+            Text(result.fish.species.name)
+                .font(.system(size: 28, weight: .semibold, design: .serif))
+                .foregroundStyle(Palette.uiInk)
+
+            Text(result.fish.species.rarity.displayName)
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundStyle(result.fish.species.rarity.tint)
+        }
+    }
+
+    /// Der Fisch in seinen Farben, in der Größe passend zum Exemplar.
+    private var fishPortrait: some View {
+        ZStack {
+            Capsule()
+                .fill(Palette.water.swiftUIColor.opacity(0.25))
+                .frame(height: 92)
+
+            FishSilhouette(species: result.fish.species)
+                .frame(width: 190, height: 70)
+                .scaleEffect(0.75 + CGFloat(result.fish.trophyFactor) * 0.35)
+        }
+    }
+
+    private var measurements: some View {
+        HStack(spacing: 22) {
+            measure(title: "Länge", value: String(format: "%.1f cm", result.fish.lengthCm))
+            measure(title: "Gewicht", value: String(format: "%.2f kg", result.fish.weightKg))
+            measure(title: "Wert", value: "\(result.coins) 🪙")
+        }
+    }
+
+    private func measure(title: String, value: String) -> some View {
+        VStack(spacing: 3) {
+            Text(title)
+                .font(.system(size: 11, design: .rounded))
+                .foregroundStyle(Palette.inkSoft.swiftUIColor)
+            Text(value)
+                .font(.system(size: 16, weight: .semibold, design: .serif))
+                .foregroundStyle(Palette.uiInk)
+                .monospacedDigit()
+        }
+    }
+
+    private var badges: some View {
+        VStack(spacing: 6) {
+            if result.fish.isTrophy {
+                badge(text: "Außergewöhnliches Exemplar", symbol: "crown.fill",
+                      color: Palette.gold.swiftUIColor)
+            }
+            if result.isPersonalRecord && !result.isNewSpecies {
+                badge(text: "Persönlicher Rekord", symbol: "chart.line.uptrend.xyaxis",
+                      color: Palette.moss.swiftUIColor)
+            }
+            badge(text: "+\(result.experience) Erfahrung", symbol: "sparkles",
+                  color: Palette.inkSoft.swiftUIColor)
+
+            if !session.completedMissions.isEmpty {
+                ForEach(session.completedMissions) { mission in
+                    badge(text: "Aufgabe erfüllt: \(mission.title)",
+                          symbol: "checkmark.seal.fill",
+                          color: Palette.vermilion.swiftUIColor)
+                }
+            }
+        }
+    }
+
+    private func badge(text: String, symbol: String, color: Color) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: symbol)
+                .font(.system(size: 11, weight: .semibold))
+            Text(text)
+                .font(.system(size: 12, weight: .medium, design: .serif))
+        }
+        .foregroundStyle(color)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(Capsule().fill(color.opacity(0.12)))
+    }
+
+    private var actions: some View {
+        VStack(spacing: 9) {
+            Button("Verkaufen · \(result.coins) Münzen") {
+                session.sellPendingCatch()
+                session.clearCompletedMissions()
+            }
+            .buttonStyle(BrushButtonStyle())
+            .frame(maxWidth: .infinity)
+
+            HStack(spacing: 9) {
+                Button("Behalten") {
+                    session.keepPendingCatch()
+                    session.clearCompletedMissions()
+                }
+                .buttonStyle(BrushButtonStyle(tint: Palette.inkSoft.swiftUIColor, filled: false))
+
+                Button("Freilassen") {
+                    session.releasePendingCatch()
+                    session.clearCompletedMissions()
+                }
+                .buttonStyle(BrushButtonStyle(tint: Palette.moss.swiftUIColor, filled: false))
+            }
+        }
+        .padding(.top, 4)
+    }
+}
+
+/// Fischform in den Farben der Art. Dieselbe Silhouette nutzt das Fangbuch —
+/// dadurch sehen Fang und Eintrag gleich aus.
+struct FishSilhouette: View {
+    let species: FishSpecies
+    var silhouetteOnly: Bool = false
+
+    var body: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            let height = geometry.size.height
+            let midY = height / 2
+
+            ZStack {
+                // Schwanz
+                Path { path in
+                    path.move(to: CGPoint(x: width * 0.13, y: midY))
+                    path.addLine(to: CGPoint(x: 0, y: midY - height * 0.30))
+                    path.addLine(to: CGPoint(x: width * 0.05, y: midY))
+                    path.addLine(to: CGPoint(x: 0, y: midY + height * 0.30))
+                    path.closeSubpath()
+                }
+                .fill(silhouetteOnly ? Palette.inkSoft.swiftUIColor.opacity(0.35)
+                                     : species.finColor.swiftUIColor)
+
+                // Rückenflosse
+                Path { path in
+                    path.move(to: CGPoint(x: width * 0.36, y: midY - height * 0.22))
+                    path.addLine(to: CGPoint(x: width * 0.52, y: midY - height * 0.46))
+                    path.addLine(to: CGPoint(x: width * 0.64, y: midY - height * 0.20))
+                    path.closeSubpath()
+                }
+                .fill(silhouetteOnly ? Palette.inkSoft.swiftUIColor.opacity(0.35)
+                                     : species.finColor.swiftUIColor)
+
+                // Körper
+                Path { path in
+                    path.move(to: CGPoint(x: width * 0.96, y: midY))
+                    path.addCurve(to: CGPoint(x: width * 0.5, y: midY - height * 0.34),
+                                  control1: CGPoint(x: width * 0.84, y: midY - height * 0.30),
+                                  control2: CGPoint(x: width * 0.66, y: midY - height * 0.36))
+                    path.addCurve(to: CGPoint(x: width * 0.1, y: midY),
+                                  control1: CGPoint(x: width * 0.30, y: midY - height * 0.32),
+                                  control2: CGPoint(x: width * 0.15, y: midY - height * 0.14))
+                    path.addCurve(to: CGPoint(x: width * 0.5, y: midY + height * 0.34),
+                                  control1: CGPoint(x: width * 0.15, y: midY + height * 0.14),
+                                  control2: CGPoint(x: width * 0.30, y: midY + height * 0.32))
+                    path.addCurve(to: CGPoint(x: width * 0.96, y: midY),
+                                  control1: CGPoint(x: width * 0.66, y: midY + height * 0.36),
+                                  control2: CGPoint(x: width * 0.84, y: midY + height * 0.30))
+                    path.closeSubpath()
+                }
+                .fill(silhouetteOnly ? Palette.inkSoft.swiftUIColor.opacity(0.45)
+                                     : species.bodyColor.swiftUIColor)
+
+                if !silhouetteOnly {
+                    // Auge
+                    Circle()
+                        .fill(Palette.ink.swiftUIColor.opacity(0.85))
+                        .frame(width: height * 0.11, height: height * 0.11)
+                        .position(x: width * 0.85, y: midY - height * 0.08)
+                }
+            }
+        }
+    }
+}
