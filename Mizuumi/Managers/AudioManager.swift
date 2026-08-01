@@ -160,84 +160,111 @@ final class AudioManager {
         }
     }
 
+    /// Kreiszahl mal zwei — in jeder Schwingung gebraucht.
+    private static let tau: Double = 2 * Double.pi
+
+    /// Eine Sinusschwingung. Als eigene Funktion, damit der Typprüfer in den
+    /// Klangformeln unten nicht jedes Mal über verschachtelte Literale läuft.
+    private static func tone(_ frequency: Double, _ t: Double) -> Double {
+        sin(AudioManager.tau * frequency * t)
+    }
+
+    /// Exponentiell abfallende Hüllkurve.
+    private static func decay(_ rate: Double, _ t: Double) -> Double {
+        exp(-rate * t)
+    }
+
     private func buildBuffers() {
-        effectBuffers["cast"] = makeBuffer(duration: 0.5) { t, duration in
+        registerEffect("cast", duration: 0.5) { t, duration in
             // Rauschwisch, der nach oben zieht: die Schnur, die von der Rolle läuft.
-            let envelope = exp(-t * 6)
-            let noise = Double.random(in: -1...1)
-            let sweep = sin(2 * .pi * (900 + 1400 * t / duration) * t) * 0.25
+            let envelope: Double = AudioManager.decay(6, t)
+            let noise: Double = Double.random(in: -1...1)
+            let frequency: Double = 900 + 1400 * (t / duration)
+            let sweep: Double = AudioManager.tone(frequency, t) * 0.25
             return (noise * 0.5 + sweep) * envelope * 0.5
         }
 
-        effectBuffers["splash"] = makeBuffer(duration: 0.7) { t, _ in
-            let envelope = exp(-t * 9)
-            let noise = Double.random(in: -1...1)
-            let body = sin(2 * .pi * 220 * t) * 0.2 * exp(-t * 14)
+        registerEffect("splash", duration: 0.7) { t, _ in
+            let envelope: Double = AudioManager.decay(9, t)
+            let noise: Double = Double.random(in: -1...1)
+            let body: Double = AudioManager.tone(220, t) * 0.2 * AudioManager.decay(14, t)
             return (noise * 0.55 + body) * envelope * 0.55
         }
 
-        effectBuffers["bite"] = makeBuffer(duration: 0.35) { t, _ in
+        registerEffect("bite", duration: 0.35) { t, _ in
             // Kurzer, tiefer „Plopp“.
-            let envelope = exp(-t * 22)
-            let pitch = 320 - 180 * t / 0.35
-            return sin(2 * .pi * pitch * t) * envelope * 0.7
+            let envelope: Double = AudioManager.decay(22, t)
+            let pitch: Double = 320 - 180 * (t / 0.35)
+            return AudioManager.tone(pitch, t) * envelope * 0.7
         }
 
-        effectBuffers["reel"] = makeBuffer(duration: 0.22) { t, _ in
-            let envelope = exp(-t * 18)
-            let click = sin(2 * .pi * 1200 * t) + sin(2 * .pi * 1800 * t) * 0.4
+        registerEffect("reel", duration: 0.22) { t, _ in
+            let envelope: Double = AudioManager.decay(18, t)
+            let click: Double = AudioManager.tone(1200, t) + AudioManager.tone(1800, t) * 0.4
             return click * envelope * 0.25
         }
 
-        effectBuffers["catchSmall"] = makeBuffer(duration: 0.9) { t, _ in
+        registerEffect("catchSmall", duration: 0.9) { t, _ in
             // Zwei Töne einer Pentatonik, leicht versetzt.
-            let a = sin(2 * .pi * 587.33 * t) * exp(-t * 4)
-            let b = sin(2 * .pi * 880.00 * t) * exp(-max(0, t - 0.16) * 4)
+            let a: Double = AudioManager.tone(587.33, t) * AudioManager.decay(4, t)
+            let delayed: Double = max(0, t - 0.16)
+            let b: Double = AudioManager.tone(880, t) * AudioManager.decay(4, delayed)
             return (a + b) * 0.28
         }
 
-        effectBuffers["catchBig"] = makeBuffer(duration: 1.6) { t, _ in
-            let a = sin(2 * .pi * 392.00 * t) * exp(-t * 2.2)
-            let b = sin(2 * .pi * 587.33 * t) * exp(-max(0, t - 0.2) * 2.2)
-            let c = sin(2 * .pi * 783.99 * t) * exp(-max(0, t - 0.42) * 2.0)
+        registerEffect("catchBig", duration: 1.6) { t, _ in
+            let a: Double = AudioManager.tone(392, t) * AudioManager.decay(2.2, t)
+            let b: Double = AudioManager.tone(587.33, t) * AudioManager.decay(2.2, max(0, t - 0.2))
+            let c: Double = AudioManager.tone(783.99, t) * AudioManager.decay(2.0, max(0, t - 0.42))
             return (a + b + c) * 0.24
         }
 
-        effectBuffers["lineSnap"] = makeBuffer(duration: 0.5) { t, _ in
-            let envelope = exp(-t * 12)
-            let crack = Double.random(in: -1...1) * exp(-t * 40)
-            let tone = sin(2 * .pi * 1600 * t) * exp(-t * 18)
+        registerEffect("lineSnap", duration: 0.5) { t, _ in
+            let envelope: Double = AudioManager.decay(12, t)
+            let crack: Double = Double.random(in: -1...1) * AudioManager.decay(40, t)
+            let tone: Double = AudioManager.tone(1600, t) * AudioManager.decay(18, t)
             return (crack * 0.8 + tone * 0.4) * envelope * 0.6
         }
 
-        effectBuffers["uiTap"] = makeBuffer(duration: 0.14) { t, _ in
-            sin(2 * .pi * 1046.5 * t) * exp(-t * 30) * 0.3
+        registerEffect("uiTap", duration: 0.14) { t, _ in
+            AudioManager.tone(1046.5, t) * AudioManager.decay(30, t) * 0.3
         }
 
         // Wasser: schmalbandiges Rauschen, das langsam an- und abschwillt.
         var lowpassState = 0.0
         ambienceBuffer = makeBuffer(duration: 8.0) { t, duration in
-            let noise = Double.random(in: -1...1)
+            let noise: Double = Double.random(in: -1...1)
             lowpassState += (noise - lowpassState) * 0.02
+
             // Weiche Wellenbewegung, an den Enden ausgeblendet, damit die
             // Schleife nicht knackt.
-            let swell = 0.6 + 0.4 * sin(2 * .pi * t / 4.0)
-            let fade = min(1, min(t, duration - t) / 0.4)
+            let swell: Double = 0.6 + 0.4 * AudioManager.tone(0.25, t)
+            let edge: Double = min(t, duration - t)
+            let fade: Double = min(1, edge / 0.4)
             return lowpassState * 3.0 * swell * fade * 0.35
         }
 
         // Pentatonische Tonleiter (D-Dur-Pentatonik), zwei Oktaven.
         let scale: [Double] = [293.66, 329.63, 392.00, 440.00, 587.33, 659.25, 783.99]
-        noteBuffers = scale.map { frequency in
+        noteBuffers = scale.compactMap { frequency in
             makeBuffer(duration: 2.4) { t, _ in
                 // Gezupfter Klang: schneller Anschlag, langer weicher Ausklang.
-                let attack = min(1, t / 0.01)
-                let body = exp(-t * 1.6)
-                let fundamental = sin(2 * .pi * frequency * t)
-                let harmonic = sin(2 * .pi * frequency * 2 * t) * 0.22 * exp(-t * 3)
+                let attack: Double = min(1, t / 0.01)
+                let body: Double = AudioManager.decay(1.6, t)
+                let fundamental: Double = AudioManager.tone(frequency, t)
+                let harmonic: Double = AudioManager.tone(frequency * 2, t) * 0.22 * AudioManager.decay(3, t)
                 return (fundamental + harmonic) * attack * body * 0.22
             }
         }
+    }
+
+    /// Legt einen Effektpuffer an. Kommt keiner zustande, fehlt später nur
+    /// dieser eine Klang — das Spiel läuft weiter.
+    private func registerEffect(_ key: String,
+                                duration: Double,
+                                generator: (Double, Double) -> Double) {
+        guard let buffer = makeBuffer(duration: duration, generator: generator) else { return }
+        effectBuffers[key] = buffer
     }
 
     /// Erzeugt einen Mono-Puffer. `generator` bekommt die Zeit in Sekunden und
