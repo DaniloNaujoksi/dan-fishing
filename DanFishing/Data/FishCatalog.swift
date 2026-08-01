@@ -119,7 +119,9 @@ enum FishCatalog {
             feeding: .predator,
             minLength: 40, maxLength: 128,
             minWeight: 0.6, maxWeight: 18.0,
-            habitats: [.sunkenLogs, .reeds, .deep],
+            // Auch im Seerosenfeld: Der Hecht steht gern unter Deckung und
+            // wartet auf alles, was zwischen den Blättern durchzieht.
+            habitats: [.sunkenLogs, .reeds, .lilies, .deep],
             activeTimes: [.dawn, .dusk],
             preferredBaitIDs: ["minnow", "wobbler", "softbait"],
             fightStrength: 0.78,
@@ -170,7 +172,7 @@ enum FishCatalog {
             feeding: .omnivore,
             minLength: 60, maxLength: 210,
             minWeight: 2.0, maxWeight: 60.0,
-            habitats: [.deep, .sunkenLogs],
+            habitats: [.deep, .sunkenLogs, .lilies],
             activeTimes: [.night],
             preferredBaitIDs: ["wormbundle", "wobbler", "minnow", "worm", "softbait"],
             fightStrength: 0.90,
