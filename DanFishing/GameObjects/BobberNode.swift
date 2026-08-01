@@ -9,6 +9,9 @@ final class BobberNode: SKNode {
     private let rings = SKNode()
     private let shadow = SKShapeNode(ellipseOf: CGSize(width: 18, height: 11))
     private let lure = SKNode()
+    /// Vorfach zwischen Schwimmer und Köder. Bei tief hängenden Ködern sieht
+    /// man daran, dass der Köder unter dem Schwimmer steht.
+    private let leader = SKShapeNode()
     private var bobPhase: CGFloat = 0
     private var flightOffset: CGFloat = 0
 
@@ -20,6 +23,11 @@ final class BobberNode: SKNode {
         shadow.zPosition = 0
         shadow.isHidden = true
         addChild(shadow)
+
+        leader.strokeColor = SKColor(white: 1, alpha: 0.35)
+        leader.lineWidth = 1
+        leader.zPosition = 0
+        addChild(leader)
 
         // Der Köder hängt unter dem Schwimmer und bekommt sein Aussehen aus
         // `configure(for:)`.
@@ -106,6 +114,16 @@ final class BobberNode: SKNode {
         lure.removeAllActions()
 
         tip.fillColor = bait.color.skColor
+
+        // Schwere Köder hängen tiefer; dazwischen steht sichtbar das Vorfach.
+        let depth = CGFloat(bait.hangDepth)
+        lure.position = CGPoint(x: 0, y: -depth)
+
+        let leaderPath = CGMutablePath()
+        leaderPath.move(to: CGPoint(x: 0, y: -4))
+        leaderPath.addLine(to: CGPoint(x: 0, y: -depth + 4))
+        leader.path = leaderPath
+        leader.isHidden = depth < 20
 
         let shape: SKShapeNode
         switch bait.id {

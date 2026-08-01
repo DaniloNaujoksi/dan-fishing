@@ -110,6 +110,7 @@ enum BaitCatalog {
              kind: .natural, targets: [.predator, .omnivore], specialty: nil,
              // Nur Arten, die mindestens einen Meter erreichen können.
              minSpeciesLength: 95,
+             hangDepth: 26,
              price: 620, unlockLevel: 6,
              strongHabitats: [.deep, .sunkenLogs], strongTimes: [.dusk, .night],
              sizeBias: 0.94, rarityBias: 0.62, baseAppeal: 0.44, color: ColorSpec(0x9BA9B2)),
@@ -126,6 +127,12 @@ enum BaitCatalog {
         Bait(id: "red_october", name: "Roter Oktober",
              summary: "Ein knallroter Riesenblinker aus Soviet-Zeiten und so schwer wie ein Türgriff. Unter Wasser blitzt er wie ein Leuchtturm. Kleinfische verziehen sich, die ganz Großen kommen schauen.",
              kind: .artificial, targets: [.predator, .omnivore], specialty: "beluga",
+             // Ein Blech dieser Größe passt nur in ein Maul, das mindestens
+             // anderthalb Meter Fisch dahinter hat. Alles darunter lässt ihn
+             // in Ruhe — dieser Köder ist ausschließlich für die Kapitalen.
+             minSpeciesLength: 125,
+             // Schwer wie ein Türgriff: Er zieht die Schnur weit nach unten.
+             hangDepth: 38,
              // Der Köder ist für genau einen Fisch gebaut: Mit ihm ist der
              // Hausen überhaupt erst realistisch zu erwischen.
              specialtyBoost: 9.0,

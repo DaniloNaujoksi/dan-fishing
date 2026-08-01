@@ -42,6 +42,13 @@ struct Bait: Identifiable, Equatable {
     /// unwahrscheinlicher macht, sondern vollständig ausschließt.
     var minSpeciesLength: Double?
 
+    /// Wie tief der Köder unter dem Schwimmer hängt, in Punkten.
+    ///
+    /// Ein leichter Wurm schwebt knapp darunter, ein schweres Blech zieht die
+    /// Schnur nach unten und steht tiefer im Wasser. Man sieht damit auf einen
+    /// Blick, in welcher Schicht man gerade fischt.
+    var hangDepth: Double = 16
+
     /// Wie stark die Spezialität wirkt. Der Regelfall reicht, um einen Köder
     /// erkennbar besser zu machen; für Köder, die eigens für einen einzigen
     /// Fisch gebaut wurden, lässt sich der Wert anheben.

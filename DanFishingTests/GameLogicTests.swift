@@ -111,6 +111,26 @@ final class BaitSystemTests: XCTestCase {
         }
     }
 
+    func testRedOctoberOnlyReachesTheGiants() {
+        let october = BaitCatalog.bait(id: "red_october")!
+        let ctx = context(habitat: .deep, time: .night, level: 12)
+
+        // Alles unter anderthalb Metern lässt das Blech in Ruhe — auch starke
+        // Räuber wie Zander oder Lachs.
+        for id in ["zander", "salmon", "perch", "carp", "barbel", "char"] {
+            let species = FishCatalog.species(id: id)!
+            XCTAssertEqual(BaitSystem.attraction(species: species, bait: october, context: ctx), 0,
+                           "\(species.name) sollte den Roten Oktober nicht nehmen")
+        }
+
+        // Die Kapitalen dagegen schon.
+        for id in ["beluga", "sturgeon", "catfish", "pike"] {
+            let species = FishCatalog.species(id: id)!
+            XCTAssertGreaterThan(BaitSystem.attraction(species: species, bait: october, context: ctx), 0,
+                                 "\(species.name) sollte ihn nehmen")
+        }
+    }
+
     func testPickyFishRefuseEverythingOutsideTheirList() {
         let goby = FishCatalog.species(id: "goby")!
         let spoon = BaitCatalog.bait(id: "spoon")!
