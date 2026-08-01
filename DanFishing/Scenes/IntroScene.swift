@@ -233,15 +233,18 @@ final class IntroScene: SKScene {
         boat.addChild(rod)
 
         line.strokeColor = SKColor(white: 1, alpha: 0.6)
-        line.lineWidth = 1.4
-        line.zPosition = 1
+        line.lineWidth = 1.6
+        // Über Wasserfläche (3) und Boot (5) — sonst deckt das Wasser die
+        // Schnur zu und Dan angelt sichtbar ins Nichts.
+        line.zPosition = 6
         world.addChild(line)
 
         bobber.fillColor = Palette.paper.skColor
         bobber.strokeColor = Palette.vermilion.skColor
         bobber.lineWidth = 2
         bobber.alpha = 0
-        bobber.zPosition = 6
+        // Der Schwimmer liegt über der Schnur.
+        bobber.zPosition = 6.5
         world.addChild(bobber)
 
         boat.position = CGPoint(x: -140, y: size.height * 0.27)
