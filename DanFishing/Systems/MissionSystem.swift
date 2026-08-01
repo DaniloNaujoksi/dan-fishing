@@ -219,7 +219,7 @@ enum MissionSystem {
                 Template(key: "bundle",
                          title: "Grobes Geschütz",
                          flavor: "Ein Bündel Tauwürmer am großen Haken. Damit fängt man nichts Kleines — oder gar nichts.",
-                         detail: "Fange 2 Fische mit dem Wurmbündel.",
+                         detail: "Fange 2 Fische mit dem Tauwurm-Bündel.",
                          goal: .withBait("wormbundle", 2), coins: 380, xp: 100)
             ]
 

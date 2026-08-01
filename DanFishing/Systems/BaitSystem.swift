@@ -58,7 +58,7 @@ enum BaitSystem {
         }
 
         // Der Köder ist genau auf diese Art abgestimmt — Fliege auf Äsche,
-        // Köderfisch auf Zander, Wurmbündel auf Wels.
+        // Köderfisch auf Zander, Tauwurm-Bündel auf Wels.
         if bait.specialty == species.id {
             score *= bait.specialtyBoost
         } else if species.preferredBaitIDs.contains(bait.id) {
