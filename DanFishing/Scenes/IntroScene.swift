@@ -21,6 +21,7 @@ final class IntroScene: SKScene {
     private let line = SKShapeNode()
     private let bobber = SKShapeNode(circleOfRadius: 6)
     private let deepFish = SKNode()
+    private let titleBacking = SKSpriteNode()
     private let titleLabel = SKLabelNode(text: "DAN FISHING")
     private let subtitle = SKLabelNode(text: "Ein stiller See, ein Boot, viel Zeit.")
     private let hint = SKLabelNode(text: "Tippen zum Fortfahren")
@@ -139,12 +140,26 @@ final class IntroScene: SKScene {
             ])))
         }
 
-        // Sonnenpfad auf dem Wasser.
-        let reflection = SKShapeNode(rectOf: CGSize(width: 90, height: size.height * 0.5))
-        reflection.fillColor = ColorSpec(0xF6D9A0).skColor(alpha: 0.14)
-        reflection.strokeColor = .clear
-        reflection.position = CGPoint(x: size.width * 0.68, y: size.height * 0.22)
-        waterNode.addChild(reflection)
+        // Sonnenpfad auf dem Wasser: einzelne Lichtstriche, die zur Sonne hin
+        // schmaler werden. Ein durchgehendes Rechteck sah aus wie ein Fehler.
+        for index in 0..<14 {
+            let fraction = CGFloat(index) / 14
+            let streak = SKShapeNode(ellipseOf: CGSize(width: 20 + fraction * 78,
+                                                       height: 3 + fraction * 2))
+            streak.fillColor = ColorSpec(0xF6D9A0).skColor(alpha: 0.05 + (1 - fraction) * 0.16)
+            streak.strokeColor = .clear
+            streak.position = CGPoint(x: size.width * 0.68 + CGFloat.random(in: -12...12),
+                                      y: size.height * (0.44 - fraction * 0.34))
+            waterNode.addChild(streak)
+
+            // Leichtes Wandern, als bräche sich das Licht in den Wellen.
+            streak.run(.repeatForever(.sequence([
+                .group([.moveBy(x: 8, y: 0, duration: 1.8 + Double(index) * 0.1),
+                        .fadeAlpha(to: 0.06, duration: 1.8)]),
+                .group([.moveBy(x: -8, y: 0, duration: 1.8 + Double(index) * 0.1),
+                        .fadeAlpha(to: 0.2, duration: 1.8)])
+            ])))
+        }
     }
 
     private func buildDeepFish() {
@@ -253,10 +268,21 @@ final class IntroScene: SKScene {
     }
 
     private func buildTitle() {
+        // Dunkler Schleier hinter dem Titel: Ohne ihn verschwindet die helle
+        // Schrift im hellen Morgenhimmel.
+        if let texture = TextureFactory.softDisc(color: UIColor(white: 0, alpha: 0.6)) {
+            titleBacking.texture = texture
+            titleBacking.size = CGSize(width: size.width * 1.3, height: 320)
+            titleBacking.position = CGPoint(x: size.width / 2, y: size.height * 0.66)
+            titleBacking.zPosition = 790
+            titleBacking.alpha = 0
+            addChild(titleBacking)
+        }
+
         titleLabel.fontName = "Georgia-Bold"
         titleLabel.fontSize = 46
         titleLabel.fontColor = Palette.paper.skColor
-        titleLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.60)
+        titleLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.70)
         titleLabel.zPosition = 800
         titleLabel.alpha = 0
         titleLabel.setScale(0.92)
@@ -265,7 +291,7 @@ final class IntroScene: SKScene {
         subtitle.fontName = "Georgia"
         subtitle.fontSize = 15
         subtitle.fontColor = Palette.paper.skColor(alpha: 0.85)
-        subtitle.position = CGPoint(x: size.width / 2, y: size.height * 0.55)
+        subtitle.position = CGPoint(x: size.width / 2, y: size.height * 0.65)
         subtitle.zPosition = 800
         subtitle.alpha = 0
         addChild(subtitle)
@@ -364,11 +390,16 @@ final class IntroScene: SKScene {
         world.run(.sequence([
             .wait(forDuration: 7.4),
             .group([
-                .scale(to: 0.88, duration: 1.8),
-                .fadeAlpha(to: 0.55, duration: 1.8)
+                .scale(to: 0.9, duration: 1.8),
+                .fadeAlpha(to: 0.78, duration: 1.8)
             ])
         ]))
         world.position = .zero
+
+        titleBacking.run(.sequence([
+            .wait(forDuration: 7.5),
+            .fadeAlpha(to: 0.85, duration: 0.8)
+        ]))
 
         titleLabel.run(.sequence([
             .wait(forDuration: 7.7),
@@ -386,6 +417,37 @@ final class IntroScene: SKScene {
                 .fadeAlpha(to: 0.85, duration: 0.8)
             ]))
         ]))
+    }
+
+    /// Zieht die Schnur von der Rutenspitze zum Schwimmer. Sie folgt der
+    /// Rutenbewegung, hängt leicht durch und strafft sich beim Biss.
+    private func updateLine() {
+        guard bobber.alpha > 0.05 else {
+            line.path = nil
+            return
+        }
+
+        // Spitze der Rute in Weltkoordinaten. Die Rute ist gedreht, deshalb
+        // wird ihr Endpunkt mitgedreht.
+        let tipLocal = CGPoint(
+            x: rod.position.x + cos(rod.zRotation) * 92 - sin(rod.zRotation) * 44,
+            y: rod.position.y + sin(rod.zRotation) * 92 + cos(rod.zRotation) * 44
+        )
+        let tip = boat.convert(tipLocal, to: world)
+        let end = bobber.position
+
+        let path = CGMutablePath()
+        path.move(to: tip)
+        // Beim Drill zieht die Rute nach unten, dann hängt die Schnur weniger
+        // durch — das liest sich als Spannung.
+        let sag: CGFloat = rod.zRotation < -0.2 ? 8 : 26
+        path.addQuadCurve(to: end,
+                          control: CGPoint(x: (tip.x + end.x) / 2,
+                                           y: (tip.y + end.y) / 2 - sag))
+        line.path = path
+        line.strokeColor = rod.zRotation < -0.2
+            ? Palette.vermilion.skColor(alpha: 0.8)
+            : SKColor(white: 1, alpha: 0.6)
     }
 
     private func emitRipple(at point: CGPoint) {
@@ -413,6 +475,8 @@ final class IntroScene: SKScene {
 
         // Wasser hebt und senkt sich ganz leicht — das hält das Bild lebendig.
         waterNode.position = CGPoint(x: 0, y: sin(CGFloat(elapsed) * 0.7) * 3)
+
+        updateLine()
 
         if elapsed >= duration {
             finish()
