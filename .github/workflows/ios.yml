@@ -53,15 +53,28 @@ jobs:
           xcrun simctl boot "$DEVICE" || true
           sleep 12
 
+          mkdir -p artefakte
+
+          # Erst das Hauptmenü.
           xcrun simctl install "$DEVICE" "$APP_PATH"
           xcrun simctl launch "$DEVICE" com.example.mizuumi
           sleep 10
-
-          mkdir -p artefakte
           xcrun simctl io "$DEVICE" screenshot artefakte/hauptmenue.png
 
-          # Ein Stück ins Spiel: „Weiterspielen“ liegt im oberen Drittel.
-          xcrun simctl io "$DEVICE" screenshot artefakte/spiel.png || true
+          # Danach direkt auf den See: Der Startschalter überspringt das Menü,
+          # damit die Szene selbst im Bild landet.
+          xcrun simctl terminate "$DEVICE" com.example.mizuumi || true
+          xcrun simctl launch "$DEVICE" com.example.mizuumi -autostart
+          sleep 14
+          xcrun simctl io "$DEVICE" screenshot artefakte/see.png
+
+          # Noch ein Bild ein paar Sekunden später — zeigt, dass die Schleife
+          # weiterläuft und die App nicht eingefroren ist.
+          sleep 8
+          xcrun simctl io "$DEVICE" screenshot artefakte/see-spaeter.png
+
+          # Läuft der Prozess überhaupt noch?
+          xcrun simctl spawn "$DEVICE" launchctl list | grep -i mizuumi || echo "App laeuft nicht mehr"
 
           # Absturzberichte einsammeln, falls die App nicht durchhält.
           cp -R ~/Library/Logs/DiagnosticReports artefakte/crashes 2>/dev/null || true

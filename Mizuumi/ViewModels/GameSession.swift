@@ -95,6 +95,13 @@ final class GameSession: ObservableObject {
         self.stats = UpgradeSystem.stats(for: loaded)
         refreshMissions()
         applySettingsToManagers()
+
+        // Startschalter für automatisierte Läufe: Damit springt die App am
+        // Menü vorbei direkt auf den See, sodass die Szene selbst geprüft
+        // werden kann. Im normalen Betrieb ist das Argument nie gesetzt.
+        if ProcessInfo.processInfo.arguments.contains("-autostart") {
+            screen = .playing
+        }
     }
 
     var hasExistingSave: Bool { saveManager.hasSave }
