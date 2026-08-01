@@ -77,6 +77,20 @@ final class BaitSystemTests: XCTestCase {
         XCTAssertGreaterThan(BaitSystem.attraction(species: pike, bait: wobbler, context: ctx), 0)
     }
 
+    func testRedOctoberIsTheWayToTheMonster() {
+        let ctx = context(habitat: .deep, time: .night, level: 12)
+        let beluga = FishCatalog.species(id: "beluga")!
+        let october = BaitCatalog.bait(id: "red_october")!
+        let bundle = BaitCatalog.bait(id: "wormbundle")!
+
+        let withOctober = BaitSystem.attraction(species: beluga, bait: october, context: ctx)
+        let withBundle = BaitSystem.attraction(species: beluga, bait: bundle, context: ctx)
+
+        // Deutlich besser, nicht nur ein bisschen: Der Köder ist für diesen
+        // einen Fisch gemacht.
+        XCTAssertGreaterThan(withOctober, withBundle * 2)
+    }
+
     func testSpecialtyBaitBeatsOthers() {
         let ctx = context(habitat: .deep, time: .night, level: 10)
         let catfish = FishCatalog.species(id: "catfish")!

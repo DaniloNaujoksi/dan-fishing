@@ -95,6 +95,9 @@ enum BaitCatalog {
         Bait(id: "red_october", name: "Roter Oktober",
              summary: "Ein Riesenblinker aus Messing und rotem Lack, schwer wie ein Türgriff. Unter Wasser blitzt er wie ein Leuchtturm. Kleinfische verziehen sich, die ganz Großen kommen schauen.",
              kind: .artificial, targets: [.predator, .omnivore], specialty: "beluga",
+             // Der Köder ist für genau einen Fisch gebaut: Mit ihm ist der
+             // Hausen überhaupt erst realistisch zu erwischen.
+             specialtyBoost: 9.0,
              price: 1500, unlockLevel: 9,
              strongHabitats: [.deep, .sunkenLogs], strongTimes: [.dusk, .night],
              sizeBias: 0.98, rarityBias: 0.88, baseAppeal: 0.34, color: ColorSpec(0xB3261F)),

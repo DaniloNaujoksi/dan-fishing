@@ -34,6 +34,11 @@ struct Bait: Identifiable, Equatable {
     /// Köder hat eine.
     let specialty: String?
 
+    /// Wie stark die Spezialität wirkt. Der Regelfall reicht, um einen Köder
+    /// erkennbar besser zu machen; für Köder, die eigens für einen einzigen
+    /// Fisch gebaut wurden, lässt sich der Wert anheben.
+    var specialtyBoost: Double = 3.4
+
     /// Preis in Münzen. 0 = von Beginn an vorhanden.
     let price: Int
     /// Spielerlevel, ab dem der Köder im Laden auftaucht.

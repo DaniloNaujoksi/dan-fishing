@@ -38,7 +38,7 @@ enum BaitSystem {
         // Der Köder ist genau auf diese Art abgestimmt — Fliege auf Äsche,
         // Köderfisch auf Zander, Wurmbündel auf Wels.
         if bait.specialty == species.id {
-            score *= 3.4
+            score *= bait.specialtyBoost
         } else if species.preferredBaitIDs.contains(bait.id) {
             score *= 2.0
         } else if bait.kind == .artificial && species.feeding == .peaceful {
