@@ -523,7 +523,7 @@ final class GameSession: ObservableObject {
         for rarity in fresh {
             let bonus = EconomySystem.collectionBonus(for: rarity)
             save.coins += bonus
-            showToast("Sammlung „\(rarity.displayName)" vollständig · +\(bonus) Münzen", emphasis: true)
+            showToast("Sammlung \(rarity.displayName) vollständig · +\(bonus) Münzen", emphasis: true)
         }
         completedCollectionRarities = completedNow
 
