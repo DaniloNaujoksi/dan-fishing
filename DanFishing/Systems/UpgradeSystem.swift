@@ -15,14 +15,7 @@ enum UpgradeSystem {
             }
         }
 
-        // Ansehen wirkt wie ein stiller Glücksbringer.
-        stats.luck += data.reputationLuck
         return stats
-    }
-
-    /// Preis nach Abzug des Ansehensrabatts.
-    static func price(_ base: Int, for data: SaveData) -> Int {
-        max(1, Int((Double(base) * (1 - data.reputationDiscount)).rounded()))
     }
 
     enum PurchaseError: Error, Equatable {
@@ -43,8 +36,7 @@ enum UpgradeSystem {
             return .failure(.alreadyMaxed)
         }
         let level = track.levels[owned]
-        // Ansehen senkt den Preis.
-        let cost = price(level.price, for: data)
+        let cost = level.price
         guard data.coins >= cost else {
             return .failure(.notEnoughCoins(missing: cost - data.coins))
         }
@@ -63,7 +55,7 @@ enum UpgradeSystem {
         guard !data.ownedBaitIDs.contains(id) else {
             return .failure(.alreadyMaxed)
         }
-        let cost = price(bait.price, for: data)
+        let cost = bait.price
         guard data.coins >= cost else {
             return .failure(.notEnoughCoins(missing: cost - data.coins))
         }

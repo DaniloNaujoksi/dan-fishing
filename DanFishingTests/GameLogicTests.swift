@@ -271,27 +271,21 @@ final class EconomyTests: XCTestCase {
         XCTAssertEqual(data.experience, 0)
     }
 
-    func testReleaseGivesExperienceInsteadOfCoins() {
+    func testBonusForNewSpeciesAndRecords() {
         let species = FishCatalog.species(id: "pike")!
-        let trophy = HookedFish(species: species, lengthCm: 120,
-                                weightKg: species.weight(forLength: 120),
+        let trophy = HookedFish(species: species, lengthCm: 126,
+                                weightKg: species.weight(forLength: 126),
                                 habitat: .sunkenLogs, baitID: "wobbler")
 
-        let reward = EconomySystem.releaseReward(for: trophy)
-        XCTAssertEqual(reward.coins, 0)
-        XCTAssertGreaterThan(reward.experience, 20)
-        // Zurücksetzen zahlt in Ansehen — das ist der eigentliche Grund dafür.
-        XCTAssertGreaterThan(reward.reputation, 5)
-    }
+        let plain = CatchResult(fish: trophy, coins: 100, experience: 10,
+                                isNewSpecies: false, isPersonalRecord: false)
+        let special = CatchResult(fish: trophy, coins: 100, experience: 10,
+                                  isNewSpecies: true, isPersonalRecord: true)
 
-    func testReputationImprovesLuckAndPrices() {
-        var data = SaveData.newGame()
-        let plainLuck = UpgradeSystem.stats(for: data).luck
-        let plainPrice = UpgradeSystem.price(1000, for: data)
-
-        data.reputation = 200
-        XCTAssertGreaterThan(UpgradeSystem.stats(for: data).luck, plainLuck)
-        XCTAssertLessThan(UpgradeSystem.price(1000, for: data), plainPrice)
+        // Ein Trophäenfisch bringt schon für sich einen Zuschlag; neue Art und
+        // Rekord legen darauf.
+        XCTAssertGreaterThan(EconomySystem.bonusCoins(for: special),
+                             EconomySystem.bonusCoins(for: plain))
     }
 }
 

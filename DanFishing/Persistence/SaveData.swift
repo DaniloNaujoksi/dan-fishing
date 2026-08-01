@@ -60,25 +60,6 @@ struct SaveData: Codable, Equatable {
     var missionSet: Int = 0
 
     var totalCatches: Int = 0
-    var totalReleased: Int = 0
-
-    /// Ansehen am See. Steigt durch das Zurücksetzen großer Fische und wirkt
-    /// dauerhaft: bessere Chancen auf seltene Arten und günstigere Preise.
-    /// Damit ist Freilassen ein Verzicht auf Geld jetzt zugunsten von später.
-    var reputation: Int = 0
-
-    /// Arten, von denen ein Exemplar als Trophäe behalten wurde.
-    var trophySpeciesIDs: [String] = []
-
-    /// Zusätzliche Fangchance auf seltene Arten aus dem Ansehen (0…0.5).
-    var reputationLuck: Double {
-        min(0.5, Double(reputation) / 400.0)
-    }
-
-    /// Rabatt im Angelladen aus dem Ansehen (0…0.2).
-    var reputationDiscount: Double {
-        min(0.20, Double(reputation) / 1000.0)
-    }
 
     /// Wurde das Tutorial schon einmal durchlaufen?
     var tutorialDone: Bool = false

@@ -107,7 +107,7 @@ struct MainMenuView: View {
                     StatChip(symbol: "circle.hexagongrid.fill", value: "\(session.save.coins)",
                              tint: Palette.gold.swiftUIColor)
                     StatChip(symbol: "fish", value: "\(session.save.totalCatches) Fänge")
-                    StatChip(symbol: "arrow.uturn.left", value: "\(session.save.totalReleased) frei")
+                    StatChip(symbol: "trophy", value: "\(session.save.codex.count) Arten")
                 }
 
                 ProgressView(value: Double(session.save.experience),

@@ -133,14 +133,12 @@ final class GameSession: ObservableObject {
     private var toastTimer: Timer?
     private var lastReelTick: Double = 0
     private var tutorial = TutorialSystem(active: false)
-    private var cachedCollections: [Rarity] = []
 
     init(saveManager: SaveGameManager = .shared) {
         self.saveManager = saveManager
         let loaded = saveManager.load() ?? SaveData.newGame()
         self.save = loaded
         self.stats = UpgradeSystem.stats(for: loaded)
-        self.cachedCollections = EconomySystem.completedCollections(in: loaded)
         refreshMissions()
         applySettingsToManagers()
 
@@ -470,14 +468,26 @@ final class GameSession: ObservableObject {
         save.codex[speciesID] = entry
         save.totalCatches += 1
 
-        let coins = EconomySystem.coinValue(for: fish)
         let xp = EconomySystem.experience(for: fish, isNewSpecies: isNew, isRecord: isRecord)
 
-        let result = CatchResult(fish: fish,
+        // Erst den Grundwert, dann die Zuschläge für neue Art, Rekord und
+        // Trophäengröße.
+        var coins = EconomySystem.coinValue(for: fish)
+        var result = CatchResult(fish: fish,
                                  coins: coins,
                                  experience: xp,
                                  isNewSpecies: isNew,
                                  isPersonalRecord: isRecord)
+        coins += EconomySystem.bonusCoins(for: result)
+        result = CatchResult(fish: fish,
+                             coins: coins,
+                             experience: xp,
+                             isNewSpecies: isNew,
+                             isPersonalRecord: isRecord)
+
+        // Jeder Fang zahlt sofort aus. Vorher musste man erst zwischen drei
+        // Knöpfen wählen, von denen zwei nichts bewirkten.
+        save.coins += coins
 
         let levels = EconomySystem.applyExperience(xp, to: &save)
         if levels > 0 {
@@ -495,71 +505,14 @@ final class GameSession: ObservableObject {
 
     // MARK: - Entscheidung nach dem Fang
 
-    func sellPendingCatch() {
-        guard let result = pendingCatch else { return }
-        save.coins += result.coins
-        showToast("+\(result.coins) Münzen")
+    /// Karte wegtippen. Münzen und Erfahrung sind beim Fang bereits
+    /// gutgeschrieben — die Karte zeigt nur noch, was es gab.
+    func dismissCatch() {
+        guard pendingCatch != nil else { return }
         pendingCatch = nil
-        persist()
+        clearCompletedMissions()
         AudioManager.shared.play(.uiTap)
-    }
-
-    /// Fisch als Trophäe behalten: Er kommt dauerhaft in die Sammlung.
-    func keepPendingCatch() {
-        guard let result = pendingCatch else { return }
-
-        let speciesID = result.fish.species.id
-        let isFirst = !save.trophySpeciesIDs.contains(speciesID)
-        if isFirst { save.trophySpeciesIDs.append(speciesID) }
-
-        let reward = EconomySystem.trophyReward(for: result.fish, isFirstOfSpecies: isFirst)
-        _ = EconomySystem.applyExperience(reward.experience, to: &save)
-
-        // Ist damit eine ganze Seltenheitsstufe vollständig, gibt es die Prämie.
-        let completedBefore = completedCollectionRarities
-        let completedNow = EconomySystem.completedCollections(in: save)
-        let fresh = completedNow.filter { !completedBefore.contains($0) }
-
-        for rarity in fresh {
-            let bonus = EconomySystem.collectionBonus(for: rarity)
-            save.coins += bonus
-            showToast("Sammlung \(rarity.displayName) vollständig · +\(bonus) Münzen", emphasis: true)
-        }
-        completedCollectionRarities = completedNow
-
-        if fresh.isEmpty {
-            showToast(isFirst
-                      ? "Trophäe: erster \(result.fish.species.name) in der Sammlung"
-                      : "Trophäe ersetzt · +\(reward.experience) EP")
-        }
-
-        pendingCatch = nil
-        stats = UpgradeSystem.stats(for: save)
         persist()
-    }
-
-    /// Fisch zurücksetzen: kein Geld, dafür Ansehen.
-    func releasePendingCatch() {
-        guard let result = pendingCatch else { return }
-
-        let reward = EconomySystem.releaseReward(for: result.fish)
-        let levels = EconomySystem.applyExperience(reward.experience, to: &save)
-        save.totalReleased += 1
-        save.reputation += reward.reputation
-
-        showToast(levels > 0
-                  ? "Freigelassen — Stufe \(save.level) · +\(reward.reputation) Ansehen"
-                  : "Freigelassen · +\(reward.reputation) Ansehen")
-
-        pendingCatch = nil
-        stats = UpgradeSystem.stats(for: save)
-        persist()
-    }
-
-    /// Bereits vollständige Sammlungen, damit die Prämie nur einmal fällt.
-    private var completedCollectionRarities: [Rarity] {
-        get { cachedCollections }
-        set { cachedCollections = newValue }
     }
 
     // MARK: - Bootsposition

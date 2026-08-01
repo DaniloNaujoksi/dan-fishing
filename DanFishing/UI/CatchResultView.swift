@@ -59,7 +59,7 @@ struct CatchResultView: View {
         HStack(spacing: 22) {
             measure(title: "Länge", value: String(format: "%.1f cm", result.fish.lengthCm))
             measure(title: "Gewicht", value: String(format: "%.2f kg", result.fish.weightKg))
-            measure(title: "Wert", value: "\(result.coins) 🪙")
+            measure(title: "Erlös", value: "+\(result.coins) 🪙")
         }
     }
 
@@ -111,58 +111,19 @@ struct CatchResultView: View {
         .background(Capsule().fill(color.opacity(0.12)))
     }
 
-    /// Drei Wege, und jeder zahlt in eine andere Währung: Münzen jetzt,
-    /// Sammlung dauerhaft, Ansehen für später. Unter jedem Knopf steht, was
-    /// er einbringt — sonst rät man.
+    /// Ein Knopf, kein Menü.
+    ///
+    /// Münzen und Erfahrung sind beim Landen bereits gutgeschrieben; die Karte
+    /// zeigt nur, was der Fisch eingebracht hat. Die frühere Wahl zwischen
+    /// Verkaufen, Behalten und Freilassen hatte nur einen Zweig mit Wirkung
+    /// und hielt den Spielfluss ohne Gegenwert auf.
     private var actions: some View {
-        let release = EconomySystem.releaseReward(for: result.fish)
-        let isNewTrophy = !session.save.trophySpeciesIDs.contains(result.fish.species.id)
-
-        return VStack(spacing: 10) {
-            Button {
-                session.sellPendingCatch()
-                session.clearCompletedMissions()
-            } label: {
-                actionLabel(title: "Verkaufen",
-                            detail: "+\(result.coins) Münzen",
-                            symbol: "circle.hexagongrid.fill")
-            }
-            .buttonStyle(BrushButtonStyle())
-            .frame(maxWidth: .infinity)
-
-            HStack(spacing: 9) {
-                Button {
-                    session.keepPendingCatch()
-                    session.clearCompletedMissions()
-                } label: {
-                    actionLabel(title: "Trophäe",
-                                detail: isNewTrophy ? "neu in der Sammlung" : "ersetzt Eintrag",
-                                symbol: "trophy")
-                }
-                .buttonStyle(BrushButtonStyle(tint: Palette.gold.swiftUIColor, filled: false))
-
-                Button {
-                    session.releasePendingCatch()
-                    session.clearCompletedMissions()
-                } label: {
-                    actionLabel(title: "Freilassen",
-                                detail: "+\(release.reputation) Ansehen",
-                                symbol: "leaf")
-                }
-                .buttonStyle(BrushButtonStyle(tint: Palette.moss.swiftUIColor, filled: false))
-            }
+        Button("Weiter") {
+            session.dismissCatch()
         }
-        .padding(.top, 4)
-    }
-
-    private func actionLabel(title: String, detail: String, symbol: String) -> some View {
-        VStack(spacing: 2) {
-            Label(title, systemImage: symbol)
-                .labelStyle(.titleAndIcon)
-            Text(detail)
-                .font(.system(size: 10, weight: .regular, design: .rounded))
-                .opacity(0.85)
-        }
+        .buttonStyle(BrushButtonStyle())
+        .frame(maxWidth: .infinity)
+        .padding(.top, 6)
     }
 }
 
