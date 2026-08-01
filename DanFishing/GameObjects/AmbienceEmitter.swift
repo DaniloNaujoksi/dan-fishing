@@ -8,7 +8,9 @@ import SpriteKit
 final class AmbienceEmitter {
 
     private unowned let layer: SKNode
-    private unowned let map: LakeMap
+    /// Die Karte ist ein Wertetyp und wird nach dem Erzeugen nicht mehr
+    /// verändert — eine Kopie ist hier also günstiger als jede Referenz.
+    private let map: LakeMap
 
     private var bubbleTimer: CGFloat = 0
     private var dragonflyTimer: CGFloat = 2
