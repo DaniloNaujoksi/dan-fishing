@@ -23,6 +23,42 @@ enum FishCatalog {
             bodyColor: ColorSpec(0xB9C6CE), bellyColor: ColorSpec(0xEDF2F4), finColor: ColorSpec(0xC96A5A)
         ),
         FishSpecies(
+            id: "bleak",
+            name: "Ukelei",
+            summary: "Handlanger Silberfisch, der in Schwärmen dicht unter der Oberfläche steht. Beißt schnell und oft — der ideale erste Fang.",
+            rarity: .common,
+            feeding: .peaceful,
+            minLength: 10, maxLength: 20,
+            minWeight: 0.01, maxWeight: 0.09,
+            habitats: [.shallows, .lilies, .reeds],
+            activeTimes: [.dawn, .day, .dusk],
+            preferredBaitIDs: ["maggot", "bread", "insect"],
+            fightStrength: 0.10,
+            motion: .darting,
+            valuePerKilo: 30,
+            minPlayerLevel: 1,
+            bodyColor: ColorSpec(0xA8B4BC), bellyColor: ColorSpec(0xEDF0F2), finColor: ColorSpec(0x7C837E)
+        ),
+
+        FishSpecies(
+            id: "ruffe",
+            name: "Kaulbarsch",
+            summary: "Kleiner stacheliger Verwandter des Barsches. Steht am Grund im trüben Wasser und nimmt fast alles, was sich bewegt.",
+            rarity: .common,
+            feeding: .omnivore,
+            minLength: 8, maxLength: 15,
+            minWeight: 0.01, maxWeight: 0.08,
+            habitats: [.shallows, .reeds, .sunkenLogs],
+            activeTimes: [.dawn, .day, .dusk, .night],
+            preferredBaitIDs: ["worm", "maggot"],
+            fightStrength: 0.14,
+            motion: .thrashing,
+            valuePerKilo: 34,
+            minPlayerLevel: 1,
+            bodyColor: ColorSpec(0x8A8458), bellyColor: ColorSpec(0xD8D2B4), finColor: ColorSpec(0xB6A971)
+        ),
+
+        FishSpecies(
             id: "perch",
             name: "Flussbarsch",
             summary: "Gestreifter Räuber, der in kleinen Gruppen an Totholz und Schilfkanten jagt.",
