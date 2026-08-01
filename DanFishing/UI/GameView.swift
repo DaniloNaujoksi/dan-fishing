@@ -12,6 +12,8 @@ struct GameView: View {
     @State private var showCodex = false
     @State private var showShop = false
     @State private var showMissions = false
+    /// Treibt das langsame Pulsieren des Aufgabenknopfs an.
+    @State private var missionPulse = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -75,6 +77,12 @@ struct GameView: View {
                 if scene == nil {
                     scene = LakeScene(size: geometry.size, session: session)
                 }
+                updateMissionPulse(active: session.claimableMissionCount > 0)
+            }
+            // Sobald draußen eine Aufgabe fertig wird, fängt der Knopf an zu
+            // atmen; nach dem Abholen hört er wieder auf.
+            .onChange(of: session.claimableMissionCount) { _, count in
+                updateMissionPulse(active: count > 0)
             }
             // Gewässerwechsel: Die Szene wird verworfen und neu aufgebaut,
             // sonst bliebe die alte Karte stehen.
@@ -155,7 +163,8 @@ struct GameView: View {
             VStack(alignment: .trailing, spacing: 8) {
                 iconButton("book.closed", label: "Fangbuch") { showCodex = true }
                 iconButton("bag", label: "Shop") { showShop = true }
-                iconButton("checklist", label: "Aufgaben") { showMissions = true }
+                iconButton("checklist", label: "Aufgaben",
+                           badge: session.claimableMissionCount) { showMissions = true }
             }
         }
         .padding(.top, 8)
@@ -254,21 +263,68 @@ struct GameView: View {
         }
     }
 
-    private func iconButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+    /// Ein Knopf der rechten Leiste.
+    ///
+    /// `badge` ist die Zahl offener Belohnungen. Ist sie größer als null, wird
+    /// der Knopf grün gefasst und atmet langsam — draußen auf dem Wasser soll
+    /// man sehen, dass etwas fertig ist, ohne ins Menü zu gehen.
+    private func iconButton(_ symbol: String,
+                            label: String,
+                            badge: Int = 0,
+                            action: @escaping () -> Void) -> some View {
+        let highlighted = badge > 0
+
+        return Button(action: action) {
             VStack(spacing: 2) {
                 Image(systemName: symbol)
                     .font(.system(size: 19, weight: .medium))
                 Text(label)
                     .font(.system(size: 9, weight: .medium, design: .rounded))
             }
-            .foregroundStyle(Palette.uiInk)
+            .foregroundStyle(highlighted ? Palette.moss.swiftUIColor : Palette.uiInk)
             .frame(width: 64, height: 52)
             .background(
                 RoundedRectangle(cornerRadius: UIStyle.controlRadius, style: .continuous)
                     .fill(Palette.paper.swiftUIColor.opacity(UIStyle.overlayOpacity))
                     .shadow(color: .black.opacity(0.12), radius: 4, y: 2)
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: UIStyle.controlRadius, style: .continuous)
+                    .strokeBorder(Palette.moss.swiftUIColor, lineWidth: highlighted ? 2 : 0)
+            )
+            .overlay(alignment: .topTrailing) {
+                if highlighted {
+                    Text("\(badge)")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(Palette.paper.swiftUIColor)
+                        .frame(width: 19, height: 19)
+                        .background(Circle().fill(Palette.moss.swiftUIColor))
+                        .offset(x: 6, y: -6)
+                }
+            }
+            // Ruhiges Pulsieren statt Blinken: auffällig genug, ohne zu stören.
+            .scaleEffect(highlighted && missionPulse ? 1.06 : 1.0)
+            .shadow(color: Palette.moss.swiftUIColor.opacity(highlighted && missionPulse ? 0.55 : 0),
+                    radius: 9)
+        }
+        .animation(.easeOut(duration: 0.3), value: highlighted)
+    }
+
+    /// Startet oder stoppt das Pulsieren.
+    ///
+    /// Die Dauerschleife hängt an einer eigenen Animation und nicht an einem
+    /// `.animation(value:)` — sonst würde sie beim Umschalten von „nichts
+    /// fertig“ auf „etwas fertig“ nur einmal zucken statt weiterzulaufen.
+    private func updateMissionPulse(active: Bool) {
+        if active {
+            guard !missionPulse else { return }
+            withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+                missionPulse = true
+            }
+        } else {
+            withAnimation(.easeOut(duration: 0.25)) {
+                missionPulse = false
+            }
         }
     }
 

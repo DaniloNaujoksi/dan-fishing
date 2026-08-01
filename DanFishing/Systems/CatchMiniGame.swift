@@ -28,6 +28,8 @@ struct CatchMiniGame {
     // MARK: - Zustand
 
     private(set) var fishPosition: Double = 0.5
+    /// Mitte des Fangbereichs. Liegt immer so, dass der ganze Balken in der
+    /// Bahn steht — siehe `updateBar`.
     private(set) var barPosition: Double = 0.25
     private(set) var barVelocity: Double = 0
     private(set) var tension: Double = 0.25
@@ -130,12 +132,19 @@ struct CatchMiniGame {
         barVelocity *= 1.0 - min(0.9, 3.0 * dt)   // Dämpfung
         barPosition += barVelocity * dt
 
-        if barPosition < 0 {
-            barPosition = 0
+        // Angeschlagen wird an den Kanten der Bahn, nicht in der Mitte des
+        // Balkens: Sonst schiebt sich der Fangbereich halb aus dem Bild und
+        // wird dort heimlich kleiner — genau dann sieht es aus, als spränge
+        // der Fisch oben aus dem Balken heraus, obwohl er noch zählt.
+        let lowestCenter = barHeight / 2
+        let highestCenter = 1 - barHeight / 2
+
+        if barPosition < lowestCenter {
+            barPosition = lowestCenter
             barVelocity = max(0, barVelocity * 0.3)
         }
-        if barPosition > 1 {
-            barPosition = 1
+        if barPosition > highestCenter {
+            barPosition = highestCenter
             barVelocity = min(0, barVelocity * 0.3)
         }
     }

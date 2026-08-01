@@ -344,6 +344,27 @@ final class CatchMiniGameTests: XCTestCase {
                           baitID: species.preferredBaitIDs[0])
     }
 
+    func testBarNeverLeavesTheTrack() {
+        // Rutscht der Fangbereich halb aus der Bahn, wird er dort heimlich
+        // kleiner — dann steht der Fisch sichtbar daneben und zählt trotzdem.
+        for reeling in [true, false] {
+            var game = CatchMiniGame(fish: fish("pike", length: 100),
+                                     stats: EquipmentStats(),
+                                     randomSource: { 0.5 })
+
+            for _ in 0..<1200 {
+                game.update(deltaTime: 1.0 / 60.0, reeling: reeling)
+                XCTAssertGreaterThanOrEqual(game.barLowerEdge, -0.0001)
+                XCTAssertLessThanOrEqual(game.barUpperEdge, 1.0001)
+
+                // Und er behält seine volle Höhe, oben wie unten.
+                XCTAssertEqual(game.barUpperEdge - game.barLowerEdge,
+                               game.barHeight, accuracy: 0.0001)
+                if game.isFinished { break }
+            }
+        }
+    }
+
     func testHoldingReelEventuallyLandsFish() {
         var game = CatchMiniGame(fish: fish("roach", length: 20),
                                  stats: EquipmentStats(),

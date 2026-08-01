@@ -15,12 +15,27 @@ struct CatchMiniGameView: View {
 
     private let trackHeight: CGFloat = 330
 
+    /// Rand, damit Fisch und Balken nicht über die Bahn hinausragen.
+    private let edgeInset: CGFloat = 15
+    private var usableHeight: CGFloat { trackHeight - edgeInset * 2 }
+
     private var barHeight: CGFloat {
-        max(20, trackHeight * CGFloat(state.barUpper - state.barLower))
+        usableHeight * CGFloat(state.barUpper - state.barLower)
     }
 
     private var barCenter: CGFloat {
         CGFloat((state.barLower + state.barUpper) / 2)
+    }
+
+    /// Höhe über dem Boden der Bahn für einen Wert 0…1.
+    ///
+    /// Fisch und Balken müssen durch dieselbe Umrechnung, sonst stimmt die
+    /// Anzeige nicht mit der Wertung überein. Genau das war der Fehler: Der
+    /// Fisch saß fest 14 Punkte tiefer als sein Wert, wodurch er am oberen
+    /// Ende sichtbar über dem Balken stand, während er rechnerisch noch drin
+    /// war.
+    private func centerY(for value: CGFloat) -> CGFloat {
+        edgeInset + usableHeight * value
     }
 
     var body: some View {
@@ -70,15 +85,17 @@ struct CatchMiniGameView: View {
                       ? Palette.moss.swiftUIColor.opacity(0.85)
                       : Palette.paper.swiftUIColor.opacity(0.4))
                 .frame(width: 62, height: barHeight)
-                .offset(y: -(barCenter * trackHeight - barHeight / 2))
-
+                .offset(y: -(centerY(for: barCenter) - barHeight / 2))
 
             // Fisch
             Image(systemName: "fish.fill")
                 .font(.system(size: 26))
                 .foregroundStyle(Palette.paper.swiftUIColor)
                 .rotationEffect(.degrees(-90))
-                .offset(y: -trackHeight * CGFloat(state.fishPosition) + 14)
+                // Feste Größe, damit die Mitte des Symbols bekannt ist —
+                // die Umrechnung unten rechnet mit genau dieser Hälfte.
+                .frame(width: 30, height: 26)
+                .offset(y: -(centerY(for: CGFloat(state.fishPosition)) - 13))
 
         }
         .frame(width: 74, height: trackHeight)

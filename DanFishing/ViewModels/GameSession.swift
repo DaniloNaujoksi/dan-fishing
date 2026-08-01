@@ -348,6 +348,18 @@ final class GameSession: ObservableObject {
         MissionSystem.progress(for: mission, in: save)
     }
 
+    /// Wie viele Aufgaben erfüllt sind, ohne dass die Belohnung geholt wurde.
+    ///
+    /// Danach richtet sich der Hinweis auf dem Aufgabenknopf: Wer draußen auf
+    /// dem Wasser etwas abgeschlossen hat, soll es sehen, ohne das Menü zu
+    /// öffnen.
+    var claimableMissionCount: Int {
+        missions.filter { mission in
+            let state = progress(for: mission)
+            return !state.claimed && state.progress >= mission.goal.target
+        }.count
+    }
+
     // MARK: - Anbindung der Szene
 
     /// Die Szene meldet jeden Frame ihre Umgebungswerte.
