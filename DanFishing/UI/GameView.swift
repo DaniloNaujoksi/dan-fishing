@@ -24,6 +24,7 @@ struct GameView: View {
                 }
 
                 VStack(spacing: 0) {
+                    levelBar
                     topBar
 
                     HStack {
@@ -146,6 +147,47 @@ struct GameView: View {
             }
         }
         .padding(.top, 8)
+    }
+
+    /// Schmaler Fortschrittsbalken über der ganzen Breite.
+    ///
+    /// Die Stufe stand bisher nur als Zahl in der Kopfzeile — man sah nicht,
+    /// wie weit die nächste entfernt ist. Der Balken beantwortet genau das,
+    /// ohne Platz zu beanspruchen.
+    private var levelBar: some View {
+        let needed = max(1, session.save.experienceForNextLevel)
+        let progress = min(1, Double(session.save.experience) / Double(needed))
+
+        return VStack(spacing: 3) {
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Palette.ink.swiftUIColor.opacity(0.22))
+
+                    Capsule()
+                        .fill(
+                            LinearGradient(colors: [Palette.gold.swiftUIColor,
+                                                    Palette.vermilion.swiftUIColor],
+                                           startPoint: .leading, endPoint: .trailing)
+                        )
+                        .frame(width: max(4, geometry.size.width * progress))
+                }
+            }
+            .frame(height: 6)
+
+            HStack {
+                Text("Stufe \(session.save.level)")
+                Spacer()
+                Text("\(session.save.experience) / \(needed) EP")
+                    .monospacedDigit()
+            }
+            .font(.system(size: 9, weight: .medium, design: .rounded))
+            .foregroundStyle(Palette.paper.swiftUIColor.opacity(0.9))
+            .shadow(color: .black.opacity(0.35), radius: 2)
+        }
+        .padding(.horizontal, 2)
+        .padding(.top, 2)
+        .animation(.easeOut(duration: 0.4), value: session.save.experience)
     }
 
     /// Ein Wert in der Kopfzeile.
