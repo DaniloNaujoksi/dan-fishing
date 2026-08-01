@@ -581,6 +581,16 @@ final class GameSession: ObservableObject {
     /// Der Fisch, von dem gerade erzählt wird. Nil, bevor die Stufe erreicht ist.
     var activeLegend: LegendaryFish? { save.activeLegend }
 
+    /// Ausbaustufe des Legenden-Detektors: 0 = nichts, 1 = Art und Köder,
+    /// 2 = zusätzlich Entfernung und Richtung.
+    var legendDetectorLevel: Int { save.upgradeLevels["legend_detector"] ?? 0 }
+
+    /// Entfernung zur Legende in Metern, sobald der Peilsender läuft. Die
+    /// Szene trägt den Wert ein.
+    @Published var legendDistance: Double?
+    /// Richtung zur Legende in Bogenmaß, aus Sicht des Bootes.
+    @Published var legendBearing: Double?
+
     /// Steht die Legende im aktuellen Gewässer?
     var legendIsHere: Bool {
         guard let legend = save.activeLegend else { return false }

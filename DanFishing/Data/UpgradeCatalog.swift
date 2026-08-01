@@ -123,6 +123,20 @@ enum UpgradeCatalog {
         ),
 
         UpgradeTrack(
+            id: "legend_detector",
+            name: "Legenden-Detektor",
+            category: .special,
+            summary: "Ein zerlesenes Notizbuch vom alten Angler am Steg, später mit Lot und "
+                + "Kompass. Verrät, welcher Fisch hinter der Geschichte steckt.",
+            levels: [
+                UpgradeLevel(title: "Notizbuch", effect: "Zeigt Art und Köder der Legende", price: 480,
+                             delta: EquipmentStatDelta()),
+                UpgradeLevel(title: "Peilsender", effect: "Zeigt Entfernung und Richtung im Wasser", price: 1300,
+                             delta: EquipmentStatDelta())
+            ]
+        ),
+
+        UpgradeTrack(
             id: "charm",
             name: "Glücksbringer",
             category: .special,

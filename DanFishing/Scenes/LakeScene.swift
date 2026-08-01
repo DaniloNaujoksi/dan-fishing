@@ -720,7 +720,7 @@ final class LakeScene: SKScene {
                                             habitat: context.habitat,
                                             timeOfDay: context.timeOfDay,
                                             baitID: bait.id) {
-                    interest = 0.85
+                    interest = 1.0
                 } else {
                     interest = 0
                 }
@@ -784,7 +784,7 @@ final class LakeScene: SKScene {
         for node in fishNodes {
             let delta = CGVector(dx: node.swimmer.position.x - point.x,
                                  dy: node.swimmer.position.y - point.y)
-            let radius: CGFloat = node === legendNode ? 230 : 90
+            let radius: CGFloat = node === legendNode ? 140 : 90
             if hypot(delta.dx, delta.dy) < radius {
                 node.spook(from: point)
                 if node === legendNode {
@@ -798,6 +798,24 @@ final class LakeScene: SKScene {
     /// Gefangene verschwinden, neue tauchen auf.
     private func syncLegend() {
         let shouldBeHere = session.legendIsHere
+
+        // Peilsender: Entfernung und Richtung an die Oberfläche geben.
+        if session.legendDetectorLevel >= 2, let node = legendNode {
+            let delta = CGVector(dx: node.swimmer.position.x - player.position.x,
+                                 dy: node.swimmer.position.y - player.position.y)
+            // Eine Zelle sind rund fünf Meter Wasser.
+            let distance = Double(hypot(delta.dx, delta.dy) / map.cellSize * 5)
+
+            // Nur bei spürbarer Änderung melden — sonst zeichnet die
+            // Oberfläche sechzigmal in der Sekunde neu.
+            if session.legendDistance == nil || abs(session.legendDistance! - distance) > 1.5 {
+                session.legendDistance = distance
+                session.legendBearing = Double(atan2(delta.dy, delta.dx))
+            }
+        } else if session.legendDistance != nil {
+            session.legendDistance = nil
+            session.legendBearing = nil
+        }
 
         if let node = legendNode, !shouldBeHere {
             node.removeFromParent()

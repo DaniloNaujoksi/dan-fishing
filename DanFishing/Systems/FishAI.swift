@@ -135,11 +135,11 @@ struct FishAI {
             // Entdecken: je näher und je passender der Köder, desto eher.
             // Ein legendärer Fisch braucht deutlich mehr, bevor er überhaupt
             // hinsieht — deshalb steht er noch da.
-            let threshold: CGFloat = swimmer.isLegendary ? 0.35 : 0.08
+            let threshold: CGFloat = swimmer.isLegendary ? 0.15 : 0.08
             if distance < detectionRadius && interest > threshold {
                 let proximity = 1 - distance / detectionRadius
                 var chance = interest * proximity * swimmer.traits.curiosity * dt * 1.6
-                if swimmer.isLegendary { chance *= 0.3 }
+                if swimmer.isLegendary { chance *= 0.65 }
                 if CGFloat.random(in: 0...1) < chance {
                     swimmer.behaviour = .approach
                     swimmer.behaviourTimer = 14
@@ -173,17 +173,22 @@ struct FishAI {
                 // Entscheidung: Der Appetit muss das Misstrauen schlagen.
                 // Bei einer Legende wiegt das Misstrauen deutlich schwerer;
                 // man braucht mehrere Anläufe, auch wenn alles stimmt.
-                let appetite = swimmer.traits.hunger * interest * (swimmer.isLegendary ? 0.9 : 1.6)
+                let appetite = swimmer.traits.hunger * interest * (swimmer.isLegendary ? 1.35 : 1.6)
                 if appetite > swimmer.traits.caution {
                     swimmer.behaviour = .nibble
                     swimmer.behaviourTimer = 0.6
-                    swimmer.nibblesLeft = Int.random(in: 1...2)
+                    // Eine Legende zupft länger, bevor sie nimmt — das ist
+                    // der spannendste Teil und macht klar, dass sie da ist.
+                    swimmer.nibblesLeft = swimmer.isLegendary
+                        ? Int.random(in: 2...4)
+                        : Int.random(in: 1...2)
                 } else {
                     swimmer.behaviour = .retreat
                     swimmer.behaviourTimer = 5
-                    // Nach einer Absage lässt sich eine Legende lange nicht
-                    // mehr blicken. Wer sie verprellt, wartet.
-                    swimmer.cooldown = swimmer.isLegendary ? 45 : 8
+                    // Nach einer Absage braucht eine Legende eine Pause, aber
+                    // keine halbe Ewigkeit — man soll es im selben Ansitz
+                    // noch einmal versuchen können.
+                    swimmer.cooldown = swimmer.isLegendary ? 15 : 8
                     outcome = .rejected
                 }
             }

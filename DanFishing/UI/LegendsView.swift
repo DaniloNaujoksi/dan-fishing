@@ -42,7 +42,9 @@ struct LegendsView: View {
     }
 
     private func activeCard(_ legend: LegendaryFish) -> some View {
-        PaperPanel(accent: Palette.gold.swiftUIColor) {
+        let detector = session.legendDetectorLevel
+
+        return PaperPanel(accent: Palette.gold.swiftUIColor) {
             VStack(alignment: .leading, spacing: 12) {
                 SectionHeading(text: legend.name, subtitle: "Man erzählt sich …")
 
@@ -66,8 +68,47 @@ struct LegendsView: View {
                              tint: Palette.gold.swiftUIColor)
                 }
 
-                Text("Er ist scheu: Wirf nicht direkt auf ihn, sondern daneben — "
-                     + "und rechne damit, dass er den Köder mehrfach prüft, bevor er nimmt.")
+                // Der Detektor deckt auf, was in der Geschichte fehlt: die Art
+                // selbst — und mit dem Peilsender, wo sie gerade steht.
+                if detector >= 1, let species = legend.species {
+                    Divider().opacity(0.4)
+
+                    HStack(spacing: 12) {
+                        FishSilhouette(species: species)
+                            .frame(width: 96, height: 40)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(species.name)
+                                .font(.system(size: 17, weight: .medium, design: .serif))
+                                .foregroundStyle(Palette.uiInk)
+                            Text("\(species.rarity.displayName) · bis \(Int(species.maxLength)) cm")
+                                .font(.system(size: 12, design: .rounded))
+                                .foregroundStyle(Palette.inkSoft.swiftUIColor)
+                        }
+                    }
+
+                    if detector >= 2, session.legendIsHere {
+                        if let distance = session.legendDistance {
+                            StatChip(symbol: "dot.radiowaves.left.and.right",
+                                     value: String(format: "%.0f m entfernt", distance),
+                                     tint: Palette.moss.swiftUIColor)
+                        } else {
+                            Text("Peilsender bereit — er meldet sich, sobald du draußen bist.")
+                                .font(.system(size: 12, design: .rounded))
+                                .foregroundStyle(Palette.inkSoft.swiftUIColor)
+                        }
+                    }
+                } else {
+                    Label("Welche Art es ist, weiß nur der alte Angler am Steg. "
+                          + "Sein Notizbuch liegt im Laden.",
+                          systemImage: "questionmark.circle")
+                        .font(.system(size: 12, design: .rounded))
+                        .foregroundStyle(Palette.inkSoft.swiftUIColor)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Text("Sie ist vorsichtig: Wirf nicht direkt auf sie, sondern daneben — "
+                     + "und rechne damit, dass sie den Köder mehrfach anzupft, bevor sie nimmt.")
                     .font(.system(size: 12, design: .rounded))
                     .foregroundStyle(Palette.inkSoft.swiftUIColor)
                     .fixedSize(horizontal: false, vertical: true)

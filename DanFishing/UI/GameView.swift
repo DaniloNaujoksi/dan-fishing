@@ -12,6 +12,7 @@ struct GameView: View {
     @State private var showCodex = false
     @State private var showShop = false
     @State private var showMissions = false
+    @State private var showLegends = false
     /// Treibt das langsame Pulsieren des Aufgabenknopfs an.
     @State private var missionPulse = false
 
@@ -98,6 +99,7 @@ struct GameView: View {
         .sheet(isPresented: $showCodex) { CodexView() }
         .sheet(isPresented: $showShop) { ShopView() }
         .sheet(isPresented: $showMissions) { MissionsView() }
+        .sheet(isPresented: $showLegends) { LegendsView() }
     }
 
     // MARK: - Kopfleiste
@@ -149,6 +151,12 @@ struct GameView: View {
                             hudValue("dot.radiowaves.up.forward", activityText,
                                      tint: Palette.moss.swiftUIColor)
                         }
+                        // Peilsender: Wie weit die Legende gerade weg ist.
+                        if let distance = session.legendDistance {
+                            hudDivider
+                            hudValue("sparkles", String(format: "%.0f m", distance),
+                                     tint: Palette.gold.swiftUIColor)
+                        }
                     }
                     .background(
                         Capsule().fill(Palette.paper.swiftUIColor.opacity(UIStyle.overlayOpacity))
@@ -165,6 +173,14 @@ struct GameView: View {
                 iconButton("bag", label: "Shop") { showShop = true }
                 iconButton("checklist", label: "Aufgaben",
                            badge: session.claimableMissionCount) { showMissions = true }
+
+                // Steht die Legende in diesem Gewässer, kommt man auch von
+                // draußen an ihren Hinweis — vorher musste man dafür ins
+                // Hauptmenü zurück.
+                if session.legendIsHere {
+                    iconButton("sparkles", label: "Legende",
+                               tint: Palette.gold.swiftUIColor) { showLegends = true }
+                }
             }
         }
         .padding(.top, 8)
@@ -271,6 +287,7 @@ struct GameView: View {
     private func iconButton(_ symbol: String,
                             label: String,
                             badge: Int = 0,
+                            tint: Color? = nil,
                             action: @escaping () -> Void) -> some View {
         let highlighted = badge > 0
 
@@ -281,7 +298,7 @@ struct GameView: View {
                 Text(label)
                     .font(.system(size: 9, weight: .medium, design: .rounded))
             }
-            .foregroundStyle(highlighted ? Palette.moss.swiftUIColor : Palette.uiInk)
+            .foregroundStyle(highlighted ? Palette.moss.swiftUIColor : (tint ?? Palette.uiInk))
             .frame(width: 64, height: 52)
             .background(
                 RoundedRectangle(cornerRadius: UIStyle.controlRadius, style: .continuous)
