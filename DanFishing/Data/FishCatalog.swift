@@ -387,7 +387,9 @@ enum FishCatalog {
             habitats: [.inflow, .deep, .shallows],
             activeTimes: [.day, .dusk],
             preferredBaitIDs: ["worm", "wormbundle", "corn", "maggot"],
-            fightStrength: 0.72,
+            // Barben ziehen für ihre Größe härter als alles andere im See:
+            // stumpfe, tiefe Fluchten, die nicht abreißen wollen.
+            fightStrength: 0.90,
             motion: .diving,
             valuePerKilo: 66,
             minPlayerLevel: 4,
