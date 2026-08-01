@@ -1,0 +1,4 @@
+# Auf dem macOS-Runner laufen die Workflow-Skripte in bash. Mit CRLF im Repo
+# würde bash an jedem Zeilenende über ein \r stolpern, deshalb alles auf LF.
+* text=auto eol=lf
+*.png binary
