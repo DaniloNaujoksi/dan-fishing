@@ -48,16 +48,15 @@ struct GameView: View {
                         .transition(.opacity)
                 }
 
-                if let result = session.pendingCatch {
-                    CatchResultView(result: result)
-                        .transition(.scale(scale: 0.92).combined(with: .opacity))
-                }
-
-                // Liegt über der Fangkarte: Die Entdeckung kommt zuerst, die
-                // Zahlen danach.
+                // Nacheinander, nicht übereinander: Erst springt der neue Fisch
+                // aus dem Wasser, danach kommt die Fangkarte mit den Zahlen.
+                // Beides gleichzeitig hieße, denselben Fisch zweimal zu sehen.
                 if let species = session.discoveredSpecies {
                     NewSpeciesBanner(species: species, bonusCoins: session.discoveryBonus)
                         .transition(.opacity)
+                } else if let result = session.pendingCatch {
+                    CatchResultView(result: result)
+                        .transition(.scale(scale: 0.92).combined(with: .opacity))
                 }
 
                 if let step = session.tutorialStep, session.pendingCatch == nil {
