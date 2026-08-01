@@ -247,6 +247,60 @@ enum FishCatalog {
         ),
 
         FishSpecies(
+            id: "goby",
+            name: "Schwarzmeergrundel",
+            summary: "Kleiner Grundbewohner mit Saugnapfbauch, eingewandert und längst heimisch. Sitzt zwischen Steinen und schnappt nach allem, was vorbeikommt.",
+            rarity: .common,
+            feeding: .omnivore,
+            minLength: 10, maxLength: 18,
+            minWeight: 0.01, maxWeight: 0.10,
+            habitats: [.shallows, .sunkenLogs, .reeds],
+            activeTimes: [.dawn, .day, .dusk, .night],
+            preferredBaitIDs: ["worm", "maggot"],
+            fightStrength: 0.16,
+            motion: .thrashing,
+            valuePerKilo: 28,
+            minPlayerLevel: 1,
+            bodyColor: ColorSpec(0x8A7C4E), bellyColor: ColorSpec(0xCFC49A), finColor: ColorSpec(0x6E6238)
+        ),
+
+        FishSpecies(
+            id: "salmon",
+            name: "Lachs",
+            summary: "Silberner Wanderer, der nur zum Laichen heraufzieht. Kraftvoll, ausdauernd und im Drill kaum zu halten — der Fisch, von dem alle erzählen.",
+            rarity: .rare,
+            feeding: .predator,
+            minLength: 60, maxLength: 100,
+            minWeight: 2.5, maxWeight: 14.0,
+            habitats: [.inflow, .deep],
+            activeTimes: [.dawn, .dusk],
+            preferredBaitIDs: ["spoon", "spinner", "minnow"],
+            fightStrength: 0.85,
+            motion: .darting,
+            valuePerKilo: 96,
+            minPlayerLevel: 5,
+            bodyColor: ColorSpec(0x9AA4AA), bellyColor: ColorSpec(0xE8EBEC), finColor: ColorSpec(0x6E7A80)
+        ),
+
+        FishSpecies(
+            id: "bream",
+            name: "Brasse",
+            summary: "Hochrückiger Friedfisch, der in großen Schwärmen den Grund abgrast. Wehrt sich wenig, kommt aber selten allein.",
+            rarity: .uncommon,
+            feeding: .peaceful,
+            minLength: 30, maxLength: 70,
+            minWeight: 0.5, maxWeight: 5.5,
+            habitats: [.lilies, .deep, .shallows],
+            activeTimes: [.dawn, .dusk, .night],
+            preferredBaitIDs: ["corn", "worm", "maggot"],
+            fightStrength: 0.40,
+            motion: .steady,
+            valuePerKilo: 48,
+            minPlayerLevel: 2,
+            bodyColor: ColorSpec(0x8C8663), bellyColor: ColorSpec(0xD8D2B0), finColor: ColorSpec(0x5E5A46)
+        ),
+
+        FishSpecies(
             id: "beluga",
             name: "Hausen",
             summary: "Der größte Süßwasserfisch überhaupt. Panzerplatten, mächtige Schwanzflosse, Barteln wie Taue. Alte Angler behaupten, er sei älter als der See selbst.",
@@ -267,8 +321,8 @@ enum FishCatalog {
         FishSpecies(
             id: "grayling",
             name: "Äsche",
-            summary: "Schlanke Schönheit mit großer gefleckter Rückenfahne. Steht in der Strömung des Zuflusses und nimmt fast nur Insekten.",
-            rarity: .common,
+            summary: "Schlanke Schönheit mit großer gefleckter Rückenfahne. Steht in der Strömung des Zuflusses und nimmt fast nur Insekten — wer sie fangen will, braucht Geduld und die richtige Fliege.",
+            rarity: .rare,
             feeding: .peaceful,
             minLength: 25, maxLength: 55,
             minWeight: 0.15, maxWeight: 2.2,
@@ -277,8 +331,8 @@ enum FishCatalog {
             preferredBaitIDs: ["fly", "insect", "maggot"],
             fightStrength: 0.44,
             motion: .darting,
-            valuePerKilo: 64,
-            minPlayerLevel: 2,
+            valuePerKilo: 96,
+            minPlayerLevel: 3,
             bodyColor: ColorSpec(0x9CA8B2), bellyColor: ColorSpec(0xE2E6E8), finColor: ColorSpec(0x6C6088)
         ),
 

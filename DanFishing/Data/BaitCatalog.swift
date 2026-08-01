@@ -66,7 +66,7 @@ enum BaitCatalog {
 
         Bait(id: "spoon", name: "Blinker",
              summary: "Trudelndes Metall mit weitem Wurf. Sucht große Flächen schnell ab.",
-             kind: .artificial, targets: [.predator, .omnivore], specialty: nil,
+             kind: .artificial, targets: [.predator, .omnivore], specialty: "salmon",
              price: 240, unlockLevel: 4,
              strongHabitats: [.deep, .inflow], strongTimes: [.day, .dusk],
              sizeBias: 0.58, rarityBias: 0.38, baseAppeal: 0.56, color: ColorSpec(0xB9C4CA)),
