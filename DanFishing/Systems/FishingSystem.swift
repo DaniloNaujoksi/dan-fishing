@@ -10,8 +10,7 @@ final class FishingSystem {
 
     enum Phase: Equatable {
         case idle          // Angel eingeholt
-        case aimingDirection  // Schritt 1: wohin geworfen wird
-        case aimingPower      // Schritt 2: wie weit geworfen wird
+        case aiming        // Richtung und Weite in einer Bewegung
         case flying        // Köder ist unterwegs
         case waiting       // Köder liegt, es passiert noch nichts
         case nibble        // Fisch interessiert sich, Schwimmer zuckt
@@ -59,37 +58,22 @@ final class FishingSystem {
 
     // MARK: - Eingaben
 
-    /// Schritt 1: Der Finger liegt auf, die Richtung wird gewählt.
-    ///
-    /// Richtung und Weite in einer Geste zu vereinen hat sich als hakelig
-    /// erwiesen — man traf entweder die Richtung oder die Weite, selten beides.
-    /// Jetzt ist es nacheinander: erst zielen, dann ausholen.
+    /// Der Finger liegt auf der Wurftaste. Ab hier wird gezielt.
     func beginAim(direction: CGVector) {
         guard phase == .idle else { return }
-        phase = .aimingDirection
-        castPower = 0.35        // Vorschau mit mittlerer Weite
+        phase = .aiming
+        castPower = 0
         aimDirection = FishingSystem.unit(direction)
     }
 
-    /// Richtung nachführen, solange Schritt 1 läuft.
-    func updateAimDirection(_ direction: CGVector) {
-        guard phase == .aimingDirection else { return }
+    /// Zielhilfe nachführen: Richtung und Weite kommen aus derselben
+    /// Fingerbewegung — Richtung aus ihrer Neigung, Weite aus ihrer Länge.
+    func updateAim(direction: CGVector, power: Double) {
+        guard phase == .aiming else { return }
+        castPower = min(1, max(0, power))
         if hypot(direction.dx, direction.dy) > 0.01 {
             aimDirection = FishingSystem.unit(direction)
         }
-    }
-
-    /// Richtung steht — weiter zu Schritt 2.
-    func confirmDirection() {
-        guard phase == .aimingDirection else { return }
-        phase = .aimingPower
-        castPower = 0
-    }
-
-    /// Schritt 2: Wurfweite aus der Länge der Fingerbewegung.
-    func updateAimPower(_ power: Double) {
-        guard phase == .aimingPower else { return }
-        castPower = min(1, max(0, power))
     }
 
     /// Wohin der Köder bei der aktuellen Zielhilfe fliegen würde.
@@ -112,14 +96,7 @@ final class FishingSystem {
     func releaseCast(from origin: CGPoint,
                      stats: EquipmentStats,
                      map: LakeMap) -> CGPoint? {
-        guard phase == .aimingPower else {
-            // Aus Schritt 1 heraus losgelassen: Wurf abbrechen.
-            if phase == .aimingDirection {
-                phase = .idle
-                castPower = 0
-            }
-            return nil
-        }
+        guard phase == .aiming else { return nil }
 
         // Zu kurz gezogen heißt: doch nicht werfen. Sonst landet der Köder bei
         // jedem versehentlichen Antippen im Wasser.
@@ -252,7 +229,7 @@ final class FishingSystem {
         case .idle, .hooked:
             break
 
-        case .aimingDirection, .aimingPower:
+        case .aiming:
             // Nichts zu rechnen: Richtung und Weite kommen vom Finger.
             break
 

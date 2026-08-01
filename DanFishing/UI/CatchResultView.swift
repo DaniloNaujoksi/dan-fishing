@@ -148,13 +148,15 @@ struct FishSilhouette: View {
         if let image = UIImage(named: "fish_\(species.id)") {
             // Gezeichnete Grafik. Unbekannte Arten erscheinen als dunkle
             // Silhouette, damit das Fangbuch nichts vorwegnimmt.
+            // Unbekannte Arten erscheinen als vollständig schwarze Silhouette:
+            // Man sieht die Form, aber nichts von der Zeichnung — das hält die
+            // Neugier auf den ersten Fang wach.
             Image(uiImage: image)
                 .resizable()
                 .interpolation(.none)
                 .aspectRatio(contentMode: .fit)
                 .scaleEffect(x: -1)
-                .brightness(silhouetteOnly ? -1 : 0)
-                .opacity(silhouetteOnly ? 0.35 : 1)
+                .colorMultiply(silhouetteOnly ? .black : .white)
         } else {
             drawnShape
         }

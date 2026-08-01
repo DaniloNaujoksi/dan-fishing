@@ -54,6 +54,10 @@ struct SaveData: Codable, Equatable {
     var missions: [MissionProgress] = []
     /// Tag, für den die aktuellen Missionen erzeugt wurden (Start des Tages).
     var missionDay: Date?
+    /// Laufende Nummer der Aufgabenstaffel. Sie zählt hoch, sobald alle
+    /// Belohnungen abgeholt sind — dadurch reihen sich die Aufgaben wie eine
+    /// Kampagne aneinander, statt auf den nächsten Kalendertag zu warten.
+    var missionSet: Int = 0
 
     var totalCatches: Int = 0
     var totalReleased: Int = 0

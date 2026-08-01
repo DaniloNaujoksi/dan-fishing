@@ -157,5 +157,8 @@ struct MenuBackground: View {
             }
         }
         .ignoresSafeArea()
+        // Reine Kulisse: Sie darf keine Berührungen abfangen, sonst gehen
+        // Knöpfe darüber ins Leere.
+        .allowsHitTesting(false)
     }
 }

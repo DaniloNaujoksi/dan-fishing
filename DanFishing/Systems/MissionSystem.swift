@@ -19,6 +19,14 @@ enum MissionSystem {
     /// Erzeugt die Missionen eines Tages, passend zum Spielerlevel.
     static func missions(for day: Date, playerLevel: Int) -> [Mission] {
         var rng = SeededGenerator(seed: seed(for: day))
+        return buildMissions(rng: &rng, playerLevel: playerLevel, setIndex: 0)
+    }
+
+    /// Baut eine Staffel Aufgaben. Der Index geht in die Kennung ein, damit
+    /// spätere Staffeln eigene Einträge im Spielstand bekommen.
+    private static func buildMissions(rng: inout SeededGenerator,
+                                      playerLevel: Int,
+                                      setIndex: Int) -> [Mission] {
         var result: [Mission] = []
         var usedKinds = Set<Int>()
 
@@ -35,7 +43,7 @@ enum MissionSystem {
             usedKinds.insert(kind)
 
             let index = result.count
-            let id = "\(Int(day.timeIntervalSince1970))-\(kind)"
+            let id = "set\(setIndex)-\(kind)"
 
             switch kind {
             case 0:
@@ -109,21 +117,42 @@ enum MissionSystem {
         return result
     }
 
-    /// Sorgt dafür, dass der Spielstand die Missionen des heutigen Tages führt.
-    /// Bei Tageswechsel werden die alten verworfen.
-    static func refreshIfNeeded(data: inout SaveData, now: Date = Date()) -> [Mission] {
-        let today = dayStart(for: now)
-        let missions = self.missions(for: today, playerLevel: data.level)
+    /// Missionen einer Staffel. Statt an echte Kalendertage gebunden zu sein,
+    /// laufen die Aufgaben als Kette: Ist eine Staffel abgeholt, folgt sofort
+    /// die nächste. Wer einen Abend durchspielen will, muss nicht auf
+    /// Mitternacht warten.
+    static func missions(forSet index: Int, playerLevel: Int) -> [Mission] {
+        var rng = SeededGenerator(seed: UInt64(index &* 7919 &+ 13) &* 0x9E3779B9 &+ 17)
+        return buildMissions(rng: &rng, playerLevel: playerLevel, setIndex: index)
+    }
 
-        if data.missionDay != today {
-            data.missionDay = today
-            data.missions = missions.map { MissionProgress(id: $0.id) }
-        } else {
-            // Fehlende Einträge nachziehen (z. B. nach einem Levelaufstieg).
-            for mission in missions where !data.missions.contains(where: { $0.id == mission.id }) {
+    /// Sorgt dafür, dass der Spielstand die aktuelle Staffel führt, und
+    /// schaltet weiter, sobald alle Belohnungen abgeholt sind.
+    @discardableResult
+    static func refreshIfNeeded(data: inout SaveData, now: Date = Date()) -> [Mission] {
+        var missions = self.missions(forSet: data.missionSet, playerLevel: data.level)
+
+        // Eintraege anlegen, die noch fehlen.
+        for mission in missions where !data.missions.contains(where: { $0.id == mission.id }) {
+            data.missions.append(MissionProgress(id: mission.id))
+        }
+
+        // Alles abgeholt? Dann kommt die nächste Staffel — sofort.
+        let allClaimed = !missions.isEmpty && missions.allSatisfy { mission in
+            data.missions.first(where: { $0.id == mission.id })?.claimed == true
+        }
+
+        if allClaimed {
+            data.missionSet += 1
+            data.missions.removeAll { entry in
+                missions.contains(where: { $0.id == entry.id })
+            }
+            missions = self.missions(forSet: data.missionSet, playerLevel: data.level)
+            for mission in missions {
                 data.missions.append(MissionProgress(id: mission.id))
             }
         }
+
         return missions
     }
 

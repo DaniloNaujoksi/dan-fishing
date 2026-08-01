@@ -313,6 +313,14 @@ final class GameSession: ObservableObject {
         AudioManager.shared.play(.catchSmall)
         HapticManager.shared.success()
         showToast("Belohnung erhalten: \(mission.rewardCoins) Münzen")
+
+        // Waren das die letzten offenen Aufgaben, steht sofort die nächste
+        // Staffel bereit — kein Warten auf den nächsten Tag.
+        let previousSet = save.missionSet
+        refreshMissions()
+        if save.missionSet > previousSet {
+            showToast("Neue Aufgaben verfügbar", emphasis: true)
+        }
         persist()
     }
 

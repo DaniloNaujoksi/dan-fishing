@@ -22,24 +22,18 @@ final class FishNode: SKNode {
         self.species = species
         super.init()
 
-        if let texture = TextureFactory.fishArtwork(for: species) {
+        // Im Wasser sieht man nur den Rücken als Schemen — die gezeichneten
+        // Grafiken erscheinen erst im Fangbuch und auf der Fangkarte.
+        if let texture = TextureFactory.fishBackSilhouette(for: species) {
             sprite.texture = texture
 
-            // Große Arten sind auch im Wasser deutlich größer zu sehen — das
-            // ist der Hinweis, der einen Hecht von einem Rotauge unterscheidet.
-            // Die Höhe folgt dem Seitenverhältnis der Grafik, damit kein Fisch
-            // gestaucht wirkt.
             // Maßstab: Ein Boot ist rund 110 Punkte lang. Ein Rotauge misst
             // damit gut 30, ein Wels über 80 — groß genug zum Erkennen, ohne
             // dass der See von Fischen zugestellt wirkt.
             let sizeFactor = min(1.5, CGFloat(species.maxLength) / 70)
-            let width = 34 * swimmer.scale * sizeFactor
+            let width = 42 * swimmer.scale * sizeFactor
             let ratio = texture.size().height / max(texture.size().width, 1)
             sprite.size = CGSize(width: width, height: width * ratio)
-
-            // Die Grafiken zeigen alle nach links, im Spiel zeigt 0° nach
-            // rechts — einmal spiegeln statt zwölf Bilder neu zu zeichnen.
-            sprite.xScale = -1
         }
         sprite.alpha = 0.55
         addChild(sprite)
@@ -88,8 +82,7 @@ final class FishNode: SKNode {
         // Schwanzschlag: schneller, je eiliger der Fisch unterwegs ist.
         let effort: CGFloat = (swimmer.behaviour == .spooked || swimmer.behaviour == .retreat) ? 2.2 : 1.0
         tailPhase += deltaTime * (3 + swimmer.speed * 0.06) * effort
-        // Spiegelung beibehalten und nur den Betrag stauchen.
-        sprite.xScale = -(1 - abs(sin(tailPhase)) * 0.06)
+        sprite.xScale = 1 - abs(sin(tailPhase)) * 0.06
 
         // Flaches Wasser: besser zu sehen. Tiefes Wasser: nur ein Schemen.
         let depth = map.depth(at: swimmer.position)

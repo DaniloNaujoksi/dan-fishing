@@ -7,6 +7,7 @@ struct GameView: View {
 
     @State private var scene: LakeScene?
     @State private var isPressingAction = false
+    @State private var minimapExpanded = false
     @State private var showBaitBox = false
     @State private var showCodex = false
     @State private var showShop = false
@@ -24,12 +25,20 @@ struct GameView: View {
 
                 VStack(spacing: 0) {
                     topBar
+
+                    HStack {
+                        Spacer()
+                        minimapOverlay
+                    }
+                    .padding(.top, 10)
+
                     Spacer()
+
                     if session.miniGame == nil {
                         bottomControls
                     }
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 14)
                 .padding(.bottom, 18)
 
                 if let miniGame = session.miniGame {
@@ -70,61 +79,77 @@ struct GameView: View {
 
     // MARK: - Kopfleiste
 
+    /// Kopfbereich in zwei Zeilen.
+    ///
+    /// Vorher standen Zurück-Knopf, Werteanzeigen und die drei Menüknöpfe in
+    /// einer Reihe — sobald die Anzeigen breiter wurden, schoben sie die
+    /// Knöpfe über den Bildrand hinaus. Jetzt hat jede Gruppe ihre eigene
+    /// Zeile und die Werte dürfen notfalls seitlich scrollen.
     private var topBar: some View {
         HStack(alignment: .top, spacing: 10) {
-            Button {
-                session.returnToMenu()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Palette.uiInk)
-                    .padding(9)
-                    .background(Circle().fill(Palette.paper.swiftUIColor.opacity(0.88)))
-            }
-
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 8) {
-                    StatChip(symbol: "circle.hexagongrid.fill",
-                             value: "\(session.save.coins)",
-                             tint: ColorSpec(0x9A7B24).swiftUIColor)
-                    StatChip(symbol: "star.fill", value: "St. \(session.save.level)")
-                    StatChip(symbol: "clock", value: session.clockText)
+            VStack(alignment: .leading, spacing: 8) {
+                Button {
+                    session.returnToMenu()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Palette.uiInk)
+                        .frame(width: 38, height: 38)
+                        .background(Circle().fill(Palette.paper.swiftUIColor.opacity(0.9)))
                 }
 
-                if session.save.settings.showDepthHint {
+                ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        StatChip(symbol: "water.waves", value: session.habitatText)
-                        StatChip(symbol: "arrow.down.to.line", value: session.depthText)
-                        if session.stats.hasFishFinder {
-                            StatChip(symbol: "dot.radiowaves.up.forward",
-                                     value: activityText,
-                                     tint: Palette.moss.swiftUIColor)
+                        StatChip(symbol: "circle.hexagongrid.fill",
+                                 value: "\(session.save.coins)",
+                                 tint: ColorSpec(0x9A7B24).swiftUIColor)
+                        StatChip(symbol: "star.fill", value: "St. \(session.save.level)")
+                        StatChip(symbol: "clock", value: session.clockText)
+
+                        if session.save.settings.showDepthHint {
+                            StatChip(symbol: "water.waves", value: session.habitatText)
+                            StatChip(symbol: "arrow.down.to.line", value: session.depthText)
+                            if session.stats.hasFishFinder {
+                                StatChip(symbol: "dot.radiowaves.up.forward",
+                                         value: activityText,
+                                         tint: Palette.moss.swiftUIColor)
+                            }
                         }
                     }
+                    .padding(.trailing, 8)
                 }
+                .frame(maxWidth: 210)
             }
 
-            Spacer()
+            Spacer(minLength: 8)
 
-            // Deutlich größer als zuvor: Mit dem Daumen am oberen Bildrand
-            // trifft man 36 Punkte kaum zuverlässig.
-            VStack(alignment: .trailing, spacing: 10) {
+            VStack(alignment: .trailing, spacing: 8) {
                 iconButton("book.closed", label: "Fangbuch") { showCodex = true }
                 iconButton("bag", label: "Laden") { showShop = true }
                 iconButton("checklist", label: "Aufgaben") { showMissions = true }
-
-                if let minimap = session.minimap {
-                    MinimapView(image: session.minimapImage,
-                                boat: minimap.boat,
-                                heading: minimap.heading,
-                                lure: minimap.lure,
-                                worldSize: minimap.worldSize,
-                                size: 76)
-                        .padding(.top, 4)
-                }
             }
         }
         .padding(.top, 8)
+    }
+
+    /// Die Minimap sitzt frei über dem Wasser und lässt sich antippen.
+    @ViewBuilder
+    private var minimapOverlay: some View {
+        if let minimap = session.minimap {
+            MinimapView(image: session.minimapImage,
+                        boat: minimap.boat,
+                        heading: minimap.heading,
+                        lure: minimap.lure,
+                        worldSize: minimap.worldSize,
+                        size: minimapExpanded ? 210 : 62)
+                .opacity(minimapExpanded ? 0.96 : 0.55)
+                .onTapGesture {
+                    withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
+                        minimapExpanded.toggle()
+                    }
+                    HapticManager.shared.selection()
+                }
+        }
     }
 
     private var activityText: String {
@@ -145,7 +170,7 @@ struct GameView: View {
                     .font(.system(size: 9, weight: .medium, design: .rounded))
             }
             .foregroundStyle(Palette.uiInk)
-            .frame(width: 54, height: 54)
+            .frame(width: 66, height: 54)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(Palette.paper.swiftUIColor.opacity(0.9))
@@ -218,10 +243,8 @@ struct GameView: View {
         Group {
             switch session.fishingPhase {
             case .idle:
-                hintText("1 · Richtung ziehen")
-            case .aimingDirection:
-                hintText("Richtung wählen, dann loslassen")
-            case .aimingPower:
+                hintText("Ziehen und loslassen")
+            case .aiming:
                 castPowerBar
             case .flying:
                 hintText("…")
@@ -270,18 +293,20 @@ struct GameView: View {
     }
 
     private var actionButton: some View {
+        // Genauso groß wie der Ruderkreis links — beide Daumen bekommen
+        // dieselbe Fläche.
         Circle()
             .fill(actionColor)
-            .frame(width: 96, height: 96)
+            .frame(width: 124, height: 124)
             .overlay(
                 Circle().strokeBorder(Palette.paper.swiftUIColor.opacity(0.8), lineWidth: 2)
             )
             .overlay(
-                VStack(spacing: 2) {
+                VStack(spacing: 3) {
                     Image(systemName: actionSymbol)
-                        .font(.system(size: 26, weight: .semibold))
+                        .font(.system(size: 32, weight: .semibold))
                     Text(actionTitle)
-                        .font(.system(size: 12, weight: .semibold, design: .serif))
+                        .font(.system(size: 14, weight: .semibold, design: .serif))
                 }
                 .foregroundStyle(Palette.paper.swiftUIColor)
             )
@@ -305,11 +330,7 @@ struct GameView: View {
 
                         // Zwei Schritte: Erst wird die Richtung bestätigt,
                         // beim zweiten Loslassen fliegt der Köder.
-                        if session.fishingPhase == .aimingDirection {
-                            scene?.confirmAimDirection()
-                        } else {
-                            scene?.releaseAim()
-                        }
+                        scene?.releaseAim()
                     }
             )
     }
@@ -317,8 +338,7 @@ struct GameView: View {
     private var actionColor: Color {
         switch session.fishingPhase {
         case .biteWindow: return Palette.vermilion.swiftUIColor
-        case .aimingDirection: return ColorSpec(0x4E7A6E).swiftUIColor
-        case .aimingPower: return ColorSpec(0x9A6A3A).swiftUIColor
+        case .aiming: return ColorSpec(0x9A6A3A).swiftUIColor
         default: return ColorSpec(0x4E6E7A).swiftUIColor
         }
     }
@@ -326,8 +346,7 @@ struct GameView: View {
     private var actionSymbol: String {
         switch session.fishingPhase {
         case .idle: return "arrow.up.forward"
-        case .aimingDirection: return "scope"
-        case .aimingPower: return "arrow.up.forward.circle"
+        case .aiming: return "arrow.up.forward.circle"
         case .flying: return "hourglass"
         case .waiting, .nibble: return "hand.tap"
         case .biteWindow: return "bolt.fill"
@@ -337,9 +356,8 @@ struct GameView: View {
 
     private var actionTitle: String {
         switch session.fishingPhase {
-        case .idle, .flying: return "Werfen"
-        case .aimingDirection: return "Richtung"
-        case .aimingPower: return "Ausholen"
+        case .idle, .flying: return "Auswerfen"
+        case .aiming: return "Auswerfen"
         case .waiting, .nibble, .biteWindow: return "Anschlag"
         case .hooked: return "Drill"
         }

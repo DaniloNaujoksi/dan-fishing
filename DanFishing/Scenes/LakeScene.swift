@@ -396,8 +396,7 @@ final class LakeScene: SKScene {
         }
 
         // Die Rute dreht sich beim Zielen mit und lädt sich beim Ausholen auf.
-        let aiming = fishing.phase == .aimingDirection || fishing.phase == .aimingPower
-        boatNode.setCastPose(aiming ? CGFloat(fishing.castPower) : nil,
+        boatNode.setCastPose(fishing.phase == .aiming ? CGFloat(fishing.castPower) : nil,
                              aimDirection: fishing.aimDirection,
                              boatHeading: boat.heading)
 
@@ -641,32 +640,20 @@ final class LakeScene: SKScene {
     ///
     /// Schritt 1 nimmt daraus die Richtung, Schritt 2 die Länge als Wurfweite.
     func updateAim(drag: CGVector) {
+        guard fishing.phase == .aiming else { return }
+
         let length = hypot(drag.dx, drag.dy)
 
-        switch fishing.phase {
-        case .aimingDirection:
-            if length > 8 { fishing.updateAimDirection(drag) }
+        // Kurze Fingerbewegung = kurzer Wurf. Nach dieser Strecke ist die
+        // volle Weite erreicht.
+        let fullPullDistance: CGFloat = 150
+        let power = Double(min(1, length / fullPullDistance))
 
-        case .aimingPower:
-            // Nach dieser Strecke ist die volle Weite erreicht.
-            let fullPullDistance: CGFloat = 150
-            fishing.updateAimPower(Double(min(1, length / fullPullDistance)))
-
-        default:
-            break
-        }
-    }
-
-    /// Schritt 1 abgeschlossen — ab jetzt zählt die Weite.
-    func confirmAimDirection() {
-        guard fishing.phase == .aimingDirection else { return }
-        fishing.confirmDirection()
-        HapticManager.shared.selection()
-        AudioManager.shared.play(.uiTap)
+        fishing.updateAim(direction: length > 6 ? drag : fishing.aimDirection, power: power)
     }
 
     func releaseAim() {
-        guard fishing.phase == .aimingPower || fishing.phase == .aimingDirection else { return }
+        guard fishing.phase == .aiming else { return }
 
         if fishing.releaseCast(from: boatNode.rodTipPosition,
                                stats: session.stats,
@@ -689,7 +676,7 @@ final class LakeScene: SKScene {
 
     /// Führt die Zielhilfe nach: Bahn, Landepunkt und Reichweite.
     private func updateAimPreview() {
-        guard fishing.phase == .aimingDirection || fishing.phase == .aimingPower else {
+        guard fishing.phase == .aiming else {
             aimPreview.hide()
             return
         }

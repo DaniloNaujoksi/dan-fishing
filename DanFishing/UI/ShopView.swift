@@ -18,12 +18,33 @@ struct ShopView: View {
                 MenuBackground()
 
                 VStack(spacing: 0) {
-                    Picker("", selection: $tab) {
+                    // Eigene Umschalter statt eines Pickers: Der segmentierte
+                    // Picker reagierte über der gezeichneten Hintergrundfläche
+                    // nicht zuverlässig auf Berührungen.
+                    HStack(spacing: 10) {
                         ForEach(Tab.allCases, id: \.self) { entry in
-                            Text(entry.rawValue).tag(entry)
+                            Button {
+                                tab = entry
+                                HapticManager.shared.selection()
+                            } label: {
+                                Text(entry.rawValue)
+                                    .font(.system(size: 15, weight: .semibold, design: .serif))
+                                    .foregroundStyle(tab == entry
+                                                     ? Palette.paper.swiftUIColor
+                                                     : Palette.uiInk)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 11)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                            .fill(tab == entry
+                                                  ? Palette.vermilion.swiftUIColor
+                                                  : Palette.paper.swiftUIColor.opacity(0.9))
+                                    )
+                                    .contentShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
-                    .pickerStyle(.segmented)
                     .padding(.horizontal, 18)
                     .padding(.top, 10)
 

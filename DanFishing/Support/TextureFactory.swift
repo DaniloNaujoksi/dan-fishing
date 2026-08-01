@@ -1,3 +1,4 @@
+import CoreImage
 import SpriteKit
 import UIKit
 
@@ -185,6 +186,76 @@ enum TextureFactory {
         }
     }
 
+    /// Der Fisch, wie man ihn von oben durch die Wasseroberfläche sieht.
+    ///
+    /// Von oben ist ein Fisch kein Steckbrief, sondern ein dunkler Schemen mit
+    /// einem Rückenstreifen. Die ausgearbeiteten Grafiken bleiben dem Fangbuch
+    /// und der Fangkarte vorbehalten — im See wäre die Art sonst schon vor dem
+    /// Anbiss zu erkennen, und genau die Ungewissheit macht den Reiz aus.
+    static func fishBackSilhouette(for species: FishSpecies) -> SKTexture? {
+        cached("back-\(species.id)") {
+            let size = CGSize(width: 128, height: 52)
+
+            let rendered = image(size: size) { context, canvas in
+                let midY = canvas.height / 2
+
+                // Körper: vorne rund, hinten schlank auslaufend.
+                let body = UIBezierPath()
+                body.move(to: CGPoint(x: canvas.width - 6, y: midY))
+                body.addCurve(to: CGPoint(x: 34, y: midY - 15),
+                              controlPoint1: CGPoint(x: canvas.width - 30, y: midY - 17),
+                              controlPoint2: CGPoint(x: 66, y: midY - 18))
+                body.addCurve(to: CGPoint(x: 14, y: midY),
+                              controlPoint1: CGPoint(x: 24, y: midY - 12),
+                              controlPoint2: CGPoint(x: 17, y: midY - 6))
+                body.addCurve(to: CGPoint(x: 34, y: midY + 15),
+                              controlPoint1: CGPoint(x: 17, y: midY + 6),
+                              controlPoint2: CGPoint(x: 24, y: midY + 12))
+                body.addCurve(to: CGPoint(x: canvas.width - 6, y: midY),
+                              controlPoint1: CGPoint(x: 66, y: midY + 18),
+                              controlPoint2: CGPoint(x: canvas.width - 30, y: midY + 17))
+                body.close()
+
+                // Grundton: die Körperfarbe der Art, kräftig abgedunkelt.
+                var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+                species.bodyColor.skColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+                let dark = UIColor(red: red * 0.42, green: green * 0.45, blue: blue * 0.48, alpha: 0.92)
+
+                context.setFillColor(dark.cgColor)
+                context.addPath(body.cgPath)
+                context.fillPath()
+
+                // Schwanzflosse als angedeutete Fahne.
+                let tail = UIBezierPath()
+                tail.move(to: CGPoint(x: 16, y: midY))
+                tail.addLine(to: CGPoint(x: 0, y: midY - 13))
+                tail.addLine(to: CGPoint(x: 6, y: midY))
+                tail.addLine(to: CGPoint(x: 0, y: midY + 13))
+                tail.close()
+                context.setFillColor(dark.withAlphaComponent(0.7).cgColor)
+                context.addPath(tail.cgPath)
+                context.fillPath()
+
+                // Rückenstreifen: einziger heller Akzent, wie das Licht ihn
+                // auf dem Rücken bricht.
+                let ridge = UIBezierPath()
+                ridge.move(to: CGPoint(x: canvas.width - 22, y: midY))
+                ridge.addQuadCurve(to: CGPoint(x: 30, y: midY),
+                                   controlPoint: CGPoint(x: 70, y: midY - 5))
+                context.setStrokeColor(UIColor(red: min(1, red * 1.25),
+                                               green: min(1, green * 1.25),
+                                               blue: min(1, blue * 1.25),
+                                               alpha: 0.5).cgColor)
+                context.setLineWidth(4)
+                context.setLineCap(.round)
+                context.addPath(ridge.cgPath)
+                context.strokePath()
+            }
+
+            return SKTexture(image: rendered)
+        }
+    }
+
     /// Bild einer Fischart.
     ///
     /// Zuerst wird die gezeichnete Grafik aus dem Asset-Katalog gesucht
@@ -338,49 +409,49 @@ enum TextureFactory {
             }
         }
 
-        // Weich hochziehen. Das Land bekommt danach eine klare Uferlinie,
-        // damit die Kante trotz Weichzeichnung ablesbar bleibt.
+        // Der entscheidende Schritt: Die kleine Karte wird weichgezeichnet,
+        // BEVOR sie hochgezogen wird. Reines Hochskalieren macht die Kanten
+        // zwar unscharf, die Form bleibt aber ein Treppenmuster aus Zellen.
+        // Ein Weichzeichner auf Zellenebene rundet dagegen die Formen selbst —
+        // aus Rechtecken werden Buchten.
+        let softened = blurred(small, radius: 1.15) ?? small
+
         let rendered = image(size: pixelSize) { context, canvas in
             context.interpolationQuality = .high
-            // Bewusst über UIImage gezeichnet statt über CGImage: Ein CGImage
-            // wird im UIKit-Kontext senkrecht gespiegelt, wodurch die ganze
-            // Karte auf dem Kopf stünde — Fische schwämmen dann über Land.
-            small.draw(in: CGRect(origin: .zero, size: canvas))
+            // Über UIImage gezeichnet statt über CGImage: Ein CGImage wird im
+            // UIKit-Kontext senkrecht gespiegelt, wodurch die ganze Karte auf
+            // dem Kopf stünde — Fische schwämmen dann über Land.
+            softened.draw(in: CGRect(origin: .zero, size: canvas))
 
-            context.setStrokeColor(ColorSpec(0xBBA987).skColor.withAlphaComponent(0.75).cgColor)
-            context.setLineWidth(max(1.5, cell * 0.16))
-            context.setLineJoin(.round)
-
-            for row in 0..<map.rows {
-                for column in 0..<map.columns where map.kind(column: column, row: row) == .land {
-                    // Nur Kanten zeichnen, an denen wirklich Wasser anliegt.
-                    let x = CGFloat(column) * cell
-                    let y = pixelSize.height - CGFloat(row + 1) * cell
-
-                    if map.kind(column: column, row: row + 1) != .land {
-                        context.move(to: CGPoint(x: x, y: y + cell))
-                        context.addLine(to: CGPoint(x: x + cell, y: y + cell))
-                    }
-                    if map.kind(column: column, row: row - 1) != .land {
-                        context.move(to: CGPoint(x: x, y: y))
-                        context.addLine(to: CGPoint(x: x + cell, y: y))
-                    }
-                    if map.kind(column: column - 1, row: row) != .land {
-                        context.move(to: CGPoint(x: x, y: y))
-                        context.addLine(to: CGPoint(x: x, y: y + cell))
-                    }
-                    if map.kind(column: column + 1, row: row) != .land {
-                        context.move(to: CGPoint(x: x + cell, y: y))
-                        context.addLine(to: CGPoint(x: x + cell, y: y + cell))
-                    }
-                }
-            }
-            context.strokePath()
+            // Ein zarter Sandsaum entlang des Ufers. Er folgt der weichen
+            // Form, statt die Zellen nachzuzeichnen.
+            context.setBlendMode(.softLight)
+            context.setAlpha(0.5)
+            softened.draw(in: CGRect(x: -cell * 0.35, y: -cell * 0.35,
+                                     width: canvas.width + cell * 0.7,
+                                     height: canvas.height + cell * 0.7))
         }
 
         // Nicht zwischenspeichern: Das Bild hängt an der Karte und wird genau
         // einmal pro Szene gebraucht.
         return SKTexture(image: rendered)
+    }
+
+    /// Weichzeichner über CoreImage. Gibt nil zurück, wenn der Filter fehlt —
+    /// dann wird ungeglättet weitergezeichnet.
+    private static func blurred(_ source: UIImage, radius: CGFloat) -> UIImage? {
+        guard let input = CIImage(image: source),
+              let filter = CIFilter(name: "CIGaussianBlur") else { return nil }
+
+        filter.setValue(input, forKey: kCIInputImageKey)
+        filter.setValue(radius, forKey: kCIInputRadiusKey)
+
+        guard let output = filter.outputImage else { return nil }
+
+        // Der Weichzeichner vergrößert das Bild; auf den Ursprung zurückschneiden.
+        let context = CIContext(options: [.useSoftwareRenderer: false])
+        guard let cgImage = context.createCGImage(output, from: input.extent) else { return nil }
+        return UIImage(cgImage: cgImage)
     }
 
     /// Kleine Übersichtskarte des Sees für die Minimap.
