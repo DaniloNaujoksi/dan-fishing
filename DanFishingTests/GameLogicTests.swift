@@ -371,13 +371,52 @@ final class UpgradeSystemTests: XCTestCase {
 
 final class MissionSystemTests: XCTestCase {
 
-    func testMissionsAreStableForTheSameDay() {
-        let day = MissionSystem.dayStart(for: Date(timeIntervalSince1970: 1_700_000_000))
-        let first = MissionSystem.missions(for: day, playerLevel: 3)
-        let second = MissionSystem.missions(for: day, playerLevel: 3)
+    func testMissionsAreStableForTheSameSet() {
+        let first = MissionSystem.missions(forSet: 3, playerLevel: 5)
+        let second = MissionSystem.missions(forSet: 3, playerLevel: 5)
 
         XCTAssertEqual(first.map(\.id), second.map(\.id))
-        XCTAssertFalse(first.isEmpty)
+        XCTAssertEqual(first.count, MissionSystem.missionsPerSet)
+        // Jede Aufgabe trägt einen Stimmungssatz — daran hängt der Ton.
+        XCTAssertTrue(first.allSatisfy { !$0.flavor.isEmpty })
+    }
+
+    func testLaterChaptersDemandMoreAndPayMore() {
+        let early = MissionSystem.missions(forSet: 0, playerLevel: 3)
+        let late = MissionSystem.missions(forSet: 12, playerLevel: 12)
+
+        let earlyCoins = early.map(\.rewardCoins).reduce(0, +)
+        let lateCoins = late.map(\.rewardCoins).reduce(0, +)
+        XCTAssertGreaterThan(lateCoins, earlyCoins * 3)
+    }
+
+    func testWeightGoalCountsInHundredGrams() {
+        let goal = MissionGoal.totalWeight(5)
+        XCTAssertEqual(goal.target, 50)
+
+        let species = FishCatalog.species(id: "carp")!
+        let fish = HookedFish(species: species, lengthCm: 60, weightKg: 2.5,
+                              habitat: .lilies, baitID: "corn")
+        let result = CatchResult(fish: fish, coins: 0, experience: 0,
+                                 isNewSpecies: false, isPersonalRecord: false)
+
+        XCTAssertEqual(goal.progress(for: result, timeOfDay: .day), 25)
+        XCTAssertEqual(goal.progressText(current: 25), "2.5 / 5.0 kg")
+    }
+
+    func testHabitatGoalOnlyCountsMatchingCatches() {
+        let goal = MissionGoal.inHabitat(.reeds, 3)
+        let species = FishCatalog.species(id: "tench")!
+
+        func result(in habitat: Habitat) -> CatchResult {
+            let fish = HookedFish(species: species, lengthCm: 40, weightKg: 1.2,
+                                  habitat: habitat, baitID: "corn")
+            return CatchResult(fish: fish, coins: 0, experience: 0,
+                               isNewSpecies: false, isPersonalRecord: false)
+        }
+
+        XCTAssertEqual(goal.progress(for: result(in: .reeds), timeOfDay: .day), 1)
+        XCTAssertEqual(goal.progress(for: result(in: .deep), timeOfDay: .day), 0)
     }
 
     func testProgressAndClaim() {

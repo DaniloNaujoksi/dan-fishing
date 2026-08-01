@@ -13,6 +13,22 @@ struct MissionsView: View {
 
                 ScrollView {
                     VStack(spacing: 14) {
+                        // Kapitelüberschrift: Sie ordnet die drei Aufgaben in
+                        // den Fortgang ein, statt sie beziehungslos zu zeigen.
+                        PaperPanel(padding: 14) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Kapitel \(session.save.missionSet + 1)")
+                                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                    .textCase(.uppercase)
+                                    .foregroundStyle(Palette.vermilion.swiftUIColor)
+
+                                Text(MissionSystem.chapterTitle(forSet: session.save.missionSet))
+                                    .font(.system(size: 22, weight: .semibold, design: .serif))
+                                    .foregroundStyle(Palette.uiInk)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+
                         ForEach(session.missions) { mission in
                             missionCard(mission)
                         }
@@ -64,9 +80,17 @@ struct MissionsView: View {
                                                  ? Palette.moss.swiftUIColor
                                                  : Palette.uiInk)
                         }
-                        Text(mission.detail)
+                        Text(mission.flavor)
                             .font(.system(size: 13, design: .serif))
+                            .italic()
                             .foregroundStyle(Palette.inkSoft.swiftUIColor)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Text(mission.detail)
+                            .font(.system(size: 13, weight: .medium, design: .serif))
+                            .foregroundStyle(Palette.uiInk.opacity(0.85))
+                            .padding(.top, 2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
 
                     Spacer()
@@ -86,7 +110,7 @@ struct MissionsView: View {
                     .tint(done ? Palette.moss.swiftUIColor : Palette.vermilion.swiftUIColor)
 
                 HStack {
-                    Text("\(min(progress.progress, target)) / \(target)")
+                    Text(mission.goal.progressText(current: progress.progress))
                         .font(.system(size: 12, design: .rounded))
                         .foregroundStyle(Palette.inkSoft.swiftUIColor)
                         .monospacedDigit()

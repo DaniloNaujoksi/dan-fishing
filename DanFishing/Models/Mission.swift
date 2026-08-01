@@ -1,7 +1,9 @@
 import Foundation
 
-/// Was eine Mission verlangt. Missionen werden aus dem Tagesdatum erzeugt,
-/// deshalb muss der Typ selbst nicht gespeichert werden — nur der Fortschritt.
+/// Was eine Aufgabe verlangt.
+///
+/// Aufgaben werden aus dem Staffelindex erzeugt und nicht gespeichert — im
+/// Spielstand liegt nur der Fortschritt.
 enum MissionGoal: Equatable {
     case catchAny(Int)
     case catchSpecies(String, Int)
@@ -11,6 +13,11 @@ enum MissionGoal: Equatable {
     case duringTime(TimeOfDay, Int)
     case rarityAtLeast(Rarity, Int)
     case personalRecord(Int)
+    /// Fische aus einer bestimmten Zone.
+    case inHabitat(Habitat, Int)
+    /// Gesamtgewicht in Kilogramm. Intern in Hundert-Gramm-Schritten gezählt,
+    /// damit der Fortschritt eine ganze Zahl bleiben kann.
+    case totalWeight(Double)
 
     /// Wie viele Schritte bis zur Erfüllung.
     var target: Int {
@@ -23,6 +30,8 @@ enum MissionGoal: Equatable {
         case .duringTime(_, let n): return n
         case .rarityAtLeast(_, let n): return n
         case .personalRecord(let n): return n
+        case .inHabitat(_, let n): return n
+        case .totalWeight(let kilos): return Int((kilos * 10).rounded())
         }
     }
 
@@ -45,14 +54,33 @@ enum MissionGoal: Equatable {
             return result.fish.species.rarity >= rarity ? 1 : 0
         case .personalRecord:
             return result.isPersonalRecord ? 1 : 0
+        case .inHabitat(let habitat, _):
+            return result.fish.habitat == habitat ? 1 : 0
+        case .totalWeight:
+            return Int((result.fish.weightKg * 10).rounded())
+        }
+    }
+
+    /// Fortschritt als Text. Gewicht liest sich in Kilogramm besser als in
+    /// Zählschritten.
+    func progressText(current: Int) -> String {
+        switch self {
+        case .totalWeight(let kilos):
+            return String(format: "%.1f / %.1f kg", Double(min(current, target)) / 10, kilos)
+        default:
+            return "\(min(current, target)) / \(target)"
         }
     }
 }
 
-/// Eine konkrete Mission des Tages.
+/// Eine konkrete Aufgabe.
 struct Mission: Identifiable, Equatable {
     let id: String
     let title: String
+    /// Stimmungssatz: warum diese Aufgabe, was daran reizt. Er trägt den Ton
+    /// des Spiels — ohne ihn bleibt eine Aufgabe eine Zeile aus einer Liste.
+    let flavor: String
+    /// Was konkret zu tun ist.
     let detail: String
     let goal: MissionGoal
     let rewardCoins: Int
@@ -63,7 +91,7 @@ struct Mission: Identifiable, Equatable {
     }
 }
 
-/// Gespeicherter Fortschritt einer Mission.
+/// Gespeicherter Fortschritt einer Aufgabe.
 struct MissionProgress: Codable, Equatable, Identifiable {
     var id: String
     var progress: Int
