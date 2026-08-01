@@ -104,7 +104,7 @@ enum BaitCatalog {
              sizeBias: 0.45, rarityBias: 0.65, baseAppeal: 0.50, color: ColorSpec(0xD8CDB5)),
 
         Bait(id: "red_october", name: "Roter Oktober",
-             summary: "Ein knallroter Riesenblinker aus Soviet-Zeiten: Tellerminen-groß und so schwer wie ein Türgriff. Unter Wasser blitzt er wie ein Leuchtturm. Kleinfische verziehen sich, die ganz Großen kommen schauen.",
+             summary: "Ein knallroter Riesenblinker aus Soviet-Zeiten und so schwer wie ein Türgriff. Unter Wasser blitzt er wie ein Leuchtturm. Kleinfische verziehen sich, die ganz Großen kommen schauen.",
              kind: .artificial, targets: [.predator, .omnivore], specialty: "beluga",
              // Der Köder ist für genau einen Fisch gebaut: Mit ihm ist der
              // Hausen überhaupt erst realistisch zu erwischen.
