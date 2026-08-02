@@ -478,9 +478,16 @@ final class LakeScene: SKScene {
                                      speciesID: species.id,
                                      scale: 1.4,
                                      turnTimer: CGFloat.random(in: 0.5...2.5),
-                                     traits: FishAI.Traits(hunger: 0.55,
-                                                           curiosity: 0.5,
-                                                           caution: 0.95))
+                                     // Die alten Werte waren nicht schwer,
+                                     // sondern unmöglich: Selbst wenn Zone,
+                                     // Zeit und Köder passten, lag der
+                                     // Appetit rechnerisch immer unter dem
+                                     // Misstrauen — sie hat also jedes Mal
+                                     // abgelehnt. Jetzt ist sie vorsichtig,
+                                     // aber zu überzeugen.
+                                     traits: FishAI.Traits(hunger: 0.9,
+                                                           curiosity: 0.8,
+                                                           caution: 0.5))
         swimmer.isLegendary = true
 
         let node = FishNode(swimmer: swimmer, species: species)

@@ -318,6 +318,39 @@ final class FishAITests: XCTestCase {
         }
     }
 
+    func testLegendActuallyBites() {
+        // Der Fehler, der das Spiel kaputtgemacht hat: Bei den alten Werten
+        // lag der Appetit der Legende immer unter ihrem Misstrauen — sie hat
+        // also selbst bei perfekten Bedingungen jedes Mal abgelehnt.
+        let map = LakeMap.generate()
+        guard let start = FishAI.randomPosition(in: .deep, map: map) else {
+            return XCTFail("Keine Tiefe")
+        }
+
+        var bites = 0
+        for run in 0..<12 {
+            var fish = swimmer(at: start, habitat: .deep, heading: 0)
+            fish.isLegendary = true
+            fish.traits = FishAI.Traits(hunger: 0.9, curiosity: 0.8, caution: 0.5)
+
+            // Köder in Prüfabstand, alles passt.
+            let lure = CGPoint(x: start.x + 50, y: start.y)
+
+            for _ in 0..<(60 * 90) {   // anderthalb Minuten Ansitz
+                let outcome = FishAI.update(&fish, deltaTime: 1.0 / 60.0, map: map,
+                                            lure: lure, interest: 1, biteAllowed: true)
+                if outcome == .bit {
+                    bites += 1
+                    break
+                }
+            }
+            _ = run
+        }
+
+        // Nicht jedes Mal, aber verlässlich: Wer richtig anbietet, bekommt sie.
+        XCTAssertGreaterThanOrEqual(bites, 9, "Legende beißt fast nie (\(bites) von 12)")
+    }
+
     func testFishCanCatchUpWithADriftingLure() {
         // Im Fluss treibt der Köder mit der Strömung. Ein Fisch, der ihn
         // verfolgt, muss mitschwimmen und dabei aufholen — sonst schaut er
