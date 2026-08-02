@@ -535,7 +535,11 @@ final class LakeScene: SKScene {
         lastUpdate = currentTime
         let dt = CGFloat(delta)
 
-        dayNight.update(deltaTime: delta)
+        // Mitternacht: ein Spieltag ist vorbei. Danach kann eine Legende
+        // weitergezogen sein.
+        if dayNight.update(deltaTime: delta) {
+            session.advanceDay()
+        }
         session.updateTutorial(deltaTime: delta)
         updateMovement(dt: dt)
         updateFishing(delta: delta)

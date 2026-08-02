@@ -17,10 +17,13 @@ struct LegendsView: View {
 
                 ScrollView {
                     VStack(spacing: 16) {
-                        if let legend = session.activeLegend {
-                            activeCard(legend)
-                        } else {
+                        if session.activeLegends.isEmpty {
                             waitingCard
+                        } else {
+                            // Die Legende des eigenen Gewässers steht oben.
+                            ForEach(sortedLegends) { legend in
+                                activeCard(legend)
+                            }
                         }
 
                         if !session.save.caughtLegends.isEmpty {
@@ -41,12 +44,38 @@ struct LegendsView: View {
         }
     }
 
+    /// Zuerst die Legende des aktuellen Gewässers, dann die übrigen.
+    private var sortedLegends: [LegendaryFish] {
+        session.activeLegends.sorted { a, b in
+            (a.waterID == session.save.currentWaterID ? 0 : 1)
+                < (b.waterID == session.save.currentWaterID ? 0 : 1)
+        }
+    }
+
     private func activeCard(_ legend: LegendaryFish) -> some View {
         let detector = session.legendDetectorLevel
+        let daysLeft = legend.daysLeft(onDay: session.inGameDay)
+        let here = legend.waterID == session.save.currentWaterID
 
-        return PaperPanel(accent: Palette.gold.swiftUIColor) {
+        return PaperPanel(accent: here ? Palette.gold.swiftUIColor : nil) {
             VStack(alignment: .leading, spacing: 12) {
-                SectionHeading(text: legend.name, subtitle: "Man erzählt sich …")
+                SectionHeading(text: legend.name,
+                               subtitle: here ? "Hier, an diesem Gewässer" : "Man erzählt sich …")
+
+                // Frist: Nach zwei bis vier Tagen zieht der Fisch weiter.
+                HStack(spacing: 8) {
+                    Image(systemName: daysLeft <= 0 ? "hourglass.bottomhalf.filled" : "hourglass")
+                        .font(.system(size: 13))
+                        .foregroundStyle(daysLeft <= 0
+                                         ? Palette.vermilion.swiftUIColor
+                                         : Palette.inkSoft.swiftUIColor)
+
+                    Text(deadlineText(daysLeft))
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(daysLeft <= 0
+                                         ? Palette.vermilion.swiftUIColor
+                                         : Palette.inkSoft.swiftUIColor)
+                }
 
                 Text(legend.hint)
                     .font(.system(size: 14, design: .serif))
@@ -114,6 +143,15 @@ struct LegendsView: View {
                     .foregroundStyle(Palette.inkSoft.swiftUIColor)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+
+    private func deadlineText(_ daysLeft: Int) -> String {
+        switch daysLeft {
+        case ..<0: return "Weitergezogen"
+        case 0: return "Heute ist der letzte Tag"
+        case 1: return "Noch heute und morgen"
+        default: return "Noch \(daysLeft + 1) Tage"
         }
     }
 

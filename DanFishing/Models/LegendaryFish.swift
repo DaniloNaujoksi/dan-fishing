@@ -24,8 +24,69 @@ struct LegendaryFish: Codable, Equatable, Identifiable {
     /// Länge dieses Exemplars — immer im obersten Bereich seiner Art.
     let lengthCm: Double
 
+    /// Spieltag, an dem die Geschichte aufkam.
+    var spawnedOnDay: Int = 0
+    /// Wie viele Spieltage sie zu holen ist. Danach zieht der Fisch weiter.
+    var lifetimeDays: Int = 3
+
     /// Wann er gefangen wurde. Nil, solange er noch draußen steht.
     var caughtAt: Date?
+
+    /// Letzter Tag, an dem er noch dasteht.
+    var lastDay: Int { spawnedOnDay + lifetimeDays - 1 }
+
+    /// Verbleibende Tage an einem bestimmten Spieltag. 0 heißt: heute ist der
+    /// letzte Tag, negativ heißt weitergezogen.
+    func daysLeft(onDay day: Int) -> Int { lastDay - day }
+
+    func hasExpired(onDay day: Int) -> Bool { day > lastDay }
+
+    // MARK: - Laden
+
+    /// Eigener Decoder, damit Spielstände von vor der Frist weiterlaufen.
+    ///
+    /// Swift setzt bei fehlenden Schlüsseln keine Standardwerte ein, sondern
+    /// wirft — ein alter Eintrag ohne `spawnedOnDay` würde also den ganzen
+    /// Spielstand unlesbar machen. Deshalb hier von Hand.
+    init(from decoder: Decoder) throws {
+        let box = try decoder.container(keyedBy: CodingKeys.self)
+        id = try box.decode(String.self, forKey: .id)
+        name = try box.decode(String.self, forKey: .name)
+        speciesID = try box.decode(String.self, forKey: .speciesID)
+        waterID = try box.decode(String.self, forKey: .waterID)
+        habitatID = try box.decode(String.self, forKey: .habitatID)
+        timeOfDayID = try box.decode(String.self, forKey: .timeOfDayID)
+        baitID = try box.decode(String.self, forKey: .baitID)
+        lengthCm = try box.decode(Double.self, forKey: .lengthCm)
+
+        spawnedOnDay = try box.decodeIfPresent(Int.self, forKey: .spawnedOnDay) ?? 0
+        lifetimeDays = try box.decodeIfPresent(Int.self, forKey: .lifetimeDays) ?? 3
+        caughtAt = try box.decodeIfPresent(Date.self, forKey: .caughtAt)
+    }
+
+    init(id: String,
+         name: String,
+         speciesID: String,
+         waterID: String,
+         habitatID: String,
+         timeOfDayID: String,
+         baitID: String,
+         lengthCm: Double,
+         spawnedOnDay: Int = 0,
+         lifetimeDays: Int = 3,
+         caughtAt: Date? = nil) {
+        self.id = id
+        self.name = name
+        self.speciesID = speciesID
+        self.waterID = waterID
+        self.habitatID = habitatID
+        self.timeOfDayID = timeOfDayID
+        self.baitID = baitID
+        self.lengthCm = lengthCm
+        self.spawnedOnDay = spawnedOnDay
+        self.lifetimeDays = lifetimeDays
+        self.caughtAt = caughtAt
+    }
 
     // MARK: - Aufgelöste Daten
 
@@ -35,9 +96,19 @@ struct LegendaryFish: Codable, Equatable, Identifiable {
     var timeOfDay: TimeOfDay? { TimeOfDay(rawValue: timeOfDayID) }
     var bait: Bait? { BaitCatalog.bait(id: baitID) }
 
+    /// Gewicht des Exemplars.
+    ///
+    /// Über dem Höchstmaß der Art rechnet die Kurve nicht weiter — dort wird
+    /// das Mehr an Länge kubisch draufgeschlagen, wie es sich für einen Fisch
+    /// gehört, den es laut Buch gar nicht geben dürfte.
     var weightKg: Double {
         guard let species else { return 0 }
-        return (species.weight(forLength: lengthCm) * 100).rounded() / 100
+        var weight = species.weight(forLength: lengthCm)
+        if lengthCm > species.maxLength {
+            let excess = lengthCm / species.maxLength
+            weight *= excess * excess * excess
+        }
+        return (weight * 100).rounded() / 100
     }
 
     /// Der Hinweis, den der Spieler bekommt.

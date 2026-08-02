@@ -62,11 +62,23 @@ struct SaveData: Codable, Equatable {
 
     var totalCatches: Int = 0
 
-    /// Der legendäre Fisch, der gerade draußen steht. Nil, solange die Stufe
-    /// dafür nicht erreicht ist.
+    /// Früher stand genau eine Legende draußen. Das Feld bleibt, damit alte
+    /// Spielstände weiterlaufen; beim Laden wandert sie in `activeLegends`.
     var activeLegend: LegendaryFish?
+
+    /// Die Legenden, von denen gerade erzählt wird. Optional, damit ältere
+    /// Spielstände ohne dieses Feld weiterhin gelesen werden können.
+    var activeLegends: [LegendaryFish]?
+
+    /// Verstrichene Spieltage. Ein Tag ist ein voller Tag-Nacht-Zyklus; daran
+    /// hängt, wie lange eine Legende noch zu holen ist.
+    var inGameDay: Int?
+
     /// Alle bereits gefangenen Legenden, neueste zuletzt.
     var caughtLegends: [LegendaryFish] = []
+
+    /// Legenden, die man hat verstreichen lassen — nur für die Anzeige.
+    var missedLegendCount: Int?
 
     /// Wurde das Tutorial schon einmal durchlaufen?
     var tutorialDone: Bool = false

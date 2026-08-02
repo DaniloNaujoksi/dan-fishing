@@ -945,11 +945,58 @@ final class LegendSystemTests: XCTestCase {
         }
     }
 
-    func testLegendIsAlwaysAnOutstandingSpecimen() {
+    func testLegendsExpireAfterTwoToFourDays() {
+        for seed in UInt64(1)...30 {
+            guard let legend = LegendSystem.roll(level: 12,
+                                                 ownedBaitIDs: [],
+                                                 avoiding: [],
+                                                 day: 7,
+                                                 seed: seed * 31) else { continue }
+
+            XCTAssertEqual(legend.spawnedOnDay, 7)
+            XCTAssertTrue(LegendSystem.lifetimeRange.contains(legend.lifetimeDays))
+
+            // Am Ausgabetag und am letzten Tag steht sie noch da …
+            XCTAssertFalse(legend.hasExpired(onDay: 7))
+            XCTAssertFalse(legend.hasExpired(onDay: legend.lastDay))
+            // … einen Tag später nicht mehr.
+            XCTAssertTrue(legend.hasExpired(onDay: legend.lastDay + 1))
+            XCTAssertEqual(legend.daysLeft(onDay: legend.lastDay), 0)
+        }
+    }
+
+    func testOnlyOneLegendPerWater() {
+        // Ein Gewässer, das schon eine Geschichte hat, bekommt keine zweite.
+        let used = ["lake", "river"]
+        for seed in UInt64(1)...40 {
+            guard let legend = LegendSystem.roll(level: 14,
+                                                 ownedBaitIDs: [],
+                                                 avoiding: [],
+                                                 excludingWaters: used,
+                                                 day: 0,
+                                                 seed: seed * 577) else { continue }
+            XCTAssertFalse(used.contains(legend.waterID))
+        }
+    }
+
+    func testParallelCountFollowsLevelAndWaters() {
+        XCTAssertEqual(LegendSystem.parallelCount(forLevel: 6, unlockedWaters: 4), 2)
+        XCTAssertEqual(LegendSystem.parallelCount(forLevel: 12, unlockedWaters: 4), 3)
+        // Nie mehr Geschichten als Gewässer — sonst lägen zwei im selben See.
+        XCTAssertEqual(LegendSystem.parallelCount(forLevel: 14, unlockedWaters: 1), 1)
+    }
+
+    func testLegendBeatsTheBook() {
+        // Eine Legende liegt über dem Höchstmaß ihrer Art — sonst wäre sie
+        // nur ein guter Fisch.
         for seed in UInt64(1)...40 {
             guard let legend = roll(level: 14, seed: seed * 131),
                   let species = legend.species else { continue }
-            XCTAssertGreaterThan(species.trophyFactor(forLength: legend.lengthCm), 0.9)
+
+            XCTAssertGreaterThan(legend.lengthCm, species.maxLength)
+            XCTAssertLessThan(legend.lengthCm, species.maxLength * 1.1)
+            XCTAssertGreaterThan(legend.weightKg, species.maxWeight)
+            XCTAssertEqual(species.trophyFactor(forLength: legend.lengthCm), 1.0, accuracy: 0.001)
         }
     }
 

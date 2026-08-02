@@ -179,7 +179,7 @@ final class GameSession: ObservableObject {
         startTutorialIfNeeded()
         // Wer schon weit genug ist, bekommt beim Weiterspielen sofort einen
         // Fisch, dem er nachjagen kann.
-        ensureLegend()
+        ensureLegends()
         screen = .playing
     }
 
@@ -525,7 +525,7 @@ final class GameSession: ObservableObject {
         if levels > 0 {
             showToast("Stufe \(save.level) erreicht", emphasis: true)
             // Mit der neuen Stufe kann die erste Legende auftauchen.
-            ensureLegend()
+            ensureLegends()
         }
 
         // Neue Art: eigene Einblendung mit Fanfare, bevor die Fangkarte
@@ -578,8 +578,17 @@ final class GameSession: ObservableObject {
 
     // MARK: - Legendäre Fische
 
-    /// Der Fisch, von dem gerade erzählt wird. Nil, bevor die Stufe erreicht ist.
-    var activeLegend: LegendaryFish? { save.activeLegend }
+    /// Alle Legenden, von denen gerade erzählt wird — höchstens eine je
+    /// Gewässer.
+    var activeLegends: [LegendaryFish] { save.activeLegends ?? [] }
+
+    /// Die Legende des aktuellen Gewässers.
+    var activeLegend: LegendaryFish? {
+        activeLegends.first { $0.waterID == save.currentWaterID }
+    }
+
+    /// Verstrichene Spieltage.
+    var inGameDay: Int { save.inGameDay ?? 0 }
 
     /// Ausbaustufe des Legenden-Detektors: 0 = nichts, 1 = Art und Köder,
     /// 2 = zusätzlich Entfernung und Richtung.
@@ -593,37 +602,89 @@ final class GameSession: ObservableObject {
 
     /// Steht die Legende im aktuellen Gewässer?
     var legendIsHere: Bool {
-        guard let legend = save.activeLegend else { return false }
+        guard let legend = activeLegend else { return false }
         return LegendSystem.isPresent(legend, waterID: save.currentWaterID)
     }
 
-    /// Sorgt dafür, dass immer ein legendärer Fisch draußen steht.
+    /// Ein Tag-Nacht-Zyklus ist vorbei. Die Szene meldet das.
     ///
-    /// Wird beim Start und nach jedem Stufenaufstieg aufgerufen. Erst ab der
-    /// Mindeststufe passiert überhaupt etwas.
-    func ensureLegend() {
-        guard save.activeLegend == nil, save.level >= LegendSystem.minimumLevel else { return }
+    /// Legenden bleiben nur zwei bis vier Tage — danach zieht der Fisch
+    /// weiter, und ein anderes Gewässer bekommt seine Geschichte. Genau das
+    /// macht aus einem Hinweis einen Grund, heute rauszufahren.
+    func advanceDay() {
+        let day = inGameDay + 1
+        save.inGameDay = day
 
-        let caughtSpecies = save.caughtLegends.map(\.speciesID)
-        guard let legend = LegendSystem.roll(level: save.level,
-                                             ownedBaitIDs: save.ownedBaitIDs,
-                                             avoiding: caughtSpecies,
-                                             seed: UInt64.random(in: 1...UInt64.max)) else { return }
+        let gone = activeLegends.filter { $0.hasExpired(onDay: day) }
+        if !gone.isEmpty {
+            save.activeLegends = activeLegends.filter { !$0.hasExpired(onDay: day) }
+            save.missedLegendCount = (save.missedLegendCount ?? 0) + gone.count
 
-        save.activeLegend = legend
+            let names = gone.map(\.name).joined(separator: ", ")
+            showToast("\(names) ist weitergezogen", emphasis: true)
+        }
+
+        ensureLegends()
+        persist()
+    }
+
+    /// Füllt die Erzählungen auf: je nach Stufe zwei oder drei gleichzeitig,
+    /// aber nie zwei im selben Gewässer.
+    ///
+    /// Wird beim Start, nach jedem Stufenaufstieg und nach jedem Tageswechsel
+    /// aufgerufen.
+    func ensureLegends() {
+        guard save.level >= LegendSystem.minimumLevel else { return }
+
+        // Alter Spielstand mit genau einer Legende: übernehmen.
+        if let old = save.activeLegend {
+            save.activeLegend = nil
+            var list = activeLegends
+            if !list.contains(where: { $0.waterID == old.waterID }) {
+                var migrated = old
+                migrated.spawnedOnDay = inGameDay
+                list.append(migrated)
+                save.activeLegends = list
+            }
+        }
+
+        let target = LegendSystem.parallelCount(forLevel: save.level,
+                                                unlockedWaters: unlockedWaters.count)
+        var list = activeLegends
+        var announced: [String] = []
+
+        while list.count < target {
+            let usedWaters = list.map(\.waterID)
+            guard let legend = LegendSystem.roll(level: save.level,
+                                                 ownedBaitIDs: save.ownedBaitIDs,
+                                                 avoiding: save.caughtLegends.map(\.speciesID),
+                                                 excludingWaters: usedWaters,
+                                                 day: inGameDay,
+                                                 seed: UInt64.random(in: 1...UInt64.max)) else { break }
+            list.append(legend)
+            announced.append("\(legend.name) (\(legend.water?.name ?? "?"))")
+        }
+
+        guard !announced.isEmpty else {
+            save.activeLegends = list
+            return
+        }
+
+        save.activeLegends = list
         persist()
 
-        showToast("Am Wasser wird von \(legend.name) erzählt", emphasis: true)
+        showToast("Am Wasser wird von \(announced.joined(separator: " und ")) erzählt",
+                  emphasis: true)
         AudioManager.shared.play(.discovery)
     }
 
     /// Trägt eine gefangene Legende ein und setzt die nächste aus.
     private func landLegend(named name: String?) {
-        guard var legend = save.activeLegend, legend.name == name else { return }
+        guard var legend = activeLegends.first(where: { $0.name == name }) else { return }
 
         legend.caughtAt = Date()
         save.caughtLegends.append(legend)
-        save.activeLegend = nil
+        save.activeLegends = activeLegends.filter { $0.id != legend.id }
 
         // Der Ruhm zahlt sich auch aus: Eine Legende bringt das Dreifache.
         let bonus = EconomySystem.coinValue(for: HookedFish(species: legend.species ?? FishCatalog.all[0],
@@ -637,7 +698,7 @@ final class GameSession: ObservableObject {
         AudioManager.shared.play(.discovery)
         HapticManager.shared.success()
 
-        ensureLegend()
+        ensureLegends()
     }
 
     // MARK: - Bootsposition

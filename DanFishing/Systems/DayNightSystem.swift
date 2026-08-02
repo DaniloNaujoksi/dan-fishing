@@ -14,9 +14,17 @@ struct DayNightSystem {
         self.normalizedTime = min(max(normalized, 0), 1)
     }
 
-    mutating func update(deltaTime: Double) {
+    /// - Returns: true, wenn dabei ein neuer Tag angebrochen ist. Daran hängen
+    ///   die Fristen der legendären Fische.
+    @discardableResult
+    mutating func update(deltaTime: Double) -> Bool {
         normalizedTime += deltaTime / DayNightSystem.cycleLength
-        while normalizedTime >= 1 { normalizedTime -= 1 }
+        var wrapped = false
+        while normalizedTime >= 1 {
+            normalizedTime -= 1
+            wrapped = true
+        }
+        return wrapped
     }
 
     /// Die Dämmerungen sind bewusst etwas länger als astronomisch richtig:

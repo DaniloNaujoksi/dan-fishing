@@ -23,18 +23,36 @@ enum LegendSystem {
         }
     }
 
+    /// Wie viele Geschichten gleichzeitig laufen.
+    ///
+    /// Nie mehr als eine je Gewässer — sonst stünden zwei Ausnahmefische im
+    /// selben See, und der besondere Ort wäre keiner mehr.
+    static func parallelCount(forLevel level: Int, unlockedWaters: Int) -> Int {
+        let byLevel = level >= 12 ? 3 : 2
+        return min(byLevel, unlockedWaters)
+    }
+
+    /// Wie lange eine Geschichte hält, in Spieltagen.
+    static let lifetimeRange = 2...4
+
     /// Würfelt einen neuen legendären Fisch aus.
     ///
-    /// - Parameter avoiding: IDs von Arten, die schon als Legende gefangen
-    ///   wurden. Sie kommen erst wieder dran, wenn alles andere durch ist.
+    /// - Parameters:
+    ///   - avoiding: IDs von Arten, die schon als Legende gefangen wurden.
+    ///     Sie kommen erst wieder dran, wenn alles andere durch ist.
+    ///   - excludingWaters: Gewässer, in denen schon eine Legende steht.
+    ///   - day: Aktueller Spieltag; ab ihm zählt die Frist.
     static func roll(level: Int,
                      ownedBaitIDs: [String],
                      avoiding caughtSpeciesIDs: [String],
+                     excludingWaters: [String] = [],
+                     day: Int = 0,
                      seed: UInt64) -> LegendaryFish? {
         guard level >= minimumLevel else { return nil }
 
         var rng = SeededGenerator(seed: seed)
         let waters = WaterCatalog.unlocked(for: level)
+            .filter { !excludingWaters.contains($0.id) }
         guard !waters.isEmpty else { return nil }
 
         let ceiling = maxRarity(forLevel: level)
@@ -79,10 +97,10 @@ enum LegendSystem {
 
         let name = LegendNames.name(for: choice.species, habitat: habitat, using: &rng)
 
-        // Ein legendärer Fisch ist immer ein Ausnahmeexemplar: die obersten
-        // Prozent seiner Art.
-        let span = choice.species.maxLength - choice.species.minLength
-        let length = choice.species.minLength + span * rng.nextDouble(in: 0.93...1.0)
+        // Ein legendärer Fisch sprengt die Tabelle: Er liegt bis zu acht
+        // Prozent über dem, was für seine Art als Höchstmaß gilt. Genau davon
+        // erzählt man sich ja — kein Buch kennt diesen Fisch.
+        let length = choice.species.maxLength * rng.nextDouble(in: 1.01...1.08)
 
         return LegendaryFish(id: UUID().uuidString,
                              name: name,
@@ -92,6 +110,8 @@ enum LegendSystem {
                              timeOfDayID: time.rawValue,
                              baitID: bait.id,
                              lengthCm: (length * 10).rounded() / 10,
+                             spawnedOnDay: day,
+                             lifetimeDays: rng.nextInt(in: lifetimeRange.lowerBound...lifetimeRange.upperBound),
                              caughtAt: nil)
     }
 

@@ -136,8 +136,13 @@ struct MainMenuView: View {
     /// Was in der Menüzeile steht: der Name der aktuellen Legende, sonst der
     /// Stand der Ruhmeshalle.
     private var legendDetail: String {
-        if let legend = session.activeLegend {
-            return legend.name
+        let active = session.activeLegends
+        if let here = session.activeLegend {
+            // Die Legende des eigenen Gewässers zuerst nennen.
+            return active.count > 1 ? "\(here.name) · \(active.count - 1) weitere" : here.name
+        }
+        if let first = active.first {
+            return active.count > 1 ? "\(active.count) Geschichten" : first.name
         }
         let caught = session.save.caughtLegends.count
         return caught > 0 ? "\(caught) gefangen" : "ab Stufe \(LegendSystem.minimumLevel)"
