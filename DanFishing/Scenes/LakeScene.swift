@@ -469,7 +469,7 @@ final class LakeScene: SKScene {
               LegendSystem.isPresent(legend, waterID: water.id),
               let species = legend.species,
               let habitat = legend.habitat,
-              let position = FishAI.randomPosition(in: habitat, map: map) else { return }
+              let position = legendSpot(in: habitat) else { return }
 
         var swimmer = FishAI.Swimmer(position: position,
                                      heading: CGFloat.random(in: 0..<(.pi * 2)),
@@ -817,6 +817,44 @@ final class LakeScene: SKScene {
                 }
             }
         }
+    }
+
+    /// Sucht den Standplatz der Legende.
+    ///
+    /// Nicht irgendeine Zelle der Zone: Am äußersten Kartenrand — etwa ganz
+    /// unten im Zufluss — steht sie so ungünstig, dass man sie kaum anwerfen
+    /// kann. Deshalb bleibt ein Sicherheitsabstand zum Rand, und unter
+    /// mehreren Möglichkeiten gewinnt die, die weiter im Wasser liegt.
+    private func legendSpot(in habitat: Habitat) -> CGPoint? {
+        let all = map.positions(of: habitat)
+        guard !all.isEmpty else { return nil }
+
+        let margin = map.cellSize * 3
+        let size = map.worldSize
+        let inner = all.filter {
+            $0.x > margin && $0.x < size.width - margin
+                && $0.y > margin && $0.y < size.height - margin
+        }
+
+        let pool = inner.isEmpty ? all : inner
+
+        // Von fünf Vorschlägen gewinnt der mit dem meisten offenen Wasser
+        // ringsum — dort kann man werfen, ohne im Ufer zu landen.
+        var best: (space: Int, point: CGPoint)?
+        for _ in 0..<5 {
+            guard let candidate = pool.randomElement() else { break }
+            var space = 0
+            for dy in -2...2 {
+                for dx in -2...2 {
+                    let probe = CGPoint(x: candidate.x + CGFloat(dx) * map.cellSize,
+                                        y: candidate.y + CGFloat(dy) * map.cellSize)
+                    if !map.isLand(at: probe) { space += 1 }
+                }
+            }
+            if best == nil || space > best!.space { best = (space, candidate) }
+        }
+
+        return best?.point ?? pool.randomElement()
     }
 
     /// Hält den sichtbaren legendären Fisch mit dem Spielstand im Einklang:

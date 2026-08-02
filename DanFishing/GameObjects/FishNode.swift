@@ -79,6 +79,10 @@ final class FishNode: SKNode {
         glow.blendMode = .add
         glow.alpha = 0.5
         glow.zPosition = -1
+        // Vorbereitet für den Farbwechsel: Sobald sie den Köder prüft, schlägt
+        // der Schein ins Rote um.
+        glow.color = ColorSpec(0xE24A2C).skColor
+        glow.colorBlendFactor = 0
         addChild(glow)
         aura = glow
 
@@ -149,6 +153,17 @@ final class FishNode: SKNode {
 
         // Neugier sichtbar machen.
         let showMark = swimmer.behaviour == .inspect || swimmer.behaviour == .nibble
+
+        // Bei einer Legende sagt die Farbe des Scheins, was sie vorhat:
+        // Gold heißt „steht da“, Rot heißt „sie kommt an den Köder“. Das ist
+        // der Moment, in dem man nichts falsch machen darf.
+        if let aura {
+            let interested = swimmer.behaviour == .approach
+                || swimmer.behaviour == .inspect
+                || swimmer.behaviour == .nibble
+            let target: CGFloat = interested ? 1.0 : 0
+            aura.colorBlendFactor += (target - aura.colorBlendFactor) * min(1, deltaTime * 3)
+        }
         interestMark.alpha += ((showMark ? 0.9 : 0) - interestMark.alpha) * min(1, deltaTime * 5)
         interestMark.position = CGPoint(x: 0, y: sprite.size.height * 0.9)
 

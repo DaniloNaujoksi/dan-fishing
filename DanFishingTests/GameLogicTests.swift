@@ -318,6 +318,40 @@ final class FishAITests: XCTestCase {
         }
     }
 
+    func testFishCanCatchUpWithADriftingLure() {
+        // Im Fluss treibt der Köder mit der Strömung. Ein Fisch, der ihn
+        // verfolgt, muss mitschwimmen und dabei aufholen — sonst schaut er
+        // ihm nur beim Wegtreiben zu.
+        let river = WaterCatalog.water(id: "river")!
+        let map = LakeMap.generate(for: river)
+
+        guard let start = FishAI.randomPosition(in: .inflow, map: map) else {
+            return XCTFail("Der Fluss hat keine Rinne")
+        }
+
+        let flow = map.current(at: start)
+        XCTAssertGreaterThan(flow.dy, 0)
+
+        // Köder ein Stück flussab, treibt weiter.
+        var lure = CGPoint(x: start.x, y: start.y + 160)
+        var fish = swimmer(at: start, habitat: .inflow, heading: -.pi / 2)
+        fish.behaviour = .approach
+        fish.behaviourTimer = 30
+
+        var closest = hypot(lure.x - fish.position.x, lure.y - fish.position.y)
+        let dt: CGFloat = 1.0 / 60.0
+
+        for _ in 0..<600 {
+            lure.y += map.current(at: lure).dy * dt
+            FishAI.update(&fish, deltaTime: dt, map: map,
+                          lure: lure, interest: 1, biteAllowed: true)
+            closest = min(closest, hypot(lure.x - fish.position.x, lure.y - fish.position.y))
+        }
+
+        XCTAssertLessThan(closest, FishAI.inspectRadius,
+                          "Der Fisch holt den treibenden Köder nicht ein")
+    }
+
     func testTrappedFishGetsFreed() {
         let map = LakeMap.generate()
 

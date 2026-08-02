@@ -250,7 +250,7 @@ struct FishAI {
             }
         }
 
-        let speed: CGFloat
+        var speed: CGFloat
         switch swimmer.behaviour {
         case .cruise:   speed = swimmer.speed * 0.75
         case .approach: speed = swimmer.speed * 1.25
@@ -258,6 +258,21 @@ struct FishAI {
         case .nibble:   speed = swimmer.speed * 0.35
         case .retreat:  speed = swimmer.speed * 1.4
         case .spooked:  speed = swimmer.speed * 2.4
+        }
+
+        // Im ziehenden Wasser treibt ein Fisch mit, sobald er nicht mehr
+        // gegen die Strömung steht. Ohne diesen Anteil bleibt er hinter dem
+        // abtreibenden Köder zurück und bekommt ihn nie zu fassen — im Fluss
+        // war das Zuschauen beim Wegtreiben.
+        let flow = map.current(at: swimmer.position)
+        let flowSpeed = hypot(flow.dx, flow.dy)
+        var drift = CGVector.zero
+
+        if swimmer.behaviour != .cruise && flowSpeed > 0 {
+            drift = CGVector(dx: flow.dx * dt, dy: flow.dy * dt)
+            // Dazu muss er aus eigener Kraft schneller sein als das Wasser,
+            // sonst holt er nie auf.
+            speed = max(speed, flowSpeed * 0.8 + 25)
         }
 
         let reach = speed * dt
@@ -272,7 +287,7 @@ struct FishAI {
         // Erster Durchgang: in der eigenen Zone bleiben.
         for offset in offsets {
             let heading = swimmer.heading + offset
-            let step = advance(from: swimmer.position, heading: heading, reach: reach)
+            let step = advance(from: swimmer.position, heading: heading, reach: reach, drift: drift)
             guard map.habitat(at: step) == swimmer.habitat else { continue }
             commit(&swimmer, to: step, heading: heading, turned: offset != 0)
             return
@@ -282,7 +297,7 @@ struct FishAI {
         // Land bleibt tabu.
         for offset in offsets {
             let heading = swimmer.heading + offset
-            let step = advance(from: swimmer.position, heading: heading, reach: reach)
+            let step = advance(from: swimmer.position, heading: heading, reach: reach, drift: drift)
             guard !map.isLand(at: step) else { continue }
             commit(&swimmer, to: step, heading: heading, turned: offset != 0)
             return
@@ -301,9 +316,12 @@ struct FishAI {
         }
     }
 
-    private static func advance(from point: CGPoint, heading: CGFloat, reach: CGFloat) -> CGPoint {
-        CGPoint(x: point.x + cos(heading) * reach,
-                y: point.y + sin(heading) * reach)
+    private static func advance(from point: CGPoint,
+                                heading: CGFloat,
+                                reach: CGFloat,
+                                drift: CGVector = .zero) -> CGPoint {
+        CGPoint(x: point.x + cos(heading) * reach + drift.dx,
+                y: point.y + sin(heading) * reach + drift.dy)
     }
 
     /// Übernimmt einen Schritt. Nach einem Ausweichmanöver bleibt die neue
