@@ -94,12 +94,30 @@ struct GameView: View {
             .animation(.easeOut(duration: 0.25), value: session.pendingCatch)
             .animation(.easeInOut(duration: 0.3), value: session.tutorialStep)
             .animation(.easeInOut(duration: 0.35), value: session.discoveredSpecies?.id)
+            // Der Wechsel auf Nachtfarben zieht langsam durch, wie das Licht.
+            .animation(.easeInOut(duration: 1.2), value: session.isNightMode)
         }
         .sheet(isPresented: $showBaitBox) { BaitBoxView() }
         .sheet(isPresented: $showCodex) { CodexView() }
         .sheet(isPresented: $showShop) { ShopView() }
         .sheet(isPresented: $showMissions) { MissionsView() }
         .sheet(isPresented: $showLegends) { LegendsView() }
+    }
+
+    // MARK: - Farben nach Tageszeit
+
+    /// Flächen der Bedienung: tagsüber Papier, nachts dunkle Tinte.
+    ///
+    /// Ein helles Bedienfeld über dem nächtlichen See blendet und nimmt dem
+    /// Nachtangeln die Stimmung. Umgeschaltet wird mit einem weichen
+    /// Übergang, damit es in der Dämmerung nicht springt.
+    private var panelFill: Color {
+        session.isNightMode ? Palette.ink.swiftUIColor : Palette.paper.swiftUIColor
+    }
+
+    /// Schrift und Symbole auf diesen Flächen.
+    private var panelInk: Color {
+        session.isNightMode ? Palette.paper.swiftUIColor : Palette.uiInk
     }
 
     // MARK: - Kopfleiste
@@ -119,9 +137,9 @@ struct GameView: View {
                     } label: {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(Palette.uiInk)
+                            .foregroundStyle(panelInk)
                             .frame(width: 34, height: 34)
-                            .background(Circle().fill(Palette.paper.swiftUIColor.opacity(0.92)))
+                            .background(Circle().fill(panelFill.opacity(0.92)))
                     }
 
                     // Münzen, Stufe und Uhrzeit stehen zusammen auf einer
@@ -137,7 +155,7 @@ struct GameView: View {
                         hudValue("clock", session.clockText)
                     }
                     .background(
-                        Capsule().fill(Palette.paper.swiftUIColor.opacity(0.92))
+                        Capsule().fill(panelFill.opacity(0.92))
                     )
                 }
 
@@ -159,7 +177,7 @@ struct GameView: View {
                         }
                     }
                     .background(
-                        Capsule().fill(Palette.paper.swiftUIColor.opacity(UIStyle.overlayOpacity))
+                        Capsule().fill(panelFill.opacity(UIStyle.overlayOpacity))
                     )
                     .padding(.leading, 42)
                 }
@@ -229,7 +247,7 @@ struct GameView: View {
 
     /// Ein Wert in der Kopfzeile.
     private func hudValue(_ symbol: String, _ value: String,
-                          tint: Color = Palette.uiInk) -> some View {
+                          tint: Color? = nil) -> some View {
         HStack(spacing: 4) {
             Image(systemName: symbol)
                 .font(.system(size: 11, weight: .semibold))
@@ -239,7 +257,7 @@ struct GameView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
         }
-        .foregroundStyle(tint)
+        .foregroundStyle(tint ?? panelInk)
         .padding(.horizontal, 9)
         .padding(.vertical, 7)
     }
@@ -298,11 +316,11 @@ struct GameView: View {
                 Text(label)
                     .font(.system(size: 9, weight: .medium, design: .rounded))
             }
-            .foregroundStyle(highlighted ? Palette.moss.swiftUIColor : (tint ?? Palette.uiInk))
+            .foregroundStyle(highlighted ? Palette.moss.swiftUIColor : (tint ?? panelInk))
             .frame(width: 64, height: 52)
             .background(
                 RoundedRectangle(cornerRadius: UIStyle.controlRadius, style: .continuous)
-                    .fill(Palette.paper.swiftUIColor.opacity(UIStyle.overlayOpacity))
+                    .fill(panelFill.opacity(UIStyle.overlayOpacity))
                     .shadow(color: .black.opacity(0.12), radius: 4, y: 2)
             )
             .overlay(
@@ -381,10 +399,10 @@ struct GameView: View {
                 Text("Einholen")
                     .font(.system(size: 14, weight: .medium, design: .serif))
             }
-            .foregroundStyle(Palette.uiInk)
+            .foregroundStyle(panelInk)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Capsule().fill(Palette.paper.swiftUIColor.opacity(UIStyle.overlayOpacity)))
+            .background(Capsule().fill(panelFill.opacity(UIStyle.overlayOpacity)))
         }
     }
 
@@ -396,11 +414,11 @@ struct GameView: View {
                 BaitIcon(bait: session.selectedBait, size: 26)
                 Text(session.selectedBait.name)
                     .font(.system(size: 14, weight: .medium, design: .serif))
-                    .foregroundStyle(Palette.uiInk)
+                    .foregroundStyle(panelInk)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Capsule().fill(Palette.paper.swiftUIColor.opacity(UIStyle.overlayOpacity)))
+            .background(Capsule().fill(panelFill.opacity(UIStyle.overlayOpacity)))
         }
     }
 
@@ -429,13 +447,13 @@ struct GameView: View {
     private func hintText(_ text: String, emphasis: Bool = false) -> some View {
         Text(text)
             .font(.system(size: 13, weight: emphasis ? .bold : .regular, design: .serif))
-            .foregroundStyle(emphasis ? Palette.paper.swiftUIColor : Palette.uiInk)
+            .foregroundStyle(emphasis ? Palette.paper.swiftUIColor : panelInk)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(
                 Capsule().fill(emphasis
                                ? Palette.vermilion.swiftUIColor
-                               : Palette.paper.swiftUIColor.opacity(0.82))
+                               : panelFill.opacity(0.82))
             )
     }
 
@@ -445,11 +463,11 @@ struct GameView: View {
         VStack(alignment: .trailing, spacing: 4) {
             Text("Wurfweite")
                 .font(.system(size: 11, design: .rounded))
-                .foregroundStyle(Palette.uiInk)
+                .foregroundStyle(panelInk)
 
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(Palette.paper.swiftUIColor.opacity(0.8))
+                    .fill(panelFill.opacity(0.8))
                     .frame(width: 150, height: 10)
                 Capsule()
                     .fill(Palette.vermilion.swiftUIColor)
@@ -532,13 +550,13 @@ struct GameView: View {
     private func toastView(_ toast: GameToast) -> some View {
         Text(toast.text)
             .font(.system(size: 15, weight: toast.emphasis ? .bold : .medium, design: .serif))
-            .foregroundStyle(toast.emphasis ? Palette.paper.swiftUIColor : Palette.uiInk)
+            .foregroundStyle(toast.emphasis ? Palette.paper.swiftUIColor : panelInk)
             .padding(.horizontal, 18)
             .padding(.vertical, 10)
             .background(
                 Capsule().fill(toast.emphasis
                                ? Palette.vermilion.swiftUIColor
-                               : Palette.paper.swiftUIColor.opacity(0.92))
+                               : panelFill.opacity(0.92))
             )
             .shadow(color: .black.opacity(0.22), radius: 10, y: 3)
             .transition(.scale(scale: 0.94).combined(with: .opacity))

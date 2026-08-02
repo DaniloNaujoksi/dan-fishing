@@ -83,6 +83,9 @@ final class GameSession: ObservableObject {
     @Published private(set) var depthText: String = "–"
     @Published private(set) var habitatText: String = "–"
     @Published private(set) var activityScore: Double = 0
+    /// Nachts wird die Bedienung dunkel mit heller Schrift. Die Szene meldet
+    /// dafür ihren Dunkelheitswert.
+    @Published private(set) var isNightMode: Bool = false
 
     @Published private(set) var miniGame: MiniGameSnapshot?
     @Published private(set) var pendingCatch: CatchResult?
@@ -367,8 +370,15 @@ final class GameSession: ObservableObject {
                            clock: String,
                            depth: Double,
                            habitat: Habitat?,
-                           activity: Double) {
+                           activity: Double,
+                           darkness: Double = 0) {
         if self.timeOfDay != timeOfDay { self.timeOfDay = timeOfDay }
+
+        // Die Bedienung schaltet nachts auf dunkel. Der Umschlagpunkt liegt
+        // bewusst nicht bei jedem Prozentschritt, sonst flackert die
+        // Oberfläche in der Dämmerung hin und her.
+        let dark = darkness > (isNightMode ? 0.45 : 0.6)
+        if isNightMode != dark { isNightMode = dark }
         if clockText != clock { clockText = clock }
 
         let newDepth = depth > 0.05 ? String(format: "%.1f m", depth) : "–"

@@ -986,7 +986,8 @@ final class LakeScene: SKScene {
                                   clock: dayNight.clockText,
                                   depth: depth,
                                   habitat: habitat,
-                                  activity: activity)
+                                  activity: activity,
+                                  darkness: dayNight.darkness)
     }
 
     /// Bedingungen dort, wo der Köder liegt (oder wo das Boot steht, solange
