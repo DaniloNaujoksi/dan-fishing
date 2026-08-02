@@ -348,13 +348,18 @@ enum FishCatalog {
             // Unter zweieinviertel Metern ist es kein Hausen, sondern eine
             // Verwechslung. Wer ihn hakt, hat etwas Ausgewachsenes am Band.
             minLength: 225, maxLength: 450,
-            minWeight: 90.0, maxWeight: 320.0,
+            // Ein Fisch dieser Länge wiegt so viel wie zwei Männer; die ganz
+            // alten Tiere bringen eine halbe Tonne auf die Waage.
+            minWeight: 190.0, maxWeight: 520.0,
             habitats: [.deep],
             activeTimes: [.night, .dawn],
             preferredBaitIDs: ["wormbundle", "big_minnow", "minnow", "moonbait"],
             fightStrength: 1.0,
             motion: .rampage,
-            valuePerKilo: 240,
+            // Der Preis je Kilo ist bewusst niedrig: Bei zweihundert Kilo mal
+            // dem Faktor für ein Monster wäre ein einziger Fang sonst mehr
+            // wert als der ganze Laden.
+            valuePerKilo: 26,
             minPlayerLevel: 10,
             bodyColor: ColorSpec(0x6E6A52), bellyColor: ColorSpec(0xD2CBA8), finColor: ColorSpec(0x565241)
         ),
