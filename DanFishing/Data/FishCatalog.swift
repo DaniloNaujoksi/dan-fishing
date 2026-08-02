@@ -304,8 +304,8 @@ enum FishCatalog {
         FishSpecies(
             id: "salmon",
             name: "Lachs",
-            summary: "Silberner Wanderer, der nur zum Laichen heraufzieht. Kraftvoll, ausdauernd und im Drill kaum zu halten — der Fisch, von dem alle erzählen.",
-            rarity: .rare,
+            summary: "Silberner Wanderer, der nur zum Laichen heraufzieht. Kraftvoll, ausdauernd und im Drill kaum zu halten — der Fisch, von dem alle erzählen. Die wenigsten haben je einen gesehen.",
+            rarity: .veryRare,
             feeding: .predator,
             minLength: 60, maxLength: 100,
             minWeight: 2.5, maxWeight: 14.0,
