@@ -50,6 +50,16 @@ final class LakeScene: SKScene {
     private var fishNodes: [FishNode] = []
     /// Der legendäre Fisch dieses Gewässers, falls er hier steht.
     private var legendNode: FishNode?
+
+    /// Die Schleppfahrt, die einem Brocken vorausgeht.
+    private struct PowerDrag {
+        var remaining: CGFloat
+        let anchor: CGPoint
+        let fish: HookedFish
+    }
+    private var powerDrag: PowerDrag?
+    /// Versatz für das Zittern der Kamera.
+    private var cameraShake: CGPoint = .zero
     private var lastUpdate: TimeInterval = 0
     private var petalTimer: CGFloat = 0
 
@@ -551,6 +561,16 @@ final class LakeScene: SKScene {
     }
 
     private func updateMovement(dt: CGFloat) {
+        // Solange der Fisch das Boot schleppt, hat der Spieler nichts zu
+        // sagen — genau das ist die Aussage der Szene.
+        if updatePowerDrag(dt: dt) {
+            actorNode.position = player.position
+            actorNode.zRotation = player.heading
+            actorNode.update(deltaTime: dt, effort: 0, speed: 200,
+                             night: CGFloat(dayNight.darkness))
+            return
+        }
+
         // Während des Drills bleibt die Figur stehen — sonst kämpft man gegen
         // zwei Dinge gleichzeitig.
         let input = session.miniGame == nil ? session.joystick : .zero
@@ -666,7 +686,9 @@ final class LakeScene: SKScene {
 
             // Im Drill zeigt die Schnur die Spannung des Fisches, sonst die
             // Straffung durch die Bootsfahrt.
-            let tension = max(CGFloat(session.miniGame?.tension ?? 0), lineTension)
+            // Während der Schleppfahrt steht die Schnur bis zum Anschlag.
+            let tension = max(CGFloat(session.miniGame?.tension ?? 0),
+                              max(lineTension, powerDrag != nil ? 1 : 0))
             line.update(from: actorNode.rodTipPosition, to: position, tension: tension)
         } else {
             bobber.isHidden = true
@@ -834,8 +856,11 @@ final class LakeScene: SKScene {
         let lead = CGPoint(x: player.position.x + player.velocity.dx * 0.35,
                            y: player.position.y + player.velocity.dy * 0.35)
         let smoothing = min(1, dt * 3.2)
-        cameraNode.position = CGPoint(x: cameraNode.position.x + (lead.x - cameraNode.position.x) * smoothing,
-                                      y: cameraNode.position.y + (lead.y - cameraNode.position.y) * smoothing)
+        cameraNode.position = CGPoint(x: cameraNode.position.x + (lead.x - cameraNode.position.x) * smoothing + cameraShake.x,
+                                      y: cameraNode.position.y + (lead.y - cameraNode.position.y) * smoothing + cameraShake.y)
+
+        // Das Zittern ist ein einmaliger Versatz je Frame, kein Zustand.
+        cameraShake = .zero
     }
 
     private func updateAtmosphere(dt: CGFloat) {
@@ -990,10 +1015,93 @@ final class LakeScene: SKScene {
             bobber.showNibble()
         case .bite:
             bobber.showBite()
+
+        case .hooked(let fish):
+            // Ein Brocken zieht erst einmal das Boot hinter sich her. Der
+            // Drill beginnt danach — man soll begriffen haben, was da hängt,
+            // bevor die Leiste aufgeht.
+            if let anchor = fishing.bobberPosition, isHeavyweight(fish) {
+                startPowerDrag(towards: anchor, fish: fish)
+                return
+            }
+
         default:
             break
         }
         session.handle(event: event)
+    }
+
+    /// Fische, die das Boot bewegen können.
+    private func isHeavyweight(_ fish: HookedFish) -> Bool {
+        fish.weightKg >= 45 || fish.species.rarity == .monster
+    }
+
+    /// Die Schleppfahrt vor dem Drill.
+    ///
+    /// Das Boot wird ein paar Sekunden lang zum Fisch gezogen, die Schnur
+    /// steht stramm, Gischt läuft mit, die Kamera zittert. Erst danach
+    /// bekommt die Oberfläche den Haken gemeldet.
+    private func startPowerDrag(towards anchor: CGPoint, fish: HookedFish) {
+        powerDrag = PowerDrag(remaining: 2.1, anchor: anchor, fish: fish)
+
+        session.showToast("Er nimmt das Boot mit!", emphasis: true)
+        AudioManager.shared.play(.lineSnap)
+        HapticManager.shared.tensionWarning()
+
+        // Kurzes Zittern in der Kamera, solange es zieht.
+        cameraNode.removeAction(forKey: "shake")
+        let shake = SKAction.sequence([
+            .run { [weak self] in
+                guard let self else { return }
+                self.cameraShake = CGPoint(x: CGFloat.random(in: -7...7),
+                                           y: CGFloat.random(in: -7...7))
+            },
+            .wait(forDuration: 0.05)
+        ])
+        cameraNode.run(.repeat(shake, count: 42), withKey: "shake")
+    }
+
+    /// Läuft die Schleppfahrt weiter. Gibt true zurück, solange sie dauert.
+    private func updatePowerDrag(dt: CGFloat) -> Bool {
+        guard var drag = powerDrag else { return false }
+
+        drag.remaining -= dt
+        powerDrag = drag
+
+        // Zum Köder ziehen, aber nie ganz darauf — sonst steht das Boot auf
+        // dem Fisch.
+        let delta = CGVector(dx: drag.anchor.x - player.position.x,
+                             dy: drag.anchor.y - player.position.y)
+        let distance = hypot(delta.dx, delta.dy)
+
+        if distance > 90 {
+            let pull: CGFloat = 190
+            let step = CGPoint(x: player.position.x + delta.dx / distance * pull * dt,
+                               y: player.position.y + delta.dy / distance * pull * dt)
+            if !player.isBlocked(step, map: map) {
+                player.place(at: step)
+            }
+            player.face(towards: drag.anchor, maxStep: dt * 2.4)
+        }
+
+        // Gischt und Kielwasser, als führe man volle Fahrt.
+        wakeTimer -= dt * 3
+        if wakeTimer <= 0 {
+            wakeTimer = 0.4
+            ambience?.spawnWake(at: player.position, heading: player.heading, strength: 1)
+        }
+
+        line.update(from: actorNode.rodTipPosition, to: drag.anchor, tension: 1)
+        bobber.showTug()
+
+        if drag.remaining <= 0 {
+            powerDrag = nil
+            cameraShake = .zero
+            cameraNode.removeAction(forKey: "shake")
+            session.handle(event: .hooked(drag.fish))
+            return false
+        }
+        return true
     }
 
     // MARK: - Schnittstelle für die Oberfläche

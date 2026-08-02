@@ -145,6 +145,10 @@ enum FightMotion: String, Codable, CaseIterable {
     /// Kurze harte Grundflucht mit plötzlichen Ausbrüchen nach oben. Der Fisch
     /// steht nie still: kaum hat man ihn hoch, geht er wieder auf Grund.
     case plunging
+    /// Nicht zu berechnen: lange Fluchten quer durch die Bahn, kurze Pausen,
+    /// in denen scheinbar nichts passiert, dann wieder ein Ruck. Nur für die
+    /// ganz Großen.
+    case rampage
 
     var displayName: String {
         switch self {
@@ -154,6 +158,7 @@ enum FightMotion: String, Codable, CaseIterable {
         case .diving: return "Abtauchend"
         case .thrashing: return "Wild"
         case .plunging: return "Ruckartig abtauchend"
+        case .rampage: return "Nicht zu berechnen"
         }
     }
 }

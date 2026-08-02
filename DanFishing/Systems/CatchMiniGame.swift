@@ -106,6 +106,18 @@ struct CatchMiniGame {
             case .thrashing:
                 fishTarget = clamp(randomSource())
                 nextDecision = 0.2 + randomSource() * 0.35
+            case .rampage:
+                // Entweder eine lange Flucht quer durch die Bahn oder ein
+                // kurzes Verharren — beides unvorhersehbar. Genau daran merkt
+                // man, dass hier etwas hängt, das größer ist als das Boot.
+                if randomSource() < 0.72 {
+                    let far = randomSource()
+                    fishTarget = clamp(far < 0.5 ? far * 0.3 : 0.7 + far * 0.3)
+                    nextDecision = 0.22 + randomSource() * 0.3
+                } else {
+                    fishTarget = clamp(fishPosition + (randomSource() - 0.5) * 0.15)
+                    nextDecision = 0.5 + randomSource() * 0.7
+                }
             case .plunging:
                 // Wie das Abtauchen, aber härter und schneller: meist ein Zug
                 // bis ganz auf Grund, dazwischen ein plötzlicher Satz nach

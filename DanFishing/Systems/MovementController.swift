@@ -47,6 +47,13 @@ struct MovementController {
         autoTarget = nil
     }
 
+    /// Dreht den Bug zu einem Punkt. Gebraucht, wenn nicht der Spieler steuert
+    /// — etwa wenn ein schwerer Fisch das Boot hinter sich herzieht.
+    mutating func face(towards point: CGPoint, maxStep: CGFloat) {
+        let target = atan2(point.y - position.y, point.x - position.x)
+        heading = MovementController.turn(from: heading, to: target, maxStep: maxStep)
+    }
+
     /// Ein Simulationsschritt.
     /// - Parameter input: Joystickvektor, Länge 0…1.
     mutating func update(deltaTime: CGFloat,
