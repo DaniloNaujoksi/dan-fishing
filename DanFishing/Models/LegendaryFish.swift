@@ -52,8 +52,8 @@ struct LegendaryFish: Codable, Equatable, Identifiable {
         let baitName = bait?.name ?? "irgendetwas"
 
         return "Am \(place) erzählt man sich von \(name). "
-            + "Er soll \(timePhrase(time)) im Bereich \(zone) stehen "
-            + "und nur \(baitName) nehmen."
+            + "Er steht im Bereich \(zone) und nimmt nur \(baitName) — "
+            + "am ehesten \(timePhrase(time))."
     }
 
     private func timePhrase(_ time: String) -> String {
@@ -71,5 +71,12 @@ struct LegendaryFish: Codable, Equatable, Identifiable {
         let zone = habitat?.displayName ?? "–"
         let time = timeOfDay?.displayName ?? "–"
         return "\(zone) · \(time) · \(bait?.name ?? "–")"
+    }
+
+    /// Die Uhrzeit ist ein Vorteil, keine Bedingung — das muss die Anzeige
+    /// auch sagen, sonst wartet man umsonst auf die Dämmerung.
+    var timeAdvice: String {
+        guard let timeOfDay else { return "" }
+        return "Beißt am besten \(timePhrase(timeOfDay.displayName)), sonst schlechter."
     }
 }

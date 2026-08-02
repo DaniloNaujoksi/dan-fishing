@@ -715,12 +715,11 @@ final class LakeScene: SKScene {
             // Uhrzeit und Köder nicht, sieht sie den Köder gar nicht an.
             // Stimmt alles, ist sie interessiert — aber immer noch scheu.
             if node === legendNode {
-                if let context, let legend = session.activeLegend,
-                   LegendSystem.acceptsBite(legend,
-                                            habitat: context.habitat,
-                                            timeOfDay: context.timeOfDay,
-                                            baitID: bait.id) {
-                    interest = 1.0
+                if let context, let legend = session.activeLegend {
+                    interest = CGFloat(LegendSystem.biteFactor(legend,
+                                                               habitat: context.habitat,
+                                                               timeOfDay: context.timeOfDay,
+                                                               baitID: bait.id))
                 } else {
                     interest = 0
                 }

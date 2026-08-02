@@ -163,17 +163,37 @@ enum LegendSystem {
         legend.caughtAt == nil && legend.waterID == waterID
     }
 
-    /// Beißt sie unter diesen Bedingungen überhaupt?
+    /// Wie gut die Bedingungen gerade passen. 0 heißt: rührt sich nicht.
     ///
-    /// Alles muss stimmen: Zone, Tageszeit und Köder. Sonst schaut sie den
-    /// Köder nicht einmal an — genau das macht die Suche aus.
+    /// Zone und Köder sind harte Bedingungen — das ist das Rätsel. Die
+    /// Tageszeit ist es ausdrücklich nicht: Eine Dämmerung dauert im Spiel
+    /// keine Minute, und darauf zu warten war reine Geduldsprobe. Zur
+    /// genannten Stunde beißt sie am besten, sonst eben schlechter.
+    static func biteFactor(_ legend: LegendaryFish,
+                           habitat: Habitat,
+                           timeOfDay: TimeOfDay,
+                           baitID: String) -> Double {
+        guard legend.habitatID == habitat.rawValue, legend.baitID == baitID else { return 0 }
+        guard let preferred = legend.timeOfDay else { return 0.6 }
+
+        if preferred == timeOfDay { return 1.0 }
+        return isNeighbour(timeOfDay, of: preferred) ? 0.65 : 0.35
+    }
+
+    /// Beißt sie hier überhaupt?
     static func acceptsBite(_ legend: LegendaryFish,
                             habitat: Habitat,
                             timeOfDay: TimeOfDay,
                             baitID: String) -> Bool {
-        legend.habitatID == habitat.rawValue
-            && legend.timeOfDayID == timeOfDay.rawValue
-            && legend.baitID == baitID
+        biteFactor(legend, habitat: habitat, timeOfDay: timeOfDay, baitID: baitID) > 0
+    }
+
+    /// Liegen zwei Tageszeiten im Kreislauf nebeneinander?
+    private static func isNeighbour(_ time: TimeOfDay, of other: TimeOfDay) -> Bool {
+        let order: [TimeOfDay] = [.dawn, .day, .dusk, .night]
+        guard let a = order.firstIndex(of: time), let b = order.firstIndex(of: other) else { return false }
+        let distance = abs(a - b)
+        return distance == 1 || distance == order.count - 1
     }
 
     /// Der fertige Fisch am Haken.

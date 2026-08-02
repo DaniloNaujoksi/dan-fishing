@@ -19,11 +19,14 @@ struct DayNightSystem {
         while normalizedTime >= 1 { normalizedTime -= 1 }
     }
 
+    /// Die Dämmerungen sind bewusst etwas länger als astronomisch richtig:
+    /// Viele Fische beißen nur dann, und eine Minute pro Zyklus war zu wenig,
+    /// um überhaupt einen Wurf anzubringen.
     var phase: TimeOfDay {
         switch normalizedTime {
-        case 0.18..<0.30: return .dawn
-        case 0.30..<0.68: return .day
-        case 0.68..<0.80: return .dusk
+        case 0.16..<0.32: return .dawn
+        case 0.32..<0.66: return .day
+        case 0.66..<0.82: return .dusk
         default: return .night
         }
     }
@@ -31,14 +34,14 @@ struct DayNightSystem {
     /// 0 = taghell, 1 = tiefe Nacht. Die Szene legt damit ihren Farbschleier an.
     var darkness: Double {
         switch normalizedTime {
-        case ..<0.18:
+        case ..<0.16:
             return 1.0
-        case 0.18..<0.30:
-            return 1.0 - (normalizedTime - 0.18) / 0.12
-        case 0.30..<0.68:
+        case 0.16..<0.32:
+            return 1.0 - (normalizedTime - 0.16) / 0.16
+        case 0.32..<0.66:
             return 0.0
-        case 0.68..<0.80:
-            return (normalizedTime - 0.68) / 0.12
+        case 0.66..<0.82:
+            return (normalizedTime - 0.66) / 0.16
         default:
             return 1.0
         }

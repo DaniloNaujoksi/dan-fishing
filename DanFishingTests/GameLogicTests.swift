@@ -968,20 +968,27 @@ final class LegendSystemTests: XCTestCase {
             return XCTFail("Keine Legende")
         }
 
-        XCTAssertTrue(LegendSystem.acceptsBite(legend, habitat: habitat,
-                                               timeOfDay: time, baitID: legend.baitID))
+        // Zone und Köder sind hart …
+        XCTAssertEqual(LegendSystem.biteFactor(legend, habitat: habitat,
+                                               timeOfDay: time, baitID: legend.baitID),
+                       1.0, accuracy: 0.001)
 
         let otherBait = legend.baitID == "worm" ? "corn" : "worm"
-        XCTAssertFalse(LegendSystem.acceptsBite(legend, habitat: habitat,
-                                                timeOfDay: time, baitID: otherBait))
-
-        let otherTime: TimeOfDay = time == .night ? .day : .night
-        XCTAssertFalse(LegendSystem.acceptsBite(legend, habitat: habitat,
-                                                timeOfDay: otherTime, baitID: legend.baitID))
+        XCTAssertEqual(LegendSystem.biteFactor(legend, habitat: habitat,
+                                               timeOfDay: time, baitID: otherBait), 0)
 
         let otherHabitat: Habitat = habitat == .deep ? .reeds : .deep
-        XCTAssertFalse(LegendSystem.acceptsBite(legend, habitat: otherHabitat,
-                                                timeOfDay: time, baitID: legend.baitID))
+        XCTAssertEqual(LegendSystem.biteFactor(legend, habitat: otherHabitat,
+                                               timeOfDay: time, baitID: legend.baitID), 0)
+
+        // … die Uhrzeit ist nur ein Vorteil. Auf eine Dämmerung zu warten,
+        // die keine Minute dauert, wäre reine Geduldsprobe.
+        for other in TimeOfDay.allCases where other != time {
+            let factor = LegendSystem.biteFactor(legend, habitat: habitat,
+                                                 timeOfDay: other, baitID: legend.baitID)
+            XCTAssertGreaterThan(factor, 0, "Zur \(other.displayName) beißt sie gar nicht")
+            XCTAssertLessThan(factor, 1.0)
+        }
     }
 
     func testNamesAreStableAndReadable() {

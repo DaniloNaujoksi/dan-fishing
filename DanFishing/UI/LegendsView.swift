@@ -57,7 +57,7 @@ struct LegendsView: View {
                     StatChip(symbol: "mappin.and.ellipse",
                              value: legend.water?.name ?? "–")
                     StatChip(symbol: "clock",
-                             value: legend.timeOfDay?.displayName ?? "–")
+                             value: "am besten \(legend.timeOfDay?.displayName ?? "–")")
                 }
 
                 HStack(spacing: 10) {
@@ -107,7 +107,8 @@ struct LegendsView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                Text("Sie ist vorsichtig: Wirf nicht direkt auf sie, sondern daneben — "
+                Text("Zone und Köder müssen stimmen, die Uhrzeit hilft nur. "
+                     + "Sie ist vorsichtig: Wirf nicht direkt auf sie, sondern daneben — "
                      + "und rechne damit, dass sie den Köder mehrfach anzupft, bevor sie nimmt.")
                     .font(.system(size: 12, design: .rounded))
                     .foregroundStyle(Palette.inkSoft.swiftUIColor)
