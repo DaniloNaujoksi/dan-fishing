@@ -144,6 +144,11 @@ final class GameSession: ObservableObject {
     private var lastReelTick: Double = 0
     private var tutorial = TutorialSystem(active: false)
 
+    /// Eine neue Legende wartet darauf, angekündigt zu werden — erst wenn die
+    /// Fangkarte weg ist.
+    private var legendRefillPending = false
+    private var legendRefillTimer: Timer?
+
     init(saveManager: SaveGameManager = .shared) {
         self.saveManager = saveManager
         let loaded = saveManager.load() ?? SaveData.newGame()
@@ -584,6 +589,14 @@ final class GameSession: ObservableObject {
         clearCompletedMissions()
         AudioManager.shared.play(.uiTap)
         persist()
+
+        // Erst durchatmen lassen, dann die nächste Geschichte erzählen.
+        guard legendRefillPending else { return }
+        legendRefillPending = false
+        legendRefillTimer?.invalidate()
+        legendRefillTimer = Timer.scheduledTimer(withTimeInterval: 2.5, repeats: false) { [weak self] _ in
+            self?.ensureLegends()
+        }
     }
 
     // MARK: - Legendäre Fische
@@ -645,6 +658,14 @@ final class GameSession: ObservableObject {
     /// aufgerufen.
     func ensureLegends() {
         guard save.level >= LegendSystem.minimumLevel else { return }
+
+        // Nicht ins offene Fangfenster hineinreden: Die Meldung über die
+        // nächste Legende würde sonst über der Fangkarte liegen. Sie kommt
+        // ein paar Sekunden nach dem Schließen.
+        guard pendingCatch == nil else {
+            legendRefillPending = true
+            return
+        }
 
         // Alter Spielstand mit genau einer Legende: übernehmen.
         if let old = save.activeLegend {
